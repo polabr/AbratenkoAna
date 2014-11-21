@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := CutStudy TrackStudy EventFilters #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := CutStudy TrackStudy EventFilters SignalSelection scratch_ana #ADD_NEW_SUBDIR ... do not remove this comment from this line
 #UBSensInterface
 
 #####################################################################################
