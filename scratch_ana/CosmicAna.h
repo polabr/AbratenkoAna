@@ -1,9 +1,9 @@
 /**
- * \file CosmicMIDEstimator.h
+ * \file CosmicAna.h
  *
  * \ingroup scratch_ana
  * 
- * \brief Class def header for a class CosmicMIDEstimator
+ * \brief Class def header for a class CosmicAna
  *
  * @author davidkaleko
  */
@@ -12,41 +12,41 @@
 
     @{*/
 
-#ifndef LARLITE_COSMICMIDESTIMATOR_H
-#define LARLITE_COSMICMIDESTIMATOR_H
+#ifndef LARLITE_COSMICANA_H
+#define LARLITE_COSMICANA_H
 
 #include "Analysis/ana_base.h"
 
 namespace larlite {
   /**
-     \class CosmicMIDEstimator
+     \class CosmicAna
      User custom analysis class made by davidkaleko
    */
-  class CosmicMIDEstimator : public ana_base{
+  class CosmicAna : public ana_base{
   
   public:
 
     /// Default constructor
-    CosmicMIDEstimator(){ 
-      _name="CosmicMIDEstimator"; 
+    CosmicAna(){ 
+      _name="CosmicAna"; 
       _fout=0;
       _h_MID=0;
     };
 
     /// Default destructor
-    virtual ~CosmicMIDEstimator(){};
+    virtual ~CosmicAna(){};
 
-    /** IMPLEMENT in CosmicMIDEstimator.cc!
+    /** IMPLEMENT in CosmicAna.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in CosmicMIDEstimator.cc! 
+    /** IMPLEMENT in CosmicAna.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in CosmicMIDEstimator.cc! 
+    /** IMPLEMENT in CosmicAna.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();

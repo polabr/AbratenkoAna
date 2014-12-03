@@ -10,7 +10,11 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::VerifyShowerLengthFormula+;
+#pragma link C++ class larlite::CosmicAna+;
+#pragma link C++ class larlite::CosmicTrackLister+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
+
 

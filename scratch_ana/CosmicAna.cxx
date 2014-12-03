@@ -1,21 +1,21 @@
-#ifndef COSMICMIDESTIMATOR_CXX
-#define COSMICMIDESTIMATOR_CXX
+#ifndef COSMICANA_CXX
+#define COSMICANA_CXX
 
-#include "CosmicMIDEstimator.h"
+#include "CosmicAna.h"
 
 namespace larlite {
 
-  bool CosmicMIDEstimator::initialize() {
+  bool CosmicAna::initialize() {
     
     _h_MID = new TH1F("_h_MID","Cosmic Score",11,-0.05,1.05);
 
     return true;
   }
   
-  bool CosmicMIDEstimator::analyze(storage_manager* storage) {
+  bool CosmicAna::analyze(storage_manager* storage) {
     
     //Read in cosmic tag shit
-    auto ev_ctag = storage->get_data<event_cosmictag>("trackkalmanhittag");    
+    auto ev_ctag = storage->get_data<event_cosmictag>("stitchkalmanhittag");    
     if(!ev_ctag) {
       print(larlite::msg::kERROR,__FUNCTION__,Form("Did not find specified data product, CosmicTag!"));
       return false;
@@ -28,7 +28,7 @@ namespace larlite {
     return true;
   }
 
-  bool CosmicMIDEstimator::finalize() {
+  bool CosmicAna::finalize() {
 
     if(_fout) { _fout->cd(); _h_MID->Write(); }
 
