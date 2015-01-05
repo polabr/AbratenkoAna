@@ -5,20 +5,21 @@
 
 
 bool TrackAssessment::Configure(){
-
-  //Set DistToBoxWall's "box" to be TPC 
-  _DistToBoxWall.SetXYZMin( 0,
-			    -(::larutil::Geometry::GetME()->DetHalfHeight()),
-			    0);
   
-  _DistToBoxWall.SetXYZMax( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
-			    ::larutil::Geometry::GetME()->DetHalfHeight(),
-			    ::larutil::Geometry::GetME()->DetLength());
+  //Set DistToBoxWall's "box" to be TPC 
+  _myGeoAABox.Min( 0,
+		   -(::larutil::Geometry::GetME()->DetHalfHeight()),
+		   0);
+  
+  _myGeoAABox.Max( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
+		   ::larutil::Geometry::GetME()->DetHalfHeight(),
+		   ::larutil::Geometry::GetME()->DetLength());
+  
   
   _isConfigured = true;
   
   return true;
-
+  
 }
 
 
@@ -51,8 +52,7 @@ bool TrackAssessment::isFullyContained(const larlite::track &thistrack){
   auto end = thistrack.vertex_at(thistrack.n_point());
 
   //Make sure track start point and end point are in active volume
-  if(_DistToBoxWall.DistanceToWall(start) > 0 &&
-     _DistToBoxWall.DistanceToWall(end) > 0)   
+  if( _myGeoAABox.Contain(start) && _myGeoAABox.Contain(end) )
     return true;
   
   return false;

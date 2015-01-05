@@ -6,13 +6,13 @@
 bool ShowerAssessment::Configure(){
 
   //Set DistToBoxWall's "box" to be TPC 
-  _DistToBoxWall.SetXYZMin( 0,
-			    -(::larutil::Geometry::GetME()->DetHalfHeight()),
-			    0);
+  _myGeoAABox.Min( 0,
+		   -(::larutil::Geometry::GetME()->DetHalfHeight()),
+		   0);
   
-  _DistToBoxWall.SetXYZMax( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
-			    ::larutil::Geometry::GetME()->DetHalfHeight(),
-			    ::larutil::Geometry::GetME()->DetLength());
+  _myGeoAABox.Max( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
+		   ::larutil::Geometry::GetME()->DetHalfHeight(),
+		   ::larutil::Geometry::GetME()->DetLength());
   
   _isConfigured = true;
 
@@ -46,7 +46,7 @@ bool ShowerAssessment::isFullyContained(const larlite::shower &thisshower){
   ////////////////////////////////////////////
 
   //If the shower start point is not in active volume, return false
-  if( _DistToBoxWall.DistanceToWall(thisshower.ShowerStart()) < 0 )
+  if( !_myGeoAABox.Contain(thisshower.ShowerStart()) )
     return false;
 
   return true;
@@ -89,8 +89,13 @@ double ShowerAssessment::EstimateShowerEContainment(double dist_to_wall_cm){
 
 double ShowerAssessment::EstimateShowerEContainment(const larlite::shower &shower){
 
-  double dist_to_wall = _DistToBoxWall.DistanceToWall(shower.ShowerStart(),shower.Direction(),1);
-  
+  ///kaleko changing this to use new geoalgo fns, haven't tested
+  geoalgo::Point_t shower_start = shower.ShowerStart();
+  geoalgo::HalfLine_t shower_line(shower_start,shower.Direction());
+  geoalgo::Point_t point_on_wall = _myGeoAlgo.Intersection(_myGeoAABox,shower_line).at(0);
+
+  double dist_to_wall = shower_start.Dist(point_on_wall);
+
   return EstimateShowerEContainment(dist_to_wall);
 
 }

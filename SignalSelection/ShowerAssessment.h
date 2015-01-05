@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include "DataFormat/shower.h"
-#include "BasicTool/GeoAlgo/DistToBoxWall.h"
+#include "BasicTool/GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
 
 /**
@@ -53,7 +53,9 @@ protected:
   bool _isConfigured;
   
   //Geometry algo instance
-  ::geoalgo::DistToBoxWall _DistToBoxWall;
+  geoalgo::GeoAlgo _myGeoAlgo;
+  geoalgo::AABox _myGeoAABox;
+  
 
 };
 

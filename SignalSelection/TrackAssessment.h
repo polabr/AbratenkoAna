@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include "DataFormat/track.h"
-#include "BasicTool/GeoAlgo/DistToBoxWall.h"
+#include "BasicTool/GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
 #include "TVector3.h"
 
@@ -48,7 +48,7 @@ protected:
   bool _isConfigured;
   
   //Geometry algo instance
-  ::geoalgo::DistToBoxWall _DistToBoxWall;
+  geoalgo::AABox _myGeoAABox;
 
 };
 
