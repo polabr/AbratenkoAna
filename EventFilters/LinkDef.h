@@ -12,6 +12,8 @@
 #pragma link C++ class larlite::MCTracksContainedFilter+;
 #pragma link C++ class larlite::OnlyOneHighEMCTrackFilter+;
 
+#pragma link C++ class larlite::CCQEMCFilter+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
