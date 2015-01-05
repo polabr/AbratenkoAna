@@ -16,7 +16,8 @@
 #define LARLITE_MCTRACKSCONTAINEDFILTER_H
 
 #include "Analysis/ana_base.h"
-#include "BasicTool/GeoAlgo/DistToBoxWall.h"
+#include "BasicTool/GeoAlgo/GeoAABox.h"
+
 #include "LArUtil/Geometry.h"
 
 namespace larlite {
@@ -57,7 +58,7 @@ namespace larlite {
     bool isFullyContained(larlite::mctrack const &mytrack);
 
     //Geometry algo instance
-    ::geoalgo::DistToBoxWall _DistToBoxWall;
+    geoalgo::AABox _myGeoAABox;
 
   };
 }

@@ -8,14 +8,14 @@ namespace larlite {
   bool MCTracksContainedFilter::initialize() {
 
     //Set DistToBoxWall's "box" to be TPC 
-    _DistToBoxWall.SetXYZMin( 0,
-			      -(::larutil::Geometry::GetME()->DetHalfHeight()),
-			      0);
+    _myGeoAABox.Min( 0,
+		     -(::larutil::Geometry::GetME()->DetHalfHeight()),
+		     0);
     
-    _DistToBoxWall.SetXYZMax( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
-			      ::larutil::Geometry::GetME()->DetHalfHeight(),
-			      ::larutil::Geometry::GetME()->DetLength());
-
+    _myGeoAABox.Max( 2*(::larutil::Geometry::GetME()->DetHalfWidth()),
+		     ::larutil::Geometry::GetME()->DetHalfHeight(),
+		     ::larutil::Geometry::GetME()->DetLength());
+    
     return true;
   }
   
@@ -46,8 +46,10 @@ namespace larlite {
 
     //Make sure track MC start point and MC end point are in active volume
 
-    if(_DistToBoxWall.DistanceToWall(mytrack.Start().Position()) > 0 &&
-       _DistToBoxWall.DistanceToWall(mytrack.End().Position()) > 0)
+    //   Point_t mypoint(mytrack.Start().Position());
+
+    if(_myGeoAABox.Contain(mytrack.Start().Position()) > 0 &&
+       _myGeoAABox.Contain(mytrack.End().Position()) > 0)
 
       return true;
 
