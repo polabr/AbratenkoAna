@@ -72,8 +72,8 @@ namespace cluster{
     */
     hSimChView = new TH2D("hSimChView",
 			  Form("Event %d (Plane %d); Wire [cm]; Time[cm]",esch->event_id(),plane),
-			  100,min_wire*0.75,max_wire*1.25,
-			  100,min_TDC*0.75,max_TDC*1.25);
+			  750,min_wire*1.00,max_wire*1.00,
+			  750,min_TDC*1.00,max_TDC*1.00);
 
     //loop again over stuff to fill the hSimChView histo
     for(auto const sch : *esch) {

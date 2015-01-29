@@ -74,8 +74,9 @@ mgr.add_in_filename(args.source)
 mgr.open()
 
 canvas=TCanvas("schview","schview",600,500)
-canvas.SetGridx(1)
-canvas.SetGridy(1)
+#canvas.SetGridx(1)
+#canvas.SetGridy(1)
+canvas.SetLogz()
 algo = cluster.SimChannelViewer()
 
 processed_events=0
