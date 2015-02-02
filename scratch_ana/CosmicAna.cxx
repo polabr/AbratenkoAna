@@ -2,7 +2,7 @@
 #define COSMICANA_CXX
 
 #include "CosmicAna.h"
-
+#include "DataFormat/cosmictag.h"
 namespace larlite {
 
   bool CosmicAna::initialize() {

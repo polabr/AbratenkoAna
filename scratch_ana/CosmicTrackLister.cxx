@@ -2,7 +2,8 @@
 #define COSMICTRACKLISTER_CXX
 
 #include "CosmicTrackLister.h"
-
+#include "DataFormat/track.h"
+#include "DataFormat/cosmictag.h"
 namespace larlite {
 
   bool CosmicTrackLister::initialize() {

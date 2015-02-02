@@ -16,7 +16,7 @@
 #define LARLITE_COSMICANA_H
 
 #include "Analysis/ana_base.h"
-
+#include "TH1F.h"
 namespace larlite {
   /**
      \class CosmicAna

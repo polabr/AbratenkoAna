@@ -19,7 +19,7 @@
 #include "Analysis/ana_base.h"
 #include "LArUtil/LArUtilManager.h"
 #include <TH2D.h>
-
+#include "DataFormat/simch.h"
 
 namespace cluster{
 
