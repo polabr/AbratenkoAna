@@ -2,6 +2,7 @@
 #define SIMCHANNELVIEWER_CXX
 
 #include "SimChannelViewer.h"
+#include "DataFormat/simch.h"
 
 namespace cluster{
 
@@ -70,10 +71,18 @@ namespace cluster{
 			  (max_TDC-min_TDC),min_TDC,max_TDC);
     
     */
-    hSimChView = new TH2D("hSimChView",
+
+    //use one bin per wire, one bin per TDC tick for finest binning
+    /*    hSimChView = new TH2D("hSimChView",
 			  Form("Event %d (Plane %d); Wire [cm]; Time[cm]",esch->event_id(),plane),
 			  750,min_wire*1.00,max_wire*1.00,
 			  750,min_TDC*1.00,max_TDC*1.00);
+    */
+    hSimChView = new TH2D("hSimChView",
+			  Form("Event %d (Plane %d); Wire [cm]; Time[cm]",esch->event_id(),plane),
+			  (max_wire-min_wire),min_wire,max_wire,
+			  (max_TDC-min_TDC),min_TDC,max_TDC);
+
 
     //loop again over stuff to fill the hSimChView histo
     for(auto const sch : *esch) {
