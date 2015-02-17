@@ -13,9 +13,11 @@
 #pragma link C++ class larlite::CosmicAna+;
 #pragma link C++ class larlite::CosmicTrackLister+;
 #pragma link C++ class cluster::SimChannelViewer+;
+#pragma link C++ class larlite::MuShowerRecoStudy+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 
 
 
