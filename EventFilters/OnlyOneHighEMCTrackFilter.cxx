@@ -2,6 +2,7 @@
 #define ONLYONEHIGHEMCTRACKFILTER_CXX
 
 #include "OnlyOneHighEMCTrackFilter.h"
+#include "DataFormat/mctrack.h"
 
 namespace larlite {
 

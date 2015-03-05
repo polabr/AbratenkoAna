@@ -2,11 +2,12 @@
 #define CCQEMCFILTER_CXX
 
 #include "CCQEMCFilter.h"
+#include "DataFormat/mctruth.h"
 
 namespace larlite {
 
   size_t total_events = 0;
-  size_t ccqe_events = 0;
+  //  size_t ccqe_events = 0;
   size_t kept_events = 0;
 
   bool CCQEMCFilter::initialize() {
@@ -32,17 +33,17 @@ namespace larlite {
     total_events++;
     
     //Enforce that the interaction number is 1001, this is CCQE
-    size_t int_type = ev_mctruth->at(0).GetNeutrino().InteractionType();
-    if(int_type != 1001) return false;
+    //    size_t int_type = ev_mctruth->at(0).GetNeutrino().InteractionType();
+    //    if(int_type != 1001) return false;
 
-    ccqe_events++;
+    //    ccqe_events++;
 
     //Enforce that there is exactly 1 electron and 1 proton, each above 20MeV kinetic energy
     //I don't care about neutrons, weird quarks, the neutrino, etc.
     size_t n_electrons = 0;
     size_t n_protons = 0;
     
-    auto particles = ev_mctruth->at(0).GetParticles();
+    auto &particles = ev_mctruth->at(0).GetParticles();
     //std::cout<<"Particle PDGs in this event (CCQE): ";
     for(auto const& particle : particles){
       double KE = particle.Trajectory().at(0).E()-particle.Mass();
@@ -58,7 +59,7 @@ namespace larlite {
       return false;
 
     
-    //If you get here, it is CCQE with 1 good electron and 1 good proton.
+    //If you get here, the event has 1 good electron and 1 good proton.
     kept_events++;
     return true;
   }
@@ -66,7 +67,7 @@ namespace larlite {
   bool CCQEMCFilter::finalize() {
 
     std::cout<<"Total events = "<<total_events<<std::endl;
-    std::cout<<"Ccqe events = "<<ccqe_events<<std::endl;
+    //    std::cout<<"Ccqe events = "<<ccqe_events<<std::endl;
     std::cout<<"Final kept events = "<<kept_events<<std::endl;
 
     return true;

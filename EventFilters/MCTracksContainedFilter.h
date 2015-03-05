@@ -16,8 +16,8 @@
 #define LARLITE_MCTRACKSCONTAINEDFILTER_H
 
 #include "Analysis/ana_base.h"
-#include "BasicTool/GeoAlgo/GeoAABox.h"
-
+#include "GeoAlgo/GeoAABox.h"
+#include "DataFormat/mctrack.h"
 #include "LArUtil/Geometry.h"
 
 namespace larlite {
