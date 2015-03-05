@@ -77,11 +77,14 @@ canvas=TCanvas("schview","schview",600,500)
 #canvas.SetGridx(1)
 #canvas.SetGridy(1)
 canvas.SetLogz()
+#gStyle.SetPalette(52) #grayscale
 algo = cluster.SimChannelViewer()
 
 processed_events=0
 
 fGSer = larutil.GeometryUtilities.GetME()
+
+#outfile = TFile("outfile.root","RECREATE");
 
 while mgr.next_event():
 
@@ -99,10 +102,14 @@ while mgr.next_event():
 
         canvas.cd()
         hSimChView = algo.GetSimChView()
+#        outfile.cd()
+#        hSimChView.Write();
         hSimChView.Draw("COLZ")
         canvas.Update()
+#        outfile.Close()
         sys.stdin.readline()
         
+
         
 
 

@@ -2,7 +2,6 @@
 #define SIMCHANNELVIEWER_CXX
 
 #include "SimChannelViewer.h"
-#include "DataFormat/simch.h"
 
 namespace cluster{
 
@@ -19,7 +18,7 @@ namespace cluster{
       std::cout<<"bawefaewfawoeifhaoweifhawoef"<<std::endl;
       return;
     }
-    if(hSimChView) delete hSimChView;
+    //    if(hSimChView) delete hSimChView;
     
     //get the geo/detector singletons only once
     const larutil::Geometry* mygeo = larutil::Geometry::GetME();
