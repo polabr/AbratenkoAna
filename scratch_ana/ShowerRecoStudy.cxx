@@ -54,17 +54,20 @@ namespace larlite {
     _n_reco_showers = ev_s->size();
     _n_true_showers = ev_mcs->size();
 
-    if(_n_reco_showers == 1 && _n_true_showers == 1){
-
+    if(_n_reco_showers == 1){
       _reco_show_length = ev_s->at(0).Length();
       // temporary fix after bug in pitch units was found
       _reco_show_length /= 0.3;
-      _true_show_length = geoalgo::Vector(ev_mcs->at(0).End().Position()).Dist(geoalgo::Vector(ev_mcs->at(0).Start().Position()) );
-      _prof_show_length = _shrProfiler.Length( ev_s->at(0).Energy().at(2));
       _reco_show_E = ev_s->at(0).Energy().at(2);
+    }
+    if(_n_true_showers == 1){
+      _true_show_length = geoalgo::Vector(ev_mcs->at(0).End().Position()).Dist(geoalgo::Vector(ev_mcs->at(0).Start().Position()) );
       _true_show_E = ev_mcs->at(0).DetProfile().E();
-      _st_pt_diff = geoalgo::Vector(ev_mcs->at(0).Start().Position()).Dist(geoalgo::Vector(ev_s->at(0).ShowerStart()));
+      _prof_show_length = _shrProfiler.Length(_true_show_E);
       _E_contained = ( ( ev_mcs->at(0).DetProfile().E() / ev_mcs->at(0).Start().E() ) > 0.95 ) ? true : false;
+    }
+    if(_n_reco_showers == 1 && _n_true_showers == 1 ){
+      _st_pt_diff = geoalgo::Vector(ev_mcs->at(0).Start().Position()).Dist(geoalgo::Vector(ev_s->at(0).ShowerStart()));
     }
     
     _ana_tree->Fill();

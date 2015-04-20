@@ -13,7 +13,9 @@
 #pragma link C++ class larlite::OnlyOneHighEMCTrackFilter+;
 
 #pragma link C++ class larlite::CCQEMCFilter+;
+#pragma link C++ class larlite::MichelElectronFilter+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 

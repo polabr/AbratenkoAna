@@ -35,7 +35,7 @@ in_linkdef='%s/LinkDef.tmp' % source_dir
 in_typedef='%s/TypeDef.tmp' % source_dir
 in_source='%s/cxx.tmp' % source_dir
 in_header='%s/h.tmp' % source_dir
-in_rootmap='%s/lib/gen_rootmap.sh' % source_dir
+#in_rootmap='%s/lib/gen_rootmap.sh' % source_dir
 in_tmp_script_empty='%s/bin/gen_empty_class' % source_dir
 in_tmp_header_empty='%s/bin/tmp/empty.h' % source_dir
 in_bin_makefile='%s/bin/GNUmakefile.tmp' % source_dir
@@ -47,7 +47,7 @@ src_list = { in_makefile : '%s/GNUmakefile'   % target_dir,
              in_typedef  : '%s/%s-TypeDef.h' % (target_dir,name),
              in_source   : '%s/sample.cxx'         % target_dir,
              in_header   : '%s/sample.h'         % target_dir,
-             in_rootmap  : '%s/lib/gen_rootmap.sh' % target_dir,
+#             in_rootmap  : '%s/lib/gen_rootmap.sh' % target_dir,
              in_tmp_script_empty : '%s/bin/gen_empty_class' % target_dir,
              in_tmp_header_empty : '%s/bin/tmp/empty.h'    % target_dir,
              in_bin_makefile   : '%s/bin/GNUmakefile' % target_dir,
@@ -64,7 +64,7 @@ for src in src_list.keys():
    fout.write(contents)
    fout.close()
 
-os.system('chmod 774 %s/lib/gen_rootmap.sh' % target_dir)
+#os.system('chmod 774 %s/lib/gen_rootmap.sh' % target_dir)
 
 # Add new package to the list of directories to be compiled
 contents=open('%s/%s/GNUmakefile' % (os.environ['LARLITE_USERDEVDIR'],REPO_NAME), 'r').read()

@@ -20,12 +20,11 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := scratch_ana #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := scratch_ana EventFilters UBCommish #ADD_NEW_SUBDIR ... do not remove this comment from this line
 #SignalSelection
 #UBSensInterface
 #CutStudy
 #TrackStudy
-#EventFilters
 
 #####################################################################################
 #

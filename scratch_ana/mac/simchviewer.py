@@ -74,11 +74,13 @@ mgr.add_in_filename(args.source)
 mgr.open()
 
 canvas=TCanvas("schview","schview",600,500)
+gStyle.SetOptStat(0)
 #canvas.SetGridx(1)
 #canvas.SetGridy(1)
-canvas.SetLogz()
+#canvas.SetLogz()
 #gStyle.SetPalette(52) #grayscale
 algo = cluster.SimChannelViewer()
+algo.SetMinAmp(500.)
 
 processed_events=0
 
@@ -104,7 +106,7 @@ while mgr.next_event():
         hSimChView = algo.GetSimChView()
 #        outfile.cd()
 #        hSimChView.Write();
-        hSimChView.Draw("COLZ")
+        hSimChView.Draw()
         canvas.Update()
 #        outfile.Close()
         sys.stdin.readline()

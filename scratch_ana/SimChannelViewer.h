@@ -44,12 +44,15 @@ namespace cluster{
 
     TH2D* GetSimChView() { return hSimChView; }
 
+    void SetMinAmp(double min) { _min_amp = min; }
 
   protected:
 
     TH2D* hSimChView;
 
     std::map<UShort_t, std::vector< larlite::ide > > fTDCIDEs;
+
+    double _min_amp;
 };
 
   

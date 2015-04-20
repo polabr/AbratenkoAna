@@ -8,6 +8,7 @@ namespace cluster{
   SimChannelViewer::SimChannelViewer()
   {
     hSimChView = 0;
+    _min_amp = 0;
   }
   
   
@@ -79,8 +80,7 @@ namespace cluster{
     */
     hSimChView = new TH2D("hSimChView",
 			  Form("Event %d (Plane %d); Wire [cm]; Time[cm]",esch->event_id(),plane),
-			  (max_wire-min_wire),min_wire,max_wire,
-			  (max_TDC-min_TDC),min_TDC,max_TDC);
+			  1000,0,1000,500,400,900);
 
 
     //loop again over stuff to fill the hSimChView histo
@@ -102,7 +102,7 @@ namespace cluster{
 	  for(int i = 0; i < (int)myit->second.size(); i++)
 	    totElectrons += myit->second.at(i).numElectrons;
 	  
-	  //fill the corresponding bin in the end histo 
+	  //fill the corresponding bin in the end histo, if above min amp
 	  hSimChView->
 	    Fill( (mygeo->ChannelToWire(sch.Channel())) *fWiretoCm,
 		  (myit->first)                         *fTimetoCm,

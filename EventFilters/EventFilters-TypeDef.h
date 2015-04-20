@@ -9,6 +9,7 @@
 #include "MCTracksContainedFilter.h"
 #include "OnlyOneHighEMCTrackFilter.h"
 #include "CCQEMCFilter.h"
+#include "MichelElectronFilter.h"
 //ADD_NEW_HEADER ... do not change this comment line
 
 // Class forward declaration here
@@ -19,10 +20,12 @@ namespace larlite {
 
 
   class CCQEMCFilter;
+  class MichelElectronFilter;
 //ADD_ANA_CLASS ... do not change this comment line
 
 }
 
 //ADD_EMPTY_CLASS ... do not change this comment line
 #endif
+
 
