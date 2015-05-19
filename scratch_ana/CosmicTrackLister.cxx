@@ -34,11 +34,14 @@ namespace larlite {
     if( !ev_ctag->size() || !ev_track->size() )
       return false;
 
-    //Grab the associations to tracks 
-    //(this is a list of track indices that belong to each cosmictag)
-    auto my_ass = ev_ctag->association(ev_track->id());
+    //Grab all track associations
+    auto my_ass = storage->get_data<event_ass>(ev_track->name());
 
-    //Loop over cosmic tag info
+    //From track associations, grab the associations to cosmic tags
+    //track_to_ctag_ass is a vector of vector of indicies of cosmic tags
+    auto const& track_to_ctag_ass = my_ass->association(ev_track->id(),ev_ctag->id());
+
+    //Loop over tracks this event
     for (size_t cos_idx=0; cos_idx<ev_ctag->size(); ++cos_idx){
       
       auto const& this_ctag = ev_ctag->at(cos_idx);
@@ -47,8 +50,16 @@ namespace larlite {
       if ( this_ctag.CosmicScore() < _min_cosmic_score )
 	continue;
 
-      for(auto const& trk_idx : my_ass.at(cos_idx))
-	_track_indices.push_back( trk_idx );
+      //For this ctag, get all track indices that are associated w/ it
+
+      ///////////////////////////////////////
+      //
+      //this shit doesn't work because i was fixing changes to associations and i forgot
+      //what this code was actually doing. -dk, 051815
+      //
+      //////////////////////////////////////
+      //for(auto const& trk_idx : track_to_ctag_ass)
+	//	_track_indices.push_back( trk_idx );
 
     }
   
