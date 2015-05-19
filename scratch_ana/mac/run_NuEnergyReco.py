@@ -28,11 +28,11 @@ my_proc.set_ana_output_file("NuEnergyReco_ana_out.root")
 
 
 #Filter
-MCfilter = fmwk.MC_CC1E_Filter()
-MCfilter.flip(False)
+#MCfilter = fmwk.MC_CC1E_Filter()
+#MCfilter.flip(False)
 
 # Attach a template process
-my_proc.add_process(MCfilter)
+#my_proc.add_process(MCfilter)
 my_proc.add_process(fmwk.NuEnergyReco());
 
 print

@@ -18,6 +18,7 @@
 #include "Analysis/ana_base.h"
 #include "DataFormat/mcpart.h"
 #include "TTree.h"
+#include "ECCQECalculator.h"
 
 namespace larlite {
   /**
@@ -51,6 +52,9 @@ namespace larlite {
 
     protected:
 
+    double _p_mass = 938.27;
+    double _n_mass = 939.57;
+    
     void ResetTTreeVars();
 
     double ComputeNuEFromMCPart(const std::vector<larlite::mcpart> &myparts);
@@ -58,15 +62,12 @@ namespace larlite {
     double ComputeTotalFinalE(const std::vector<larlite::mcpart> &myparts);
     
     TTree* tree;
-    double nu_E_from_mcnu;
+    double true_nu_E;
     double nu_vtx_x_from_mcnu;
     double nu_vtx_y_from_mcnu;
     double nu_vtx_z_from_mcnu;
-
-    double nu_E_from_mcpart;
-    double nu_vtx_x_from_mcpart;
-    double nu_vtx_y_from_mcpart;
-    double nu_vtx_z_from_mcpart;
+    //Note: I'm cleaning up the code and removing "nu_*_mcpart"
+    //stuff because it matches identically nu_*_mcnu
 
     double remnant_E;
 
@@ -86,6 +87,21 @@ namespace larlite {
     int hit_nuc;
 
     int nu_pdg;
+
+    double tot_binding_E;
+
+    double E_ccqe;
+    double lep_E;
+    int n_lep;
+    double tot_prot_E;
+    int n_protons;
+    double tot_neutron_E;
+    int n_neutrons;
+    double max_prot_E;
+    double second_prot_E;
+
+    larlite::util::ECCQECalculator _calc;
+
   };
 }
 #endif

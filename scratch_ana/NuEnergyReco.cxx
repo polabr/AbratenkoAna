@@ -6,20 +6,20 @@
 #include "DataFormat/mctrack.h"
 #include "DataFormat/mctruth.h"
 
+#include <algorithm> //for std::sort
+
 namespace larlite {
 
   bool NuEnergyReco::initialize() {
 
     if(tree) delete tree;
     tree = new TTree("tree","tree");
-    tree->Branch("nu_E_from_mcnu",&nu_E_from_mcnu,"nu_E_from_mcnu/D");
+    tree->Branch("true_nu_E",&true_nu_E,"true_nu_E/D");
+    /*
     tree->Branch("nu_vtx_x_from_mcnu",&nu_vtx_x_from_mcnu,"nu_vtx_x_from_mcnu/D");
     tree->Branch("nu_vtx_y_from_mcnu",&nu_vtx_y_from_mcnu,"nu_vtx_y_from_mcnu/D");
     tree->Branch("nu_vtx_z_from_mcnu",&nu_vtx_z_from_mcnu,"nu_vtx_z_from_mcnu/D");
-    tree->Branch("nu_E_from_mcpart",&nu_E_from_mcpart,"nu_E_from_mcpart/D");
-    tree->Branch("nu_vtx_x_from_mcpart",&nu_vtx_x_from_mcpart,"nu_vtx_x_from_mcpart/D");
-    tree->Branch("nu_vtx_y_from_mcpart",&nu_vtx_y_from_mcpart,"nu_vtx_y_from_mcpart/D");
-    tree->Branch("nu_vtx_z_from_mcpart",&nu_vtx_z_from_mcpart,"nu_vtx_z_from_mcpart/D");
+    */
     tree->Branch("remnant_E",&remnant_E,"remnant_E/D");
     tree->Branch("tot_mcs_E",&tot_mcs_E,"tot_mcs_E/D");
     tree->Branch("tot_mct_E",&tot_mct_E,"tot_mct_E/D");
@@ -33,7 +33,17 @@ namespace larlite {
     tree->Branch("hit_target",&hit_target,"hit_target/I");
     tree->Branch("hit_nuc",&hit_nuc,"hit_nuc/I");
     tree->Branch("nu_pdg",&nu_pdg,"nu_pdg/I");
-    
+    tree->Branch("tot_binding_E",&tot_binding_E,"tot_binding_E/D");
+    tree->Branch("E_ccqe",&E_ccqe,"E_ccqe/D");
+    tree->Branch("lep_E",&lep_E,"lep_E/D");
+    tree->Branch("n_lep",&n_lep,"n_lep/I");
+    tree->Branch("n_protons",&n_protons,"n_protons/I");
+    tree->Branch("tot_prot_E",&tot_prot_E,"tot_prot_E/D");
+    tree->Branch("n_neutrons",&n_neutrons,"n_neutrons/I");
+    tree->Branch("tot_neutron_E",&tot_prot_E,"tot_neutron_E/D");
+    tree->Branch("max_prot_E",&max_prot_E,"max_prot_E/D");
+    tree->Branch("second_prot_E",&second_prot_E,"second_prot_E/D");
+
     return true;
   }
   
@@ -51,7 +61,7 @@ namespace larlite {
     }
     
     auto mcnu_traj = ev_tru->at(0).GetNeutrino().Nu().Trajectory();
-    nu_E_from_mcnu = 1000.*mcnu_traj.at(0).E();
+    true_nu_E = 1000.*mcnu_traj.at(0).E();
     nu_vtx_x_from_mcnu = mcnu_traj.at(0).X();
     nu_vtx_y_from_mcnu = mcnu_traj.at(0).Y();
     nu_vtx_z_from_mcnu = mcnu_traj.at(0).Z();
@@ -65,19 +75,19 @@ namespace larlite {
 
     non_mcs_mct_E = 0;
     n_non_mcs_mct = 0;
+    tot_binding_E = 0;
+    n_lep = 0;
+    std::vector<float> prot_energies;
+    prot_energies.clear();
+    std::vector<float> neut_energies;
+    neut_energies.clear();
+
     auto mcpart_list = ev_tru->at(0).GetParticles();
     for (auto const mcp : mcpart_list){
-
+      
       if (mcp.StatusCode() == 15)
 	remnant_E = 1000*(mcp.Trajectory().at(0).E());
-
-      if (abs(mcp.PdgCode()) == 12){
-	nu_E_from_mcpart = 1000.*mcp.Trajectory().at(0).E();
-	nu_vtx_x_from_mcpart = mcp.Trajectory().at(0).X();
-	nu_vtx_y_from_mcpart = mcp.Trajectory().at(0).Y();
-	nu_vtx_z_from_mcpart = mcp.Trajectory().at(0).Z();
-      }
-
+      
       if (mcp.StatusCode() == 1){
 	//These are all the PDGs that are made into mcshowers or mctracks (by definition)
 	//pi0 removed because its two gammas (22) are what matter. these are removed
@@ -94,14 +104,33 @@ namespace larlite {
 	    mcp.PdgCode() != -321  ){
 	  non_mcs_mct_E += 1000*mcp.Trajectory().at(0).E();
 	  n_non_mcs_mct++;
+	  
+	  if(mcp.PdgCode() == 2000000101){
+	    tot_binding_E += 1000*mcp.Trajectory().at(0).E();
+	  }
+	}
+	
+	//Store the mcparticle lepton energy while we're at it
+	if(abs(mcp.PdgCode()) == 13 || abs(mcp.PdgCode()) == 11){
+	  lep_E = 1000.*mcp.Trajectory().at(0).E();
+	  n_lep++;
+	  auto lep_mom = 1000.*mcp.Trajectory().at(0).Momentum().Vect();
+	  std::vector<double> tmp = {lep_mom.X(),lep_mom.Y(),lep_mom.Z(),lep_E};
+	  E_ccqe = 1000.*_calc.ComputeECCQE(tmp);
+	}
+	if(abs(mcp.PdgCode()) == 2212){
+	  prot_energies.push_back(1000.*mcp.Trajectory().at(0).E() - _p_mass);
+	}
+	if(abs(mcp.PdgCode()) == 2112){
+	  neut_energies.push_back(1000.*mcp.Trajectory().at(0).E() - _n_mass);
 	}
       }
     }
-
+    
+    //    std::cout<<"tot_binding_E = "<<tot_binding_E<<std::endl;
     tot_initial_E = ComputeTotalInitialE(mcpart_list);
     tot_final_E   = ComputeTotalFinalE(mcpart_list);
     
-
     for (auto const& mcs : *ev_mcs){
       //Avoid double counting
       if(mcs.AncestorTrackID() != mcs.TrackID()) continue;
@@ -118,8 +147,33 @@ namespace larlite {
 
     n_mcs = ev_mcs->size();
     n_mct = ev_mct->size();
-      
-    tree->Fill();
+
+    //sort energies vector from lowest to highest
+    std::sort(prot_energies.begin(),prot_energies.end());
+    std::sort(neut_energies.begin(),neut_energies.end());
+
+    //n_protons = prot_energies.size();
+    //n_neutrons = neut_energies.size();
+    
+
+    max_prot_E = prot_energies.size() > 0 ? prot_energies.back() : -999.;
+    second_prot_E = prot_energies.size() > 1 ? prot_energies.end()[-2] : -999.;
+
+    tot_prot_E = 0.;
+    tot_neutron_E = 0.;
+    n_protons = 0;
+    n_neutrons = 0;
+
+    std::cout<<"fix this! in a more organized manner! you are only counting protons with above 30 mev!"<<std::endl;
+    for (double E : prot_energies){
+      tot_prot_E += E;
+      if ( E > 30.) n_protons++;
+    }
+    for (double E : neut_energies){
+      tot_neutron_E += E;
+      if ( E > 30.) n_neutrons++;
+    }
+    //    tree->Fill();
   
     return true;
   }
@@ -154,15 +208,10 @@ namespace larlite {
 
   void NuEnergyReco::ResetTTreeVars(){
 
-    nu_E_from_mcnu = 0;
+    true_nu_E = 0;
     nu_vtx_x_from_mcnu = 0;
     nu_vtx_y_from_mcnu = 0;
     nu_vtx_z_from_mcnu = 0;
-
-    nu_E_from_mcpart = 0;
-    nu_vtx_x_from_mcpart = 0;
-    nu_vtx_y_from_mcpart = 0;
-    nu_vtx_z_from_mcpart = 0;
 
     remnant_E = 0;
 
@@ -182,6 +231,9 @@ namespace larlite {
     hit_nuc = -1;
 
     nu_pdg = -1;
+
+    E_ccqe = 0;
+    lep_E = 0;
 
   }
 }
