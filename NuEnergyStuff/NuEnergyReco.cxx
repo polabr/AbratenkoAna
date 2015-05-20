@@ -24,9 +24,10 @@ namespace larlite {
     tree->Branch("n_protons",&n_protons,"n_protons/I");
     tree->Branch("tot_prot_E",&tot_prot_E,"tot_prot_E/D");
     tree->Branch("n_neutrons",&n_neutrons,"n_neutrons/I");
-    tree->Branch("tot_neutron_E",&tot_prot_E,"tot_neutron_E/D");
+    tree->Branch("tot_neutron_E",&tot_neutron_E,"tot_neutron_E/D");
     tree->Branch("max_prot_E",&max_prot_E,"max_prot_E/D");
     tree->Branch("second_prot_E",&second_prot_E,"second_prot_E/D");
+    tree->Branch("tot_pt",&tot_pt,"tot_pt/D");
 
     return true;
   }
@@ -56,47 +57,58 @@ namespace larlite {
     std::vector<float> neut_energies;
     neut_energies.clear();
 
+    
     auto mcpart_list = ev_tru->at(0).GetParticles();
+    TLorentzVector total_momentum(0.,0.,0.,0.);
     for (auto const mcp : mcpart_list){
+   
       if (mcp.StatusCode() == 1){
+
+	double part_E = 1000.*mcp.Trajectory().at(0).E();
+	auto part_3mom = 1000.*mcp.Trajectory().at(0).Momentum().Vect();
+	std::vector<double> part_4mom = {part_3mom.X(),part_3mom.Y(),part_3mom.Z(),part_E};
+
 	//Store the mcparticle lepton energy while we're at it
 	if(abs(mcp.PdgCode()) == 13 || abs(mcp.PdgCode()) == 11){
-	  lep_E = 1000.*mcp.Trajectory().at(0).E();
+	  lep_E = part_E;
 	  n_lep++;
-	  auto lep_mom = 1000.*mcp.Trajectory().at(0).Momentum().Vect();
-	  std::vector<double> tmp = {lep_mom.X(),lep_mom.Y(),lep_mom.Z(),lep_E};
-	  E_ccqe = 1000.*_calc.ComputeECCQE(tmp);
+	  E_ccqe = 1000.*_calc.ComputeECCQE(part_4mom);
+	  total_momentum += mcp.Trajectory().at(0).Momentum();
+
 	}
-	if(abs(mcp.PdgCode()) == 2212){
-	  prot_energies.push_back(1000.*mcp.Trajectory().at(0).E() - _p_mass);
+	
+	if(abs(mcp.PdgCode()) == 2212 && (part_E-_p_mass) > _min_p_E){
+	  total_momentum += mcp.Trajectory().at(0).Momentum();
+	  prot_energies.push_back(part_E-_p_mass);
 	}
-	if(abs(mcp.PdgCode()) == 2112){
-	  neut_energies.push_back(1000.*mcp.Trajectory().at(0).E() - _n_mass);
-	}
+
+	if(abs(mcp.PdgCode()) == 2112 && (part_E-_n_mass) > _min_n_E) 
+	  neut_energies.push_back(part_E-_n_mass);
       }
     }
     
+    //this equals x component^2 + y component ^2, sqrt
+    tot_pt = total_momentum.Vect().Perp();
+
+    n_protons = prot_energies.size();
+    n_neutrons = neut_energies.size();
+
     //sort energies vector from lowest to highest
     std::sort(prot_energies.begin(),prot_energies.end());
     std::sort(neut_energies.begin(),neut_energies.end());
 
-    max_prot_E = prot_energies.size() > 0 ? prot_energies.back() : -999.;
-    second_prot_E = prot_energies.size() > 1 ? prot_energies.end()[-2] : -999.;
+    max_prot_E = n_protons > 0 ? prot_energies.back() : -999.;
+    second_prot_E = n_protons > 1 ? prot_energies.end()[-2] : -999.;
 
     tot_prot_E = 0.;
     tot_neutron_E = 0.;
-    n_protons = 0;
-    n_neutrons = 0;
 
-    std::cout<<"fix this! in a more organized manner! you are only counting protons with above 30 mev!"<<std::endl;
-    for (double E : prot_energies){
+    for (double E : prot_energies)
       tot_prot_E += E;
-      if ( E > 30.) n_protons++;
-    }
-    for (double E : neut_energies){
+
+    for (double E : neut_energies)
       tot_neutron_E += E;
-      if ( E > 30.) n_neutrons++;
-    }
+
     tree->Fill();
   
     return true;
@@ -115,6 +127,7 @@ namespace larlite {
     nuance_intxn = -1;
     E_ccqe = 0;
     lep_E = 0;
+    tot_pt = -1.;
   }
 }
 #endif

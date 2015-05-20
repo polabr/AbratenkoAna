@@ -30,8 +30,14 @@ namespace larlite {
   public:
 
     /// Default constructor
-    NuEnergyReco(){ _name="NuEnergyReco"; tree=0; _fout=0;};
-
+    NuEnergyReco(){ 
+      _name="NuEnergyReco"; 
+      _min_p_E = 0.;
+      _min_n_E = 0.;
+      tree=0; 
+      _fout=0;
+    };
+    
     /// Default destructor
     virtual ~NuEnergyReco(){};
 
@@ -50,8 +56,16 @@ namespace larlite {
     */
     virtual bool finalize();
 
+    
+    void SetMinPE(double kaleko){ _min_p_E = kaleko; }
+    void SetMinNE(double kaleko){ _min_n_E = kaleko; }
+
     protected:
 
+    
+    double _min_p_E;
+    double _min_n_E;
+    
     double _p_mass = 938.27;
     double _n_mass = 939.57;
 
@@ -70,7 +84,7 @@ namespace larlite {
     int n_neutrons;
     double max_prot_E;
     double second_prot_E;
-
+    double tot_pt;
 
     larlite::util::ECCQECalculator _calc;
 

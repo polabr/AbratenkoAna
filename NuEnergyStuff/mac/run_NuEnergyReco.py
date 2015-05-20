@@ -33,7 +33,10 @@ my_proc.set_ana_output_file("NuEnergyReco_ana_out.root")
 
 # Attach a template process
 #my_proc.add_process(MCfilter)
-my_proc.add_process(fmwk.NuEnergyReco());
+ner = fmwk.NuEnergyReco()
+ner.SetMinPE(30.)
+ner.SetMinNE(-1.)
+my_proc.add_process(ner)
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
