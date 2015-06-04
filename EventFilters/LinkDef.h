@@ -14,6 +14,7 @@
 
 #pragma link C++ class larlite::CCQEMCFilter+;
 #pragma link C++ class larlite::MichelElectronFilter+;
+#pragma link C++ class larlite::MC_1eNpNn0else_Filter+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
