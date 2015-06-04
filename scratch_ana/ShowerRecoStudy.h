@@ -65,6 +65,10 @@ namespace larlite {
     double _true_show_E;
     double _st_pt_diff;
     bool _E_contained;
+    double _reco_show_OA;
+    double _prof_show_OA;
+    double _reco_true_3d_anglediff;
+    double _reco_show_direrr;
 
     EMShowerProfile _shrProfiler;
   };
