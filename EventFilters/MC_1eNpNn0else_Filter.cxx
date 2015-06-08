@@ -60,8 +60,19 @@ namespace larlite {
 	  abs(particle.PdgCode()) == 13  || 
 	  abs(particle.PdgCode()) == 321 ) 
 	return false;
-	
 
+      /*
+      //temp cout to check for unexpected particles
+      if (abs(particle.PdgCode()) != 2212 && //proton
+	  abs(particle.PdgCode()) != 2112 && //neutron
+	  abs(particle.PdgCode()) != 11  &&  //electron
+	  abs(particle.PdgCode()) != 12  &&  //nue
+	  abs(particle.PdgCode()) != 2000000101 && //bindino
+	  abs(particle.PdgCode()) != 311  &&  //K0
+	  abs(particle.PdgCode()) != 3222  &&  //sigma+
+	  abs(particle.PdgCode()) != 3122 )  //lamda+
+	std::cout<<"Found particle with pdg = "<<particle.PdgCode()<<std::endl;
+      */
     }
 
     //Skip this event if the number of electrons is not 1
