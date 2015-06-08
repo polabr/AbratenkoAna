@@ -24,16 +24,14 @@ for x in xrange(len(sys.argv)):
     my_proc.add_input_file(sys.argv[x])
 
 # Specify output root file name
-my_proc.set_ana_output_file("NuEnergyReco_ana_out.root")
+my_proc.set_ana_output_file("NuEnergyReco_mctruth_ana_out.root")
 
 
 #Filter
-#MCfilter = fmwk.MC_CC1E_Filter()
-#MCfilter.flip(False)
+MCfilter = fmwk.MC_1eNpNn0else_Filter()
+my_proc.add_process(MCfilter)
 
-# Attach a template process
-#my_proc.add_process(MCfilter)
-ner = fmwk.NuEnergyReco()
+ner = fmwk.NuEnergyReco_mctruth()
 ner.SetMinPE(30.)
 ner.SetMinNE(-1.)
 my_proc.add_process(ner)

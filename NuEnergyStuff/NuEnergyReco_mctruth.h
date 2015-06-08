@@ -1,9 +1,9 @@
 /**
- * \file NuEnergyReco.h
+ * \file NuEnergyReco_mctruth.h
  *
  * \ingroup scratch_ana
  * 
- * \brief Class def header for a class NuEnergyReco
+ * \brief Class def header for a class NuEnergyReco_mctruth
  *
  * @author davidkaleko
  */
@@ -12,8 +12,8 @@
 
     @{*/
 
-#ifndef LARLITE_NUENERGYRECO_H
-#define LARLITE_NUENERGYRECO_H
+#ifndef LARLITE_NUENERGYRECO_MCTRUTH_H
+#define LARLITE_NUENERGYRECO_MCTRUTH_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/mcpart.h"
@@ -22,16 +22,19 @@
 
 namespace larlite {
   /**
-     \class NuEnergyReco
+     \class NuEnergyReco_mctruth
      User custom analysis class made by davidkaleko
+     This uses on mctruth to study the best way to compute the true
+     neutrino energy from "reconstructed" (mctruth) quantities.
+     It basically makes a ttree and stores it for TTree->Draw stuff.
    */
-  class NuEnergyReco : public ana_base{
+  class NuEnergyReco_mctruth : public ana_base{
   
   public:
 
     /// Default constructor
-    NuEnergyReco(){ 
-      _name="NuEnergyReco"; 
+    NuEnergyReco_mctruth(){ 
+      _name="NuEnergyReco_mctruth"; 
       _min_p_E = 0.;
       _min_n_E = 0.;
       tree=0; 
@@ -39,19 +42,19 @@ namespace larlite {
     };
     
     /// Default destructor
-    virtual ~NuEnergyReco(){};
+    virtual ~NuEnergyReco_mctruth(){};
 
-    /** IMPLEMENT in NuEnergyReco.cc!
+    /** IMPLEMENT in NuEnergyReco_mctruth.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in NuEnergyReco.cc! 
+    /** IMPLEMENT in NuEnergyReco_mctruth.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in NuEnergyReco.cc! 
+    /** IMPLEMENT in NuEnergyReco_mctruth.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -75,15 +78,19 @@ namespace larlite {
     double true_nu_E;
     int nu_pdg;
     int nuance_intxn;
+    bool isCC;
+    int _mode;
+    bool areOtherParticles;
+    double otherParticles_KE;
     double E_ccqe;
     double lep_E;
     int n_lep;
-    double tot_prot_E;
+    double tot_prot_KE;
     int n_protons;
-    double tot_neutron_E;
+    double tot_neutron_KE;
     int n_neutrons;
-    double max_prot_E;
-    double second_prot_E;
+    double max_prot_KE;
+    double second_prot_KE;
     double tot_pt;
 
     larlite::util::ECCQECalculator _calc;
