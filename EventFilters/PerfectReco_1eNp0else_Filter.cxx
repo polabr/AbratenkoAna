@@ -40,11 +40,12 @@ namespace larlite {
 
       //If there are any mcshowers that aren't electrons
       //that have > 20MeV KE, skip this event
-      if ( abs(mcs.PdgCode()) != 11 && KE > 0.02 )
+      //mcshowers use MEV scale energies
+      if ( abs(mcs.PdgCode()) != 11 && KE > 20. )
 	return false;
 
       //Enforce that there is exactly 1 electron, above 20MeV kinetic energy
-      if ( abs(mcs.PdgCode()) == 11 && KE > 0.02 )
+      if ( abs(mcs.PdgCode()) == 11 && KE > 20. )
 	n_electrons++;
     }
 
@@ -54,7 +55,8 @@ namespace larlite {
       double KE = mcs.Start().E() - mcs.Start().Momentum().M();
       //If there are any mctracks that have >20 MEV kinetic energy
       //and are not protons, skip this event
-      if( abs(mcs.PdgCode()) != 2212 && KE > 0.02 )
+      //mctracks use MEV scale energies
+      if( abs(mcs.PdgCode()) != 2212 && KE > 20. )
 	return false;
     }
 
