@@ -35,8 +35,8 @@ namespace larlite {
     /// Default constructor
     NuEnergyReco_mctruth(){ 
       _name="NuEnergyReco_mctruth"; 
-      _min_p_E = 0.;
-      _min_n_E = 0.;
+      _min_p_E_MEV = 30.;
+      _min_n_E_MEV = -1.;
       tree=0; 
       _fout=0;
     };
@@ -60,18 +60,15 @@ namespace larlite {
     virtual bool finalize();
 
     
-    void SetMinPE(double kaleko){ _min_p_E = kaleko; }
-    void SetMinNE(double kaleko){ _min_n_E = kaleko; }
+    void SetMinPE_MEV(double kaleko){ _min_p_E_MEV = kaleko; }
+    void SetMinNE_MEV(double kaleko){ _min_n_E_MEV = kaleko; }
 
     protected:
 
     
-    double _min_p_E;
-    double _min_n_E;
+    double _min_p_E_MEV;
+    double _min_n_E_MEV;
     
-    double _p_mass = 938.27;
-    double _n_mass = 939.57;
-
     void ResetTTreeVars();
 
     TTree* tree;

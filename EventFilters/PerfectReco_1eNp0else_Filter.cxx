@@ -35,21 +35,16 @@ namespace larlite {
     size_t n_electrons = 0;
     //Loop over MCShowers
     for(auto const& mcs : *ev_mcs){
-
+      // KE is in MEV
       double KE = mcs.Start().E() - mcs.Start().Momentum().M();
-
       //If there are any mcshowers that aren't electrons
       //that have > 20MeV KE, skip this event
-      //mcshowers use MEV scale energies
       if ( abs(mcs.PdgCode()) != 11 && KE > 20. )
 	return false;
-
       //Enforce that there is exactly 1 electron, above 20MeV kinetic energy
       if ( abs(mcs.PdgCode()) == 11 && KE > 20. )
 	n_electrons++;
     }
-
-
     //Loop over MCTracks
     for(auto const& mcs : *ev_mct){
       double KE = mcs.Start().E() - mcs.Start().Momentum().M();
@@ -59,8 +54,6 @@ namespace larlite {
       if( abs(mcs.PdgCode()) != 2212 && KE > 20. )
 	return false;
     }
-
-
     //Skip this event if the number of electrons is not 1
     if ( n_electrons != 1 )
       return false;

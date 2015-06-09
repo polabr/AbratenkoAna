@@ -29,11 +29,12 @@ my_proc.set_ana_output_file("NuEnergyReco_mctruth_ana_out.root")
 
 #Filter
 MCfilter = fmwk.MC_1eNpNn0else_Filter()
+#MCfilter = fmwk.PerfectReco_1eNp0else_Filter()
 my_proc.add_process(MCfilter)
 
 ner = fmwk.NuEnergyReco_mctruth()
-ner.SetMinPE(30.)
-ner.SetMinNE(-1.)
+ner.SetMinPE_MEV(30.)
+ner.SetMinNE_MEV(-1.)
 my_proc.add_process(ner)
 
 print

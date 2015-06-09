@@ -33,8 +33,8 @@ namespace larlite {
     /// Default constructor
     NuEnergyReco_perfectreco(){ 
       _name="NuEnergyReco_perfectreco"; 
-      _min_p_E = 0.;
-      _min_n_E = 0.;
+      _min_p_E_MEV = 30.;
+      _min_n_E_MEV = -1.;
       tree=0; 
       _fout=0;
     }
@@ -57,14 +57,14 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    void SetMinPE(double kaleko){ _min_p_E = kaleko; }
-    void SetMinNE(double kaleko){ _min_n_E = kaleko; }
+    void SetMinPE_MEV(double kaleko){ _min_p_E_MEV = kaleko; }
+    void SetMinNE_MEV(double kaleko){ _min_n_E_MEV = kaleko; }
 
 
   protected:
 
-    double _min_p_E;
-    double _min_n_E;
+    double _min_p_E_MEV;
+    double _min_n_E_MEV;
 
     void ResetTTreeVars();
     
@@ -77,8 +77,12 @@ namespace larlite {
     int _mode; //
     double lep_E;
     int n_lep;
-    double tot_prot_KE;
-    int n_protons;
+    double tot_primaryprot_KE;
+    int n_primary_protons;
+    double tot_secondaryprot_KE;
+    int n_secondary_protons;
+    double avg_dist_to_secondary_protons;
+    int n_protons_mctruth;
     double tot_neutron_KE;
     int n_neutrons;
     double tot_pt;

@@ -80,12 +80,12 @@ namespace larlite {
 	  total_momentum += mcp.Trajectory().at(0).Momentum();
 	}
 	
-	if(abs(mcp.PdgCode()) == 2212 && part_KE > _min_p_E){
+	if(abs(mcp.PdgCode()) == 2212 && part_KE > _min_p_E_MEV){
 	  total_momentum += mcp.Trajectory().at(0).Momentum();
 	  prot_energies.push_back(part_KE);
 	}
 
-	if(abs(mcp.PdgCode()) == 2112 && part_KE > _min_n_E) 
+	if(abs(mcp.PdgCode()) == 2112 && part_KE > _min_n_E_MEV) 
 	  neut_energies.push_back(part_KE);
    
 	//Sometimes there are 311 (K0), 3222 (sigma+), 3122 (lambda+)
