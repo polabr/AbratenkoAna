@@ -6,10 +6,8 @@
 #define LARLITE_LARSOFTIMPORT_TYPEDEF_H
 
 // Header files included here
-#include "sample.h"
 
 // Class forward declaration here
-class sample;
 
 namespace larlite{
   class TrackMomentumCalculator;

@@ -9,7 +9,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class sample+;
 #pragma link C++ class larlite::TrackMomentumCalculator+;
 #pragma link C++ class larlite::TestMultiScatterPID+;
 //ADD_NEW_CLASS ... do not change this line
