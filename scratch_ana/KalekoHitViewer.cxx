@@ -1,12 +1,12 @@
-#ifndef LARLITE_HITVIEWER_CXX
-#define LARLITE_HITVIEWER_CXX
+#ifndef LARLITE_KALEKOHITVIEWER_CXX
+#define LARLITE_KALEKOHITVIEWER_CXX
 
-#include "HitViewer.h"
+#include "KalekoHitViewer.h"
 
 namespace larlite{
 
-  //Constructor (called when you create a HitViewer object)
-  HitViewer::HitViewer()
+  //Constructor (called when you create a KalekoHitViewer object)
+  KalekoHitViewer::KalekoHitViewer()
   {
     //Initializing pointers to zero is generally good practice.
     hHitHisto = 0;
@@ -18,13 +18,13 @@ namespace larlite{
   }
 
   //Destructor (called at the very end, to save output etc)
-  HitViewer::~HitViewer()
+  KalekoHitViewer::~KalekoHitViewer()
   {
     //Delete histograms when you're done with them!
     if(hHitHisto) delete hHitHisto;
   }
 
-  void HitViewer::GenerateHisto(const larlite::event_hit *ev_hit, int plane){
+  void KalekoHitViewer::GenerateHisto(const larlite::event_hit *ev_hit, int plane){
 
     //First we loop over the hits to determine the histogram max and min
     //(so the histogram is automatically zoomed in to the right region for

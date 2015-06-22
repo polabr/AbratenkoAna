@@ -1,5 +1,5 @@
 /**
- * \file HitViewer.h
+ * \file KalekoHitViewer.h
  *
  * \ingroup scratch_ana
  * 
@@ -11,8 +11,8 @@
 /** \addtogroup scratch_ana
 
     @{*/
-#ifndef LARLITE_HITVIEWER_H
-#define LARLITE_HITVIEWER_H
+#ifndef LARLITE_KALEKOHITVIEWER_H
+#define LARLITE_KALEKOHITVIEWER_H
 
 #include <iostream>
 #include "Analysis/ana_base.h"
@@ -31,19 +31,19 @@ Instead, you should initialize histograms and things in the constructor.
 
 namespace larlite{				
   /**
-     \class HitViewer
-     User defined class HitViewer ... these comments are used to generate
+     \class KalekoHitViewer
+     User defined class KalekoHitViewer ... these comments are used to generate
      doxygen documentation!
   */
-  class HitViewer{
+  class KalekoHitViewer{
     
   public:
     
     /// Default constructor
-    HitViewer();
+    KalekoHitViewer();
     
     /// Default destructor
-    ~HitViewer();
+    ~KalekoHitViewer();
 
     void GenerateHisto(const larlite::event_hit *ev_hit, int plane);
 
