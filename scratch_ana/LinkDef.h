@@ -16,9 +16,14 @@
 #pragma link C++ class larlite::MuShowerRecoStudy+;
 #pragma link C++ class larlite::ShowerRecoStudy+;
 #pragma link C++ class larlite::ProtonStudy+;
+#pragma link C++ class larlite::test_reco_and_mc+;
+#pragma link C++ class larlite::HitViewer+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
+
+
 
 
 
