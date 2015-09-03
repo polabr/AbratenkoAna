@@ -18,9 +18,11 @@
 #pragma link C++ class larlite::test_reco_and_mc+;
 #pragma link C++ class larlite::KalekoHitViewer+;
 #pragma link C++ class larlite::NeutrinoParentInvestigation+;
+#pragma link C++ class larlite::HitStudy+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 
 
 
