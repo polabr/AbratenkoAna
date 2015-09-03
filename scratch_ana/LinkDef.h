@@ -15,7 +15,6 @@
 #pragma link C++ class larlite::MuShowerRecoStudy+;
 #pragma link C++ class larlite::ShowerRecoStudy+;
 #pragma link C++ class larlite::ProtonStudy+;
-#pragma link C++ class larlite::test_reco_and_mc+;
 #pragma link C++ class larlite::KalekoHitViewer+;
 #pragma link C++ class larlite::NeutrinoParentInvestigation+;
 #pragma link C++ class larlite::HitStudy+;

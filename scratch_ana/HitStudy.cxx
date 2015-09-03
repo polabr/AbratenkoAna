@@ -8,8 +8,17 @@ namespace larlite {
 
 bool HitStudy::initialize() {
 
+    mygeo = larutil::Geometry::GetME();
+    mygeoutil = larutil::GeometryUtilities::GetME();
+    mydetprop = larutil::DetectorProperties::GetME();
+
+    fTimetoCm = mygeoutil->TimeToCm();
+    fWiretoCm = mygeoutil->WireToCm();
+    fElectronsToADC = mydetprop->ElectronsToADC();
+
     _hit_wires = new TH1F("hit_wires", "Wire [cm] from each hit", 8000, 0, 1050);
     _hit_times = new TH1F("hit_times", "Time [cm] from each hit", 8000, 0, 1050);
+
     return true;
 }
 
@@ -24,9 +33,9 @@ bool HitStudy::analyze(storage_manager* storage) {
 
     //Loop over hits
     for (auto &hit : *ev_hit) {
-      //i personally only care about hits on the y plane
-      if(hit.WireID().Plane != 2) continue;
-      
+        //i personally only care about hits on the y plane
+        if (hit.WireID().Plane != 2) continue;
+
         _hit_wires->Fill(hit.WireID().Wire * fWiretoCm);
         _hit_times->Fill(hit.PeakTime()    * fTimetoCm);
     }

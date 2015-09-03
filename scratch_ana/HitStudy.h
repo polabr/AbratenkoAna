@@ -50,14 +50,15 @@ public:
   virtual bool finalize();
 
 protected:
+ 
   //get the geo/detector singletons only once
-  const larutil::Geometry* mygeo = larutil::Geometry::GetME();
-  const larutil::GeometryUtilities* mygeoutil = larutil::GeometryUtilities::GetME();
-  const larutil::DetectorProperties* mydetprop = larutil::DetectorProperties::GetME();
+  const larutil::Geometry* mygeo;
+  const larutil::GeometryUtilities* mygeoutil;
+  const larutil::DetectorProperties* mydetprop;
 
-  double fTimetoCm = mygeoutil->TimeToCm();
-  double fWiretoCm = mygeoutil->WireToCm();
-  double fElectronsToADC = mydetprop->ElectronsToADC();
+  double fTimetoCm;
+  double fWiretoCm;
+  double fElectronsToADC;
 
   TH1F* _hit_wires;
   TH1F* _hit_times;
