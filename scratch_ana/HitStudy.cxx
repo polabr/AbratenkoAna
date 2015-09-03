@@ -24,7 +24,9 @@ bool HitStudy::analyze(storage_manager* storage) {
 
     //Loop over hits
     for (auto &hit : *ev_hit) {
-
+      //i personally only care about hits on the y plane
+      if(hit.WireID().Plane != 2) continue;
+      
         _hit_wires->Fill(hit.WireID().Wire * fWiretoCm);
         _hit_times->Fill(hit.PeakTime()    * fTimetoCm);
     }
