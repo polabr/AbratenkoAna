@@ -29,7 +29,7 @@ class HitStudy : public ana_base {
 public:
 
   /// Default constructor
-  HitStudy() { _name = "HitStudy"; _fout = 0; _hit_wires = 0; _hit_times = 0;}
+  HitStudy() { _name = "HitStudy"; _fout = 0;}
 
   /// Default destructor
   virtual ~HitStudy() {}
@@ -60,8 +60,8 @@ protected:
   double fWiretoCm;
   double fElectronsToADC;
 
-  TH1F* _hit_wires;
-  TH1F* _hit_times;
+  std::vector<TH1F*> _hit_wires;
+  std::vector<TH1F*> _hit_times;
   
 };
 }

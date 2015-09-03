@@ -16,8 +16,10 @@ bool HitStudy::initialize() {
     fWiretoCm = mygeoutil->WireToCm();
     fElectronsToADC = mydetprop->ElectronsToADC();
 
-    _hit_wires = new TH1F("hit_wires", "Wire [cm] from each hit", 8000, 0, 1050);
-    _hit_times = new TH1F("hit_times", "Time [cm] from each hit", 8000, 0, 1050);
+    _hit_wires.push_back(new TH1F("hit_wires_plane0", "Reconstructed CC-Hits on a given Wire Number (Plane 0);Wire Number;Number of Hits", 2390, -0.5, 2390.5));
+    _hit_wires.push_back(new TH1F("hit_wires_plane1", "Reconstructed CC-Hits on a given Wire Number (Plane 1);Wire Number;Number of Hits", 2390, -0.5, 2390.5));
+    _hit_wires.push_back(new TH1F("hit_wires_plane2", "Reconstructed CC-Hits on a given Wire Number (Plane 2);Wire Number;Number of Hits", 3456, -0.5, 3455.5));
+//    _hit_times = new TH1F("hit_times", "Time [cm] from each hit", 8000, 0, 1050);
 
     return true;
 }
@@ -34,10 +36,13 @@ bool HitStudy::analyze(storage_manager* storage) {
     //Loop over hits
     for (auto &hit : *ev_hit) {
         //i personally only care about hits on the y plane
-        if (hit.WireID().Plane != 2) continue;
+        if (hit.WireID().Plane > 2) {
+            std::cout << "I don't even know anymore." << std::endl;
+            continue;
+        }
 
-        _hit_wires->Fill(hit.WireID().Wire * fWiretoCm);
-        _hit_times->Fill(hit.PeakTime()    * fTimetoCm);
+        _hit_wires.at(hit.WireID().Plane)->Fill(hit.WireID().Wire);// * fWiretoCm);
+        // _hit_times->Fill(hit.PeakTime()    * fTimetoCm);
     }
 
     return true;
@@ -46,7 +51,13 @@ bool HitStudy::analyze(storage_manager* storage) {
 
 bool HitStudy::finalize() {
 
-    if (_fout) { _fout->cd(); _hit_wires->Write(); _hit_times->Write(); }
+    if (_fout) { 
+    _fout->cd(); 
+    _hit_wires.at(0)->Write(); 
+    _hit_wires.at(1)->Write(); 
+    _hit_wires.at(2)->Write(); 
+
+    }//_hit_times->Write(); }
 
     return true;
 }
