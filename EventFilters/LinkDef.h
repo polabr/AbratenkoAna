@@ -13,8 +13,7 @@
 #pragma link C++ class larlite::OnlyOneHighEMCTrackFilter+;
 
 #pragma link C++ class larlite::CCQEMCFilter+;
-#pragma link C++ class larlite::MBLEESelection+;
-#pragma link C++ class larlite::MichelElectronFilter+;
+#pragma link C++ class larlite::MBLEESelectionFilter+;
 #pragma link C++ class larlite::MC_1eNpNn0else_Filter+;
 #pragma link C++ class larlite::PerfectReco_1eNp0else_Filter+;
 //ADD_NEW_CLASS ... do not change this line
