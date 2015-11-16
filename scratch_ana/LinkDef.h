@@ -12,15 +12,18 @@
 //#pragma link C++ class larlite::VerifyShowerLengthFormula+;
 #pragma link C++ class larlite::CosmicTrackLister+;
 #pragma link C++ class cluster::SimChannelViewer+;
-#pragma link C++ class larlite::MuShowerRecoStudy+;
-#pragma link C++ class larlite::ShowerRecoStudy+;
+//#pragma link C++ class larlite::MuShowerRecoStudy+;
+//#pragma link C++ class larlite::ShowerRecoStudy+;
 #pragma link C++ class larlite::ProtonStudy+;
 #pragma link C++ class larlite::KalekoHitViewer+;
 #pragma link C++ class larlite::NeutrinoParentInvestigation+;
 #pragma link C++ class larlite::HitStudy+;
+#pragma link C++ class larlite::MCShowerStudy+;
+#pragma link C++ class larlite::MCTrackStudy+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 
 
 

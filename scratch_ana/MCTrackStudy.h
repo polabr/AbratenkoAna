@@ -1,9 +1,9 @@
 /**
- * \file ProtonStudy.h
+ * \file MCTrackStudy.h
  *
  * \ingroup scratch_ana
  * 
- * \brief Quick ana to look at how low energy we can reconstruct protons
+ * \brief Class def header for a class MCTrackStudy
  *
  * @author davidkaleko
  */
@@ -12,53 +12,46 @@
 
     @{*/
 
-#ifndef LARLITE_PROTONSTUDY_H
-#define LARLITE_PROTONSTUDY_H
+#ifndef LARLITE_MCTRACKSTUDY_H
+#define LARLITE_MCTRACKSTUDY_H
 
 #include "Analysis/ana_base.h"
 
 namespace larlite {
   /**
-     \class ProtonStudy
-     User custom analysis class made by davidkaleko
+     \class MCTrackStudy
+     User custom analysis class made by SHELL_USER_NAME
    */
-  class ProtonStudy : public ana_base{
+  class MCTrackStudy : public ana_base{
   
   public:
 
     /// Default constructor
-    ProtonStudy(){ _name="ProtonStudy"; _fout=0; _ana_tree=0;};
+    MCTrackStudy(){ _name="MCTrackStudy"; _fout=0; _ana_tree=0;}
 
     /// Default destructor
-    virtual ~ProtonStudy(){};
+    virtual ~MCTrackStudy(){}
 
-    /** IMPLEMENT in ProtonStudy.cc!
+    /** IMPLEMENT in MCTrackStudy.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in ProtonStudy.cc! 
+    /** IMPLEMENT in MCTrackStudy.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in ProtonStudy.cc! 
+    /** IMPLEMENT in MCTrackStudy.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
-    protected:
+  protected:
+    
 
     TTree* _ana_tree;
-    double _sum_trk_len;
-    double _vect_trk_len;
-    double _prot_KE;
-    int _pdg;
-
-
-
-    double proton_mass = 938.272;
-
+    double _start_x_vtx;
 
   };
 }

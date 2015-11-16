@@ -1,9 +1,9 @@
 /**
- * \file ProtonStudy.h
+ * \file MCShowerStudy.h
  *
  * \ingroup scratch_ana
  * 
- * \brief Quick ana to look at how low energy we can reconstruct protons
+ * \brief Class def header for a class MCShowerStudy
  *
  * @author davidkaleko
  */
@@ -12,53 +12,48 @@
 
     @{*/
 
-#ifndef LARLITE_PROTONSTUDY_H
-#define LARLITE_PROTONSTUDY_H
+#ifndef LARLITE_MCSHOWERSTUDY_H
+#define LARLITE_MCSHOWERSTUDY_H
 
 #include "Analysis/ana_base.h"
 
 namespace larlite {
   /**
-     \class ProtonStudy
-     User custom analysis class made by davidkaleko
+     \class MCShowerStudy
+     User custom analysis class made by SHELL_USER_NAME
    */
-  class ProtonStudy : public ana_base{
+  class MCShowerStudy : public ana_base{
   
   public:
 
-    /// Default constructor
-    ProtonStudy(){ _name="ProtonStudy"; _fout=0; _ana_tree=0;};
+    /// Default constructor WITHOUT _ana_tree=0 IT RANDOMLY SEGFAULTS HALF THE GODDAMN TIME ON MY LAPTOP
+    MCShowerStudy(){ _name="MCShowerStudy"; _fout=0; _ana_tree = 0;}
 
     /// Default destructor
-    virtual ~ProtonStudy(){};
+    virtual ~MCShowerStudy(){}
 
-    /** IMPLEMENT in ProtonStudy.cc!
+    /** IMPLEMENT in MCShowerStudy.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in ProtonStudy.cc! 
+    /** IMPLEMENT in MCShowerStudy.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in ProtonStudy.cc! 
+    /** IMPLEMENT in MCShowerStudy.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
-    protected:
+  protected:
+    
 
     TTree* _ana_tree;
-    double _sum_trk_len;
-    double _vect_trk_len;
-    double _prot_KE;
-    int _pdg;
-
-
-
-    double proton_mass = 938.272;
-
+    double _start_x_vtx;
+    double _detprof_x_vtx;
+    double _detprof_E;
 
   };
 }
