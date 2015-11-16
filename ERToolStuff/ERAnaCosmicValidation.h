@@ -28,6 +28,13 @@ class ERAnaCosmicValidation : public AnaBase {
 
 public:
 
+  enum MC_ParticleGeneration_t {
+    kPrimary,      ///< Primary cosmic
+    kSecondary,    ///< Secondary cosmic
+    kOther,        ///< Neither primary or secondary
+    kINVALID_RECO_TYPE
+  };
+
   /// Default constructor
   ERAnaCosmicValidation(const std::string& name = "ERAnaCosmicValidation");
 
@@ -69,6 +76,10 @@ private:
   void PrepareTreeVariables();
   /// Function to re-set TTree variables
   void ResetTreeVariables();
+
+  ///Check if ertool particle (from mcparticlegraph) is a primary cosmic
+  MC_ParticleGeneration_t GetParticleGeneration(const ertool::Particle& myparticle);
+
 };
 }
 #endif

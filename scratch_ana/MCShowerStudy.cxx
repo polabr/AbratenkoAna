@@ -24,7 +24,7 @@ bool MCShowerStudy::analyze(storage_manager* storage) {
     _detprof_x_vtx = -9e9;
     _detprof_E = -9e9;
 
-    auto ev_mcs = storage->get_data<event_mcshower>("mcreco");
+    auto ev_mcs = storage->get_data<event_mcshower>("mcreconew");
     if (!ev_mcs) {
         print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, MCShower!"));
         return false;

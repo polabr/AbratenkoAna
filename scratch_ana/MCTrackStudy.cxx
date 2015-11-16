@@ -12,6 +12,7 @@ bool MCTrackStudy::initialize() {
     if (!_ana_tree) {
         _ana_tree = new TTree("ana_tree", "ana_tree");
         _ana_tree->Branch("start_x_vtx", &_start_x_vtx, "start_x_vtx/D");
+        _ana_tree->Branch("start_t",&_start_t,"start_t/D");
     }
     return true;
 }
@@ -19,6 +20,7 @@ bool MCTrackStudy::initialize() {
 bool MCTrackStudy::analyze(storage_manager* storage) {
 
     _start_x_vtx = -9e9;
+    _start_t = -9e9;
 
     auto ev_mct = storage->get_data<event_mctrack>("mcreco");
     if (!ev_mct) {
@@ -34,6 +36,7 @@ bool MCTrackStudy::analyze(storage_manager* storage) {
         //If mctrack has no size, it never enters detector
         if (!mct.size()) continue;
         _start_x_vtx = mct.at(0).X();
+        _start_t = mct.at(0).T();
         _ana_tree->Fill();
     }
 

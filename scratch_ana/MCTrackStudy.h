@@ -52,6 +52,7 @@ namespace larlite {
 
     TTree* _ana_tree;
     double _start_x_vtx;
+    double _start_t;
 
   };
 }
