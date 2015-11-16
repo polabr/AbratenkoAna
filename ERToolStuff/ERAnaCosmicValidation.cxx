@@ -17,7 +17,25 @@ ERAnaCosmicValidation::ERAnaCosmicValidation(const std::string& name)
 
 
 bool ERAnaCosmicValidation::Analyze(const EventData &data, const ParticleGraph &ps)
-{ return true; }
+{ 
+
+  ResetTreeVariables();
+
+
+  //Loop through particle graph
+  auto const& particles = ps.GetParticleArray();
+  for ( auto const & p : particles ){
+    //If this particle was tagged as "cosmic"
+    if ( p.ProcessType() == ProcessType_t::kCosmic ) 
+      std::cout<<"This particle was tagged as kCosmic!" << std::endl;
+    else
+      std::cout<<"This particle was NOT tagged as cosmic." << std::endl;
+  }
+
+
+  return true; 
+
+}
 
 void ERAnaCosmicValidation::ProcessEnd(TFile* fout)
 {
