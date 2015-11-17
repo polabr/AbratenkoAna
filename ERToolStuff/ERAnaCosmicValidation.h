@@ -72,13 +72,18 @@ private:
   bool _reco_primary; // Whether this ertool object was tagged a cosmic primary
   bool _reco_secondary; // Whether this ertool object was tagged a cosmic secondary
 
-// prepare TTree with variables
+  /// prepare TTree with variables
   void PrepareTreeVariables();
   /// Function to re-set TTree variables
   void ResetTreeVariables();
 
-  ///Check if ertool particle (from mcparticlegraph) is a primary cosmic
-  MC_ParticleGeneration_t GetParticleGeneration(const ertool::Particle& myparticle);
+  /// Simple function that takes in a particle from mcparticlegraph
+  /// and returns the MC generation of that particle (to tell if it's primary, secondary, etc)
+  MC_ParticleGeneration_t GetMCParticleGeneration(const ertool::Particle& myparticle);
+
+  /// Function that takes a particle from the reco particle graph and returns
+  /// the matching particle from the MCParticleGraph
+  ertool::Particle FindMCParticleGraphParticle(const EventData &data, const ertool::Particle &p);
 
 };
 }
