@@ -13,6 +13,9 @@ ERAnaCosmicValidation::ERAnaCosmicValidation(const std::string& name)
 
   // set default energy cut (for counting) to 0
   _eCut = 0;
+
+  for (size_t i = 0; i < 3; ++i)
+    _total_particles.push_back(0);
 }
 
 
@@ -35,24 +38,29 @@ bool ERAnaCosmicValidation::Analyze(const EventData &data, const ParticleGraph &
     // Reset ttree variables (since we will be filling the TTree once per particle)
     ResetTreeVariables();
 
-    _reco_primary = p.ProcessType() == ProcessType_t::kCosmic;
-
     _is_track = p.RecoType() == RecoType_t::kTrack;
+    //Particle is recod "primary" if it is tagged as cosmic, and tagged as a primary
+    _reco_primary = (p.ProcessType() == ProcessType_t::kCosmic) && p.Primary();
+    //Particle is recod "secondary" if it is a descdendant, and its parent is a cosmic
+    _reco_secondary = p.Descendant() && ps.GetParticle(p.Parent()).ProcessType() == ProcessType_t::kCosmic;
 
     /// Find the same particle in the mcparticle event data and fill some more ttree variables
     /// that have to come from the mcparticle event data.
-
-    /// Container to store the particle from mcparticlegraph that matches my reco particle
     ertool::Particle found_mcparticle;
     try {
       found_mcparticle = FindMCParticleGraphParticle(data, p);
       // Check the generation of the identified mcparticlegraph node
       _true_primary = GetMCParticleGeneration(found_mcparticle) == MC_ParticleGeneration_t::kPrimary;
       _true_secondary = GetMCParticleGeneration(found_mcparticle) == MC_ParticleGeneration_t::kSecondary;
+      // Increment counters
+      if (_true_primary) _total_particles.at(0)++;
+      else if (_true_secondary) _total_particles.at(1)++;
+      else _total_particles.at(2)++;
+      // Fill ttree
       _result_tree->Fill();
     }
     catch (ertool::ERException& e) {
-      std::cout << "Caught ertool exception " << e.what() << std::endl;
+      std::cout << e.msg() << std::endl;
       std::cout << "Skipping this particle." << std::endl;
       continue;
     }
@@ -84,28 +92,24 @@ ertool::Particle ERAnaCosmicValidation::FindMCParticleGraphParticle(const EventD
       //and this mcparticlegraph node doesn't correspond to a track... skip
       if (mcp.RecoType() != RecoType_t::kTrack) continue;
       //Check that the track we're looking for matches exactly the mcparticlegraph's track:
-      auto mctrack = mc_data.Track(mcp);
-      auto recotrack = data.Track(p);
       //Check the start x, y, z coordinates all agree
-      if (mctrack.at(0).at(0) != recotrack.at(0).at(0) ||
-          mctrack.at(0).at(1) != recotrack.at(0).at(1) ||
-          mctrack.at(0).at(2) != recotrack.at(0).at(2)) continue;
-      //Check energy agrees (note, mctrack._time is unfilled (1e308), but recotrack._time IS filled)
-      if (mctrack._energy != recotrack._energy) continue;
+      if (mc_data.Track(mcp).at(0).at(0) != data.Track(p).at(0).at(0) ||
+          mc_data.Track(mcp).at(0).at(1) != data.Track(p).at(0).at(1) ||
+          mc_data.Track(mcp).at(0).at(2) != data.Track(p).at(0).at(2)) continue;
+      //Check energy agrees (note, mc_data.Track(mcp)._time is unfilled (1e308), but data.Track(p)._time IS filled)
+      if (mc_data.Track(mcp)._energy != data.Track(p)._energy) continue;
       found_match = true;
     }
     else { //If we're looking for a shower
       //and this mcparticlegraph node corresponds to a track... skip
       if (mcp.RecoType() != RecoType_t::kShower) continue;
       //Check that the shower we're looking for matches exactly the mcparticlegraph's shower:
-      auto mcshower = mc_data.Shower(mcp);
-      auto recoshower = data.Shower(p);
       //Check the start point coordinates all agree
-      if (mcshower.Start() != recoshower.Start()) continue;
+      if (mc_data.Shower(mcp).Start() != data.Shower(p).Start()) continue;
       //Check energy, dedx agree
-      //(note, mcshower._time is unfilled (1e308), but recoshower._time IS filled)
-      if (mcshower._energy != recoshower._energy ||
-          mcshower._dedx != recoshower._dedx ) continue;
+      //(note, mc_data.Shower(mcp)._time is unfilled (1e308), but data.Shower(p)._time IS filled)
+      if (mc_data.Shower(mcp)._energy != data.Shower(p)._energy ||
+          mc_data.Shower(mcp)._dedx != data.Shower(p)._dedx ) continue;
       found_match = true;
     }
 
@@ -116,7 +120,7 @@ ertool::Particle ERAnaCosmicValidation::FindMCParticleGraphParticle(const EventD
 
   if (found_match) return found_mcparticle;
   else {
-    throw ertool::ERException("wtf FindMCParticleGraphParticle function failed to find a match!");
+    throw ertool::ERException(Form("FindMCParticleGraphParticle failed to find a match! Particle info: %s.", p.Print().c_str()));
     return ertool::Particle();
   }
 
@@ -136,6 +140,12 @@ ERAnaCosmicValidation::MC_ParticleGeneration_t ERAnaCosmicValidation::GetMCParti
 
 void ERAnaCosmicValidation::ProcessEnd(TFile * fout)
 {
+  std::cout << "ERAnaCosmicValidation: Total particles analyzed counter:" << std::endl;
+  std::cout << "    # Primary   = " << _total_particles.at(0) << std::endl;
+  std::cout << "    # Secondary = " << _total_particles.at(1) << std::endl;
+  std::cout << "    # Other     = " << _total_particles.at(2) << std::endl;
+  std::cout << std::endl;
+
   if (fout) {
     fout->cd();
     _result_tree->Write();
@@ -147,7 +157,7 @@ void ERAnaCosmicValidation::PrepareTreeVariables() {
 
   if (_result_tree) { delete _result_tree; }
 
-  _result_tree = new TTree("CosmicValidationTree", "CosmicValidationTree");
+  _result_tree = new TTree("cos_tree", "cos_tree");
   _result_tree->Branch("_is_track", &_is_track, "_is_track/O");
   _result_tree->Branch("_true_primary", &_true_primary, "_true_primary/O");
   _result_tree->Branch("_true_secondary", &_true_secondary, "_true_secondary/O");

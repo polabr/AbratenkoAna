@@ -32,7 +32,7 @@ my_proc.set_ana_output_file("cosmicValidation_ana_out.root")
 # this information is loaded from:
 # $LARLITE_BASEDIR/python/seltool/primarycosmicDef.py
 cosmicprimary_algo = GetPrimaryCosmicFinderInstance()
-# cosmicsecondary_algo = ertool.ERAlgoCRSecondary()
+cosmicsecondary_algo = ertool.ERAlgoCRSecondary()
 # cosmicorphanalgo = ertool.ERAlgoCROrphan()
 
 Ecut = 50 # in MeV
@@ -47,7 +47,7 @@ main_anaunit._mgr.AddCfgFile(os.environ['LARLITE_USERDEVDIR']+'/SelectionTool/ER
 main_anaunit.SetShowerProducer(True,'mcreconew')
 main_anaunit.SetTrackProducer(True,'mcreconew')
 main_anaunit._mgr.AddAlgo(cosmicprimary_algo)
-# main_anaunit._mgr.AddAlgo(cosmicsecondary_algo)
+main_anaunit._mgr.AddAlgo(cosmicsecondary_algo)
 # main_anaunit._mgr.AddAlgo(cosmicorphanalgo)
 
 main_anaunit._mgr.AddAna(cos_ana)
@@ -59,8 +59,8 @@ main_anaunit._mgr._mc_for_ana = True
 # my_proc.add_process(nuefilter)
 my_proc.add_process(main_anaunit)
 
-my_proc.run(0,2)
-# my_proc.run()
+my_proc.run(0,100)
+# my_proc.run(0,1000)
 
 # done!
 print

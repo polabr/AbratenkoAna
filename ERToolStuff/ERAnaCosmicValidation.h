@@ -85,6 +85,8 @@ private:
   /// the matching particle from the MCParticleGraph
   ertool::Particle FindMCParticleGraphParticle(const EventData &data, const ertool::Particle &p);
 
+  /// Basic counter: # of primary, secondary, other particles
+  std::vector< size_t > _total_particles;
 };
 }
 #endif
