@@ -28,12 +28,12 @@ class ERAnaCosmicValidation : public AnaBase {
 
 public:
 
-  enum MC_ParticleGeneration_t {
-    kPrimary,      ///< Primary cosmic
-    kSecondary,    ///< Secondary cosmic
-    kOther,        ///< Neither primary or secondary
-    kINVALID_RECO_TYPE
-  };
+  // enum MC_ParticleGeneration_t {
+  //   kPrimary,      ///< Primary cosmic
+  //   kSecondary,    ///< Secondary cosmic
+  //   kOther,        ///< Neither primary or secondary
+  //   kINVALID_RECO_TYPE
+  // };
 
   /// Default constructor
   ERAnaCosmicValidation(const std::string& name = "ERAnaCosmicValidation");
@@ -79,14 +79,26 @@ private:
 
   /// Simple function that takes in a particle from mcparticlegraph
   /// and returns the MC generation of that particle (to tell if it's primary, secondary, etc)
-  MC_ParticleGeneration_t GetMCParticleGeneration(const ertool::Particle& myparticle);
+  bool IsMCParticlePrimary(const ertool::Particle& myparticle);
+
+  /// Simple function that takes in a particle from mcparticlegraph
+  /// and returns whether that particle is "secondary"
+  /// (meaning, that particle has a parent in the mcparticlegraph that deposits energy in the detector)
+  bool IsMCParticleSecondary(const ertool::Particle & myparticle);
 
   /// Function that takes a particle from the reco particle graph and returns
   /// the matching particle from the MCParticleGraph
-  ertool::Particle FindMCParticleGraphParticle(const EventData &data, const ertool::Particle &p);
+  ertool::Particle FindMCParticleGraphParticle(const EventData & data, const ertool::Particle & p);
+
+  /// Function to take in a particle from the mcparticle graph, and find all the mc secondaries associated with
+  /// that particle, and add them to a std::set keeping track of them all.
+  void TrackAllSecondaries(const ertool::Particle &p);
 
   /// Basic counter: # of primary, secondary, other particles
   std::vector< size_t > _total_particles;
+
+  /// List of all potential nodeID of MC secondaries associated with a tagged primary particle
+  std::set< size_t > _potential_secondary_nodeIDs;
 };
 }
 #endif

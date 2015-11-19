@@ -38,7 +38,7 @@ print
 print "n_true_secondary particles is ",n_true_secondary
 print "n_correctly_recod_secondary particles is ",n_correctly_recod_secondary
 print "n_falsely_recod_secondary is ",n_falsely_recod_secondary
-print "secondary efficiency is %d/(%d-%d) = %f"%(n_correctly_recod_secondary,n_true_secondary,n_falsely_recod_primary,float(n_correctly_recod_secondary)/float(n_true_secondary-n_falsely_recod_primary))
+print "secondary efficiency is %d/%d = %f"%(n_correctly_recod_secondary,n_true_secondary,float(n_correctly_recod_secondary)/float(n_true_secondary))
 print
 
 
