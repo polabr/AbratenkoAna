@@ -33,7 +33,7 @@ my_proc.set_ana_output_file("cosmicValidation_ana_out.root")
 # $LARLITE_BASEDIR/python/seltool/primarycosmicDef.py
 cosmicprimary_algo = GetPrimaryCosmicFinderInstance()
 cosmicsecondary_algo = ertool.ERAlgoCRSecondary()
-# cosmicorphanalgo = ertool.ERAlgoCROrphan()
+cosmicorphanalgo = ertool.ERAlgoCROrphan()
 
 Ecut = 50 # in MeV
 
@@ -44,11 +44,16 @@ main_anaunit = fmwk.ExampleERSelection()
 main_anaunit._mgr.ClearCfgFile()
 main_anaunit._mgr.AddCfgFile(os.environ['LARLITE_USERDEVDIR']+'/SelectionTool/ERTool/dat/ertool_default.cfg')
 
-main_anaunit.SetShowerProducer(True,'mcreconew')
-main_anaunit.SetTrackProducer(True,'mcreconew')
+main_anaunit.SetShowerProducer(True,'mcreco')
+main_anaunit.SetTrackProducer(True,'mcreco')
+
+from seltool.trackDresserDef import GetTrackDresserInstance
+dresser = GetTrackDresserInstance()
+main_anaunit._mgr.AddAlgo(dresser)
+
 main_anaunit._mgr.AddAlgo(cosmicprimary_algo)
 main_anaunit._mgr.AddAlgo(cosmicsecondary_algo)
-# main_anaunit._mgr.AddAlgo(cosmicorphanalgo)
+main_anaunit._mgr.AddAlgo(cosmicorphanalgo)
 
 main_anaunit._mgr.AddAna(cos_ana)
 main_anaunit._mgr._profile_mode = True
@@ -59,8 +64,8 @@ main_anaunit._mgr._mc_for_ana = True
 # my_proc.add_process(nuefilter)
 my_proc.add_process(main_anaunit)
 
-# my_proc.run(0,1)
-my_proc.run(0,100)
+# my_proc.run(32,1) #weird event in corsika noOB
+my_proc.run(0,1000)
 
 # done!
 print
