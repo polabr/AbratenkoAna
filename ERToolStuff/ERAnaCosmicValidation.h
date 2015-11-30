@@ -18,6 +18,7 @@
 #include "ERTool/Base/AnaBase.h"
 #include "TTree.h"
 #include "GeoAlgo/GeoAlgo.h"
+#include "ERTool/Algo/AlgoFindRelationship.h"
 
 namespace ertool {
 
@@ -80,6 +81,15 @@ namespace ertool {
         float _orphan_dist; // Dist CROrphan uses to determine if something is orphan
         float _energy; // Energy of track or shower associated with the particle.
         float _trk_length; // If particle is a track, this is track.Length()
+        float _start_x_vtx;
+        float _start_y_vtx;
+        float _start_z_vtx;
+        bool _start_contained_in_TPC; // Whether start point of particle is contained in TPC box
+        bool _trackend_contained_in_TPC; // Whether end point of particle is contained in TPC box
+        float _perp_dist_any_wall; // Min [perpendicular distance b/t start point or end point] and any wall of TPC box
+        bool _going_upwards; // Whether particle has positive y-component of direction
+        float _dist_to_closest_particle; // Shortest distance between this particle and the nearest other particle
+        bool _tagged_as_neutron; // Whether CROrphan tagged this particle as a neutron
 
         /// prepare TTree with variables
         void PrepareTreeVariables();
@@ -117,7 +127,7 @@ namespace ertool {
 
         ::geoalgo::GeoAlgo _geoalg;
         ::geoalgo::AABox _tpc_box;
-
+        ertool::AlgoFindRelationship _findRel;
 
     };
 }

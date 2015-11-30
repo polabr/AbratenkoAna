@@ -189,34 +189,87 @@ namespace ertool {
       if (p.RecoType() == RecoType_t::kTrack) {
         _energy = mc_data.Track(found_mcparticle)._energy;
         _trk_length = mc_data.Track(found_mcparticle).Length();
+        _start_x_vtx = mc_data.Track(found_mcparticle).at(0).at(0);
+        _start_y_vtx = mc_data.Track(found_mcparticle).at(0).at(1);
+        _start_z_vtx = mc_data.Track(found_mcparticle).at(0).at(2);
       }
       else if (p.RecoType() == RecoType_t::kShower) {
         _energy = mc_data.Shower(found_mcparticle)._energy;
         _trk_length = -999.;
+        _start_x_vtx = mc_data.Shower(found_mcparticle).Start().at(0);
+        _start_y_vtx = mc_data.Shower(found_mcparticle).Start().at(1);
+        _start_z_vtx = mc_data.Shower(found_mcparticle).Start().at(2);
       }
       /// Distance to top wall information:
 
       // Finding perpendicular distance from particle start point to top wall
       ::geoalgo::Vector start;
+      ::geoalgo::Vector end;
       ::geoalgo::Vector dir;
       if (p.RecoType() == RecoType_t::kTrack) {
         start = mc_data.Track(found_mcparticle).at(0);
+        end = mc_data.Track(found_mcparticle).back();
         dir = mc_data.Track(found_mcparticle).at(0).Dir();
       }
       else if (p.RecoType() == RecoType_t::kShower) {
         start = mc_data.Shower(found_mcparticle).Start();
+        end = end = mc_data.Shower(found_mcparticle).Start(); // end meaningless for showers
         dir = mc_data.Shower(found_mcparticle).Dir();
       }
       else std::cout << "p was neither shower nor track. type = " << p.RecoType() << std::endl;
+
+      _perp_dist_any_wall = std::min(std::sqrt(_geoalg.SqDist(start, _tpc_box)),
+                                     std::sqrt(_geoalg.SqDist(end, _tpc_box)));
+      _going_upwards = dir.at(1) > 0;
+
       if (!_tpc_box.Contain(start)) {
+        _start_contained_in_TPC = false;
         _perp_dist_top_wall = -999.;
         _orphan_dist = -999.;
+
       }
       else {
+        _start_contained_in_TPC = true;
         _perp_dist_top_wall = _tpc_box.Max()[1] - start[1];
-        if (dir[1] > 0) _orphan_dist = -999.;
+        if (dir[1] > 0) _orphan_dist = -100.;
         else _orphan_dist = (_tpc_box.Max()[1] - start[1]) / (dir[1] * -1.);
       }
+      _trackend_contained_in_TPC = _tpc_box.Contain(end);
+
+
+      // Loop through all primary cosmics find shortest distance between each and this particle
+      double _tmp_min_dist = 999999.;
+      _dist_to_closest_particle = 999999.;
+      for ( auto const &pnodeid2 : ps.GetPrimaryNodes() ) {
+
+        ertool::Particle p2 = ps.GetParticle(pnodeid2);
+
+        if (p2.ProcessType() != ProcessType_t::kCosmic) continue;
+
+        // Don't compare yourself to yourself
+        if (p2.ID() == p.ID()) continue;
+
+        if (p.RecoType() == RecoType_t::kTrack && p2.RecoType() == RecoType_t::kTrack)
+          _tmp_min_dist =
+            _findRel.FindClosestApproach(data.Track(p), data.Track(p2));
+        else if (p.RecoType() == RecoType_t::kTrack && p2.RecoType() == RecoType_t::kShower)
+          _tmp_min_dist =
+            _findRel.FindClosestApproach(data.Track(p), data.Shower(p2));
+        else if (p.RecoType() == RecoType_t::kShower && p2.RecoType() == RecoType_t::kTrack)
+          _tmp_min_dist =
+            _findRel.FindClosestApproach(data.Shower(p), data.Track(p2));
+        else if (p.RecoType() == RecoType_t::kShower && p2.RecoType() == RecoType_t::kShower)
+          _tmp_min_dist =
+            _findRel.FindClosestApproach(data.Shower(p), data.Shower(p2));
+        else std::cout << "wtf" << std::endl;
+
+        if (_tmp_min_dist < _dist_to_closest_particle)
+          _dist_to_closest_particle = _tmp_min_dist;
+
+      }// End inner loop over particles to compare all permutations
+
+      // Check if the particle was tagged as neutron
+      _tagged_as_neutron = p.ProcessType() == ProcessType_t::kNeutronInduced;
 
       // Fill ttree
       _result_tree->Fill();
@@ -342,7 +395,15 @@ namespace ertool {
     _result_tree->Branch("_orphan_dist", &_orphan_dist, "_orphan_dist/F");
     _result_tree->Branch("_energy", &_energy, "_energy/F");
     _result_tree->Branch("_trk_length", &_trk_length, "_trk_length/F");
-
+    _result_tree->Branch("_start_x_vtx", &_start_x_vtx, "_start_x_vtx/F");
+    _result_tree->Branch("_start_y_vtx", &_start_y_vtx, "_start_y_vtx/F");
+    _result_tree->Branch("_start_z_vtx", &_start_z_vtx, "_start_z_vtx/F");
+    _result_tree->Branch("_start_contained_in_TPC", &_start_contained_in_TPC, "_start_contained_in_TPC/O");
+    _result_tree->Branch("_trackend_contained_in_TPC", &_trackend_contained_in_TPC, "_trackend_contained_in_TPC/O");
+    _result_tree->Branch("_perp_dist_any_wall", &_perp_dist_any_wall, "_perp_dist_any_wall/F");
+    _result_tree->Branch("_going_upwards", &_going_upwards, "_going_upwards/O");
+    _result_tree->Branch("_dist_to_closest_particle", &_dist_to_closest_particle, "_dist_to_closest_particle/F");
+    _result_tree->Branch("_tagged_as_neutron", &_tagged_as_neutron, "_tagged_as_neutron/O");
     return;
   }
 
@@ -361,6 +422,15 @@ namespace ertool {
     _orphan_dist = -999.;
     _energy = -999.;
     _trk_length = -999.;
+    _start_x_vtx = -999.;
+    _start_y_vtx = -999.;
+    _start_z_vtx = -999.;
+    _start_contained_in_TPC = false;
+    _trackend_contained_in_TPC = false;
+    _perp_dist_any_wall = -999.;
+    _going_upwards = false;
+    _dist_to_closest_particle = -999.;
+    _tagged_as_neutron = false;
 
     return;
   }

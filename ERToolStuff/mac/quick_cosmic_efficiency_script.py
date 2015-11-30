@@ -16,7 +16,11 @@ for x in xrange(entries):
 
 	blah = t.GetEntry(x)
 	#Ignore all particles that are tracks with length less than 1cm
-	if t._is_track and t._trk_length < 1: continue
+	# if t._is_track and t._trk_length < 1: continue
+	#Ignore all particles with energy deposited < 20 MeV
+	# if t._energy < 20.: continue
+	# if not t._start_contained_in_TPC: continue
+	# if t._is_track and (t._start_contained_in_TPC or t._trackend_contained_in_TPC): continue
 
 	if t._true_primary:
 		n_true_primary += 1
@@ -57,7 +61,10 @@ print
 print "n_true_orphan particles is ",n_true_orphan
 print "n_correctly_recod_orphan particles is ",n_correctly_recod_orphan
 print "n_falsely_recod_orphan is ",n_falsely_recod_orphan
-print "orphan efficiency is %d/%d = %f"%(n_correctly_recod_orphan,n_true_orphan,float(n_correctly_recod_orphan)/float(n_true_orphan))
+if n_true_orphan:
+	print "orphan efficiency is %d/%d = %f"%(n_correctly_recod_orphan,n_true_orphan,float(n_correctly_recod_orphan)/float(n_true_orphan))
+else:
+	print "orphan efficiency is infinite because there are no true orphans in the denominator."
 print
 
 f.Close()
