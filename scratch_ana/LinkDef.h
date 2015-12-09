@@ -20,9 +20,11 @@
 #pragma link C++ class larlite::HitStudy+;
 #pragma link C++ class larlite::MCShowerStudy+;
 #pragma link C++ class larlite::MCTrackStudy+;
+#pragma link C++ class larlite::ShowerProfileValidation+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 
 
 
