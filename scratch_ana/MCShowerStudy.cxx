@@ -10,7 +10,7 @@ bool MCShowerStudy::initialize() {
     _start_x_vtx = -9e9;
     _detprof_x_vtx = -9e9;
     if (!_ana_tree) {
-        _ana_tree = new TTree("ana_tree", "ana_tree");
+        _ana_tree = new TTree("mcs_tree", "mcs_tree");
         _ana_tree->Branch("start_x_vtx", &_start_x_vtx, "start_x_vtx/D");
         _ana_tree->Branch("detprof_x_vtx", &_detprof_x_vtx, "detprof_x_vtx/D");
         _ana_tree->Branch("detprof_E", &_detprof_E, "detprof_E/D");
@@ -24,7 +24,7 @@ bool MCShowerStudy::analyze(storage_manager* storage) {
     _detprof_x_vtx = -9e9;
     _detprof_E = -9e9;
 
-    auto ev_mcs = storage->get_data<event_mcshower>("mcreconew");
+    auto ev_mcs = storage->get_data<event_mcshower>(_producername);
     if (!ev_mcs) {
         print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, MCShower!"));
         return false;

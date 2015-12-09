@@ -237,14 +237,12 @@ namespace ertool {
       _trackend_contained_in_TPC = _tpc_box.Contain(end);
 
 
-      // Loop through all primary cosmics find shortest distance between each and this particle
+      // Loop through all other particles find shortest distance between each and this particle
       double _tmp_min_dist = 999999.;
       _dist_to_closest_particle = 999999.;
-      for ( auto const &pnodeid2 : ps.GetPrimaryNodes() ) {
+      for ( auto const &pnodeid2 : ps.GetParticleNodes() ) {
 
         ertool::Particle p2 = ps.GetParticle(pnodeid2);
-
-        if (p2.ProcessType() != ProcessType_t::kCosmic) continue;
 
         // Don't compare yourself to yourself
         if (p2.ID() == p.ID()) continue;
@@ -267,9 +265,6 @@ namespace ertool {
           _dist_to_closest_particle = _tmp_min_dist;
 
       }// End inner loop over particles to compare all permutations
-
-      // Check if the particle was tagged as neutron
-      _tagged_as_neutron = p.ProcessType() == ProcessType_t::kNeutronInduced;
 
       // Fill ttree
       _result_tree->Fill();
@@ -403,7 +398,7 @@ namespace ertool {
     _result_tree->Branch("_perp_dist_any_wall", &_perp_dist_any_wall, "_perp_dist_any_wall/F");
     _result_tree->Branch("_going_upwards", &_going_upwards, "_going_upwards/O");
     _result_tree->Branch("_dist_to_closest_particle", &_dist_to_closest_particle, "_dist_to_closest_particle/F");
-    _result_tree->Branch("_tagged_as_neutron", &_tagged_as_neutron, "_tagged_as_neutron/O");
+
     return;
   }
 
@@ -430,7 +425,6 @@ namespace ertool {
     _perp_dist_any_wall = -999.;
     _going_upwards = false;
     _dist_to_closest_particle = -999.;
-    _tagged_as_neutron = false;
 
     return;
   }
@@ -501,7 +495,11 @@ namespace ertool {
     //If you want just one layer deep of children, use p.Children
     //If you want all the layers below this particle, you need to use ParticleGraph::GetAllDescendantNodes
     // (meaning you need access to the mcparticlegraph here)
-    for (auto const& childnodeID : p.Children())
+
+     /// Grab the mc particle graph
+    auto const& mc_graph = MCParticleGraph();
+    // for (auto const& childnodeID : p.Children())
+    for (auto const& childnodeID : mc_graph.GetAllDescendantNodes(p.ID()))
       _potential_secondary_nodeIDs.insert( childnodeID );
 
   }

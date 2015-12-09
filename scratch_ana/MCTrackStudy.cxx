@@ -10,7 +10,7 @@ bool MCTrackStudy::initialize() {
     _start_x_vtx = -9e9;
 
     if (!_ana_tree) {
-        _ana_tree = new TTree("ana_tree", "ana_tree");
+        _ana_tree = new TTree("mct_tree", "mct_tree");
         _ana_tree->Branch("start_x_vtx", &_start_x_vtx, "start_x_vtx/D");
         _ana_tree->Branch("start_t",&_start_t,"start_t/D");
     }
@@ -22,7 +22,7 @@ bool MCTrackStudy::analyze(storage_manager* storage) {
     _start_x_vtx = -9e9;
     _start_t = -9e9;
 
-    auto ev_mct = storage->get_data<event_mctrack>("mcreco");
+    auto ev_mct = storage->get_data<event_mctrack>(_producername);
     if (!ev_mct) {
         print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, mctrack!"));
         return false;

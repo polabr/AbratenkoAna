@@ -89,7 +89,6 @@ namespace ertool {
         float _perp_dist_any_wall; // Min [perpendicular distance b/t start point or end point] and any wall of TPC box
         bool _going_upwards; // Whether particle has positive y-component of direction
         float _dist_to_closest_particle; // Shortest distance between this particle and the nearest other particle
-        bool _tagged_as_neutron; // Whether CROrphan tagged this particle as a neutron
 
         /// prepare TTree with variables
         void PrepareTreeVariables();

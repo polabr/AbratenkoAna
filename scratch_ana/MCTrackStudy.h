@@ -27,7 +27,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    MCTrackStudy(){ _name="MCTrackStudy"; _fout=0; _ana_tree=0;}
+    MCTrackStudy(){ _name="MCTrackStudy"; _fout=0; _ana_tree=0; _producername = "mcreco";}
 
     /// Default destructor
     virtual ~MCTrackStudy(){}
@@ -47,8 +47,11 @@ namespace larlite {
     */
     virtual bool finalize();
 
-  protected:
+    void setMCShowerProducer(std::string producername) { _producername = producername; }
+
     
+  protected:
+    std::string _producername;
 
     TTree* _ana_tree;
     double _start_x_vtx;

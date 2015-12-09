@@ -27,7 +27,7 @@ namespace larlite {
   public:
 
     /// Default constructor WITHOUT _ana_tree=0 IT RANDOMLY SEGFAULTS HALF THE GODDAMN TIME ON MY LAPTOP
-    MCShowerStudy(){ _name="MCShowerStudy"; _fout=0; _ana_tree = 0;}
+    MCShowerStudy(){ _name="MCShowerStudy"; _fout=0; _ana_tree = 0; _producername = "mcreco";}
 
     /// Default destructor
     virtual ~MCShowerStudy(){}
@@ -47,8 +47,11 @@ namespace larlite {
     */
     virtual bool finalize();
 
+    void setMCShowerProducer(std::string producername) { _producername = producername; }
+
   protected:
     
+    std::string _producername;
 
     TTree* _ana_tree;
     double _start_x_vtx;
