@@ -35,7 +35,7 @@ namespace larlite {
       _name="TrigEffStudy"; 
       _fout = 0; 
       _ana_tree = 0;
-      _window_max_us = 8.;
+      _window_max_us = 0.1;
       _window_min_us = -0.01;
     }
 
@@ -75,6 +75,7 @@ namespace larlite {
     TTree *_ana_tree;
     int n_trigs;
     int n_reco_PE;
+    bool _use_mc;
 
     // TTree functionality
     void resetTTreeVars();
