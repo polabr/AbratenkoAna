@@ -2,7 +2,7 @@
  * \file TrigEffStudy.h
  *
  * \ingroup FEMEmulator
- * 
+ *
  * \brief Ana unit that owns LLInterface. It configures the LLInterface instance.
  *        Each event it asks LLInterface to "Emulate" and it checks whether a software trigger is fired.
  *        It then stores relevant information to a ttree for later efficiency plotting, etc.
@@ -26,21 +26,21 @@ namespace larlite {
      \class TrigEffStudy
      User custom analysis class made by kaleko
    */
-  class TrigEffStudy : public ana_base{
-  
+  class TrigEffStudy : public ana_base {
+
   public:
 
     /// Default constructor
-    TrigEffStudy(){ 
-      _name="TrigEffStudy"; 
-      _fout = 0; 
+    TrigEffStudy() {
+      _name = "TrigEffStudy";
+      _fout = 0;
       _ana_tree = 0;
       _window_max_us = 0.1;
       _window_min_us = -0.01;
     }
 
     /// Default destructor
-    virtual ~TrigEffStudy(){}
+    virtual ~TrigEffStudy() {}
 
     virtual bool initialize();
 
@@ -58,10 +58,13 @@ namespace larlite {
 
   protected:
 
+    // Bool to toggle whether to use simphotons (if true), or ophits (if false)
+    bool _use_mc;
+
     fememu::LLInterface _my_LLint;
     fememu::FEMBeamTriggerConfig *_myconfig = 0;
     fememu::FEMBeamTriggerOutput _myoutput;
-    
+
     // Construct the LL interface. Throws exception if config not set
     void constructLLInterface();
 
@@ -74,8 +77,10 @@ namespace larlite {
     // Analysis ttree for efficiency plotting later
     TTree *_ana_tree;
     int n_trigs;
-    int n_reco_PE;
-    bool _use_mc;
+    int n_reco_PE; //or, number of simphotons if _use_mc is true
+    float x_pos;
+    int pdg; //PDG of particle whose x_pos and energy are saved
+    float energy; //Truth energy of particle whose x_pos is saved
 
     // TTree functionality
     void resetTTreeVars();
@@ -86,11 +91,11 @@ namespace larlite {
 #endif
 
 //**************************************************************************
-// 
+//
 // For Analysis framework documentation, read Manual.pdf here:
 //
 // http://microboone-docdb.fnal.gov:8080/cgi-bin/ShowDocument?docid=3183
 //
 //**************************************************************************
 
-/** @} */ // end of doxygen group 
+/** @} */ // end of doxygen group
