@@ -25,6 +25,13 @@
 // 4) If you ask Taritree's FEM trigger emulator for a fire_time, that is in
 // number of SAMPLES (15.6ns each) between the TimeStamp() of the opdetwaveform
 // and the emulated trigger firing (since the emulator takes as input opdetwaveforms)
+//
+// 5) Note that in simulation, the trigger data product TriggerTime() is usually 3650 us.
+// However, the actual particle interaction time is NOT exactly 3650, the particle can
+// arrive any time within a 1.6us window after the trigger time. To get the actual particle
+// arrival time, you do mcparticle.Trajectory().front().T(), which is a time in
+// NANOSECONDS which is the number of ns after the trigger data product TriggerTime()
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 
 namespace larlite {
@@ -38,8 +45,6 @@ namespace larlite {
     }
 
     initializeTTree();
-
-    _use_mc = true;
 
     return true;
   }
@@ -102,26 +107,44 @@ namespace larlite {
     if (n_trigs > 1)
       std::cout << "WARNING LOOKING ONLY @ FIRST TRIGGER! THERE WERE >1 TRIGGERS!" << std::endl;
 
-    //us with respect to RUN START
-    float emulated_trigger_time_us = _myoutput.fire_time_v.at(0) != -1 ?
-                                     _myoutput.fire_time_v.at(0) * 0.0156 + ev_odw->at(0).TimeStamp() :
-                                     -9e9;
-    //TTree variable is the trigger time difference
-    em_trig_minus_dp_trig_us = emulated_trigger_time_us - trigger_time_us;
+    //Figure out the emulated trigger time in us with respect to RUN START
+    //First find one of the opdetwaveforms that was used by the emulator to generate a trigger
+    //(all wfs used by emulator are time-aligned, so just one will suffice)
+    float odw_timestamp = -1;
+    for (auto const &wf : *ev_odw) {
+      if ( wf.ChannelNumber() < 31 && wf.size() > 1000 ) {
+        odw_timestamp = wf.TimeStamp();
+        break;
+      }
+    }
+    if (odw_timestamp == -1) {
+      print(larlite::msg::kERROR, __FUNCTION__, Form("Could not locate opdetwaveform used by trigger emulator!"));
+      return false;
+    }
 
-    ///Find the x-position of the first particle
+    float emulated_trigger_time_us = _myoutput.fire_time_v.at(0) != -1 ?
+                                     _myoutput.fire_time_v.at(0) * 0.0156 + odw_timestamp :
+                                     -9e9;
+
+    ///Find the x-position of the first particle, and the arrival time of the first particle
     //For neutrino files, neutrino has        mother -1, status 0 (almost always), trackID 0
     //For single electron files, electron has mother -1, status 1,                 trackID -1
+    float truth_part_arrival_time; // us with respect to RUN START
     for (auto const &part : ev_mct->front().GetParticles()) {
       if (part.Mother() == -1 && part.TrackId() <= 0) {
         x_pos = part.Trajectory().front().X();
         pdg = part.PdgCode();
         energy = part.Trajectory().front().E();
+        truth_part_arrival_time = part.Trajectory().front().T() / 1000. + trigger_time_us;
         break;
       }
-      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find relevant particle in mctruth. Can't save x-position!"));
+      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find relevant particle in mctruth!"));
       return false;
     }
+
+
+    //TTree variable is the trigger time difference
+    em_trig_minus_truth_particle_time_ns = (emulated_trigger_time_us - truth_part_arrival_time) * 1000.;
 
     /// Now we compute the "reconstructed PE", in two different possible ways, depending on how
     //_use_mc is toggled.
@@ -145,9 +168,10 @@ namespace larlite {
       for (auto const& oph : *ev_oph) {
         // Don't count PMTs numbered greater than 31
         if (oph.OpChannel() > 31) continue;
-        // Don't sum PEs from ophits that occur outside of specified time window around trigger data product fire time
+        // Don't sum PEs from ophits that occur outside of specified time window around true particle arrival time
         // Note ophit time == 0 is the trigger data TriggerTime()
-        if (oph.PeakTime() < _window_us_before_trig || oph.PeakTime() > _window_us_after_trig )
+        if (oph.PeakTime() + truth_part_arrival_time - trigger_time_us < -_window_us_before_truth_part_time ||
+            oph.PeakTime() + truth_part_arrival_time - trigger_time_us > _window_us_after_truth_part_time )
           continue;
 
         n_reco_PE +=  oph.Amplitude() / 20.; //oph.PE();
@@ -241,7 +265,7 @@ namespace larlite {
     x_pos = -9.e9;
     pdg = -999999;
     energy = -9.e9;
-    em_trig_minus_dp_trig_us = -9.e9;
+    em_trig_minus_truth_particle_time_ns = -9.e9;
   }
 
   void TrigEffStudy::initializeTTree() {
@@ -252,7 +276,7 @@ namespace larlite {
       _ana_tree->Branch("x_pos", &x_pos, "x_pos/F");
       _ana_tree->Branch("pdg", &pdg, "pdg/I");
       _ana_tree->Branch("energy", &energy, "energy/F");
-      _ana_tree->Branch("em_trig_minus_dp_trig_us", &em_trig_minus_dp_trig_us, "em_trig_minus_dp_trig_us/F");
+      _ana_tree->Branch("em_trig_minus_truth_particle_time_ns", &em_trig_minus_truth_particle_time_ns, "em_trig_minus_truth_particle_time_ns/F");
     }
 
   }

@@ -35,8 +35,9 @@ namespace larlite {
       _name = "TrigEffStudy";
       _fout = 0;
       _ana_tree = 0;
-      _window_us_after_trig = 0.1;
-      _window_us_before_trig = 0.01;
+      _window_us_after_truth_part_time = 0.1;
+      _window_us_before_truth_part_time = 0.01;
+      _use_mc = true;
     }
 
     /// Default destructor
@@ -52,9 +53,10 @@ namespace larlite {
     void setConfig(fememu::FEMBeamTriggerConfig* dummy) { _myconfig = dummy; }
 
     // Setter for how wide of a time-window one wants to integrate PEs over PMTs
-    // Time window starts _window_us_before_trig before trigger, extends _window_us_after_trig past trigger
-    void setWindowMin(float dummy) { _window_us_before_trig = dummy; }
-    void setWindowMax(float dummy) { _window_us_after_trig = dummy; }
+    // Time window starts _window_us_before_truth_part_time before trigger, extends _window_us_after_truth_part_time past trigger
+    void setWindowPreTruthPartTime(float dummy) { _window_us_before_truth_part_time = dummy; }
+    void setWindowPostTruthPartTime(float dummy) { _window_us_after_truth_part_time = dummy; }
+    void setUseMC(bool dummy) { _use_mc = dummy; }
 
   protected:
 
@@ -69,10 +71,10 @@ namespace larlite {
     void constructLLInterface();
 
     // Time window to integrate PE over PMT channels 0-31
-    // This much time is searched after trigger time
-    float _window_us_after_trig;
-    // This much time is searched before trigger time
-    float _window_us_before_trig;
+    // This much time is searched after true mcparticle arrival time
+    float _window_us_after_truth_part_time;
+    // This much time is searched before true mcparticle arrival time time
+    float _window_us_before_truth_part_time;
 
     // Analysis ttree for efficiency plotting later
     TTree *_ana_tree;
@@ -81,7 +83,7 @@ namespace larlite {
     float x_pos;
     int pdg; //PDG of particle whose x_pos and energy are saved
     float energy; //Truth energy of particle whose x_pos is saved
-    float em_trig_minus_dp_trig_us; //Time difference between emulated trigger and dataproduct (simulated) trigger
+    float em_trig_minus_truth_particle_time_ns; //Time difference between emulated trigger and actual particle arrival time
 
     // TTree functionality
     void resetTTreeVars();
