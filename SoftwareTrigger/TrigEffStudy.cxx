@@ -94,15 +94,17 @@ namespace larlite {
     if (n_trigs > 1)
       std::cout << "WARNING LOOKING ONLY @ FIRST TRIGGER! THERE WERE >1 TRIGGERS!" << std::endl;
 
-    ///Find the x-position of the first particle created (the first particle with parentID == -1)
+    ///Find the x-position of the first particle created 
+    //For neutrino files, neutrino has        mother -1, status 0 (almost always), trackID 0
+    //For single electron files, electron has mother -1, status 1,                 trackID -1
     for (auto const &part : ev_mct->front().GetParticles()) {
-      if (part.Mother() == -1) {
+      if (part.Mother() == -1 && part.TrackId() <= 0) {
         x_pos = part.Trajectory().front().X();
         pdg = part.PdgCode();
         energy = part.Trajectory().front().E();
         break;
       }
-      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find particle with mother == -1 in mctruth. Can't save x-position!"));
+      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find relevant particle in mctruth. Can't save x-position!"));
       return false;
     }
 
