@@ -20,6 +20,7 @@
 #include "Analysis/ana_base.h"
 #include "LArLiteInterface.h"
 #include "TTree.h"
+#include "TH1.h"
 
 namespace larlite {
   /**
@@ -38,6 +39,7 @@ namespace larlite {
       _window_us_after_truth_part_time = 0.1;
       _window_us_before_truth_part_time = 0.01;
       _use_mc = true;
+      _debughist = 0;
     }
 
     /// Default destructor
@@ -88,6 +90,8 @@ namespace larlite {
     // TTree functionality
     void resetTTreeVars();
     void initializeTTree();
+
+    TH1F *_debughist;
 
   };
 }

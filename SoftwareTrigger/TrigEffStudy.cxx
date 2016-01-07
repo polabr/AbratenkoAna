@@ -44,6 +44,8 @@ namespace larlite {
       return false;
     }
 
+    _debughist = new TH1F("debughist","oph.PeakTime() - truth_part_arrival_time + trigger_time_us",1000,-.5,10);
+
     initializeTTree();
 
     return true;
@@ -170,8 +172,10 @@ namespace larlite {
         if (oph.OpChannel() > 31) continue;
         // Don't sum PEs from ophits that occur outside of specified time window around true particle arrival time
         // Note ophit time == 0 is the trigger data TriggerTime()
-        if (oph.PeakTime() + truth_part_arrival_time - trigger_time_us < -_window_us_before_truth_part_time ||
-            oph.PeakTime() + truth_part_arrival_time - trigger_time_us > _window_us_after_truth_part_time )
+        // Note included 60 ns scintillation + shaping time
+        _debughist->Fill(oph.PeakTime() - truth_part_arrival_time + trigger_time_us);
+        if (oph.PeakTime() - truth_part_arrival_time + trigger_time_us < -_window_us_before_truth_part_time ||
+            oph.PeakTime() - truth_part_arrival_time + trigger_time_us > _window_us_after_truth_part_time )
           continue;
 
         n_reco_PE +=  oph.Amplitude() / 20.; //oph.PE();
@@ -246,6 +250,7 @@ namespace larlite {
         _fout->cd();
         _ana_tree->Write();
       }
+      _debughist->Write();
     }
 
     return true;
