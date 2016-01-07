@@ -40,8 +40,9 @@ my_proc.set_ana_output_file("ana_out_TrigEffStudy.root");
 # Attach a template process
 mod = fmwk.TrigEffStudy()
 mod.setConfig(config)
-mod.setWindowMin(-0.01)
-mod.setWindowMax(0.1)
+mod.setWindowPreTruthPartTime(0.01)
+mod.setWindowPostTruthPartTime(0.1) 
+mod.setUseMC(False)
 my_proc.add_process(mod)
 
 print
