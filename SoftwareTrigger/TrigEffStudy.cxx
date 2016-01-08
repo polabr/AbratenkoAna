@@ -7,6 +7,8 @@
 #include "DataFormat/simphotons.h"
 #include "DataFormat/mctruth.h"
 #include "DataFormat/trigger.h"
+#include "DataFormat/mctrack.h"
+#include "DataFormat/mcshower.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Please, allow me to summarize all of the different timings that are going on.
@@ -43,10 +45,16 @@ namespace larlite {
       std::cout << e.what() << std::endl;
       return false;
     }
-
-    _debughist = new TH1F("debughist","oph.PeakTime() - truth_part_arrival_time + trigger_time_us",1000,-.5,10);
+    if (!_use_mc)
+      // _debughist = new TH1F("debughist", "oph.PeakTime() - truth_part_arrival_time + trigger_time_us", 1000, -.5, 10);
+      _debughist = new TH1F("debughist", "oph.PeakTime()", 1000, -.5, 10);
+    else
+      _debughist = new TH1F("debughist", "simphoton.Time/1000. - truth_part_arrival_time + 3650.", 1000, -.2, 2);
 
     initializeTTree();
+
+    std::cout << "_window_us_after_truth_part_time = " << _window_us_after_truth_part_time << std::endl;
+    std::cout << "_window_us_before_truth_part_time = " << _window_us_before_truth_part_time << std::endl;
 
     return true;
   }
@@ -64,6 +72,24 @@ namespace larlite {
       return false;
     }
 
+    ///Read in simphotons (used as an alternative to compute some TTree variables)
+    auto ev_simph = storage->get_data<event_simphotons>("largeant");
+    if (!ev_simph) {
+      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product simphotons!"));
+      return false;
+    }
+    if (ev_simph->empty()) {
+      print(larlite::msg::kERROR, __FUNCTION__, Form("simphotons exist but has zero size!"));
+      return false;
+    }
+
+
+    ///Read in mctrack (used to compute some ttree variables)
+    auto ev_mctrack = storage->get_data<event_mctrack>("mcreco");
+
+    ///Read in mcshower (used to compute some ttree variables)
+    auto ev_mcshower = storage->get_data<event_mcshower>("mcreco");
+
     ///Read in mctruth (used to compute some ttree variables)
     auto ev_mct = storage->get_data<event_mctruth>("generator");
     if (!ev_mct) {
@@ -75,12 +101,23 @@ namespace larlite {
       return false;
     }
 
+    ///Read in ophit (used to compute some TTree variables)
+    auto ev_oph = storage->get_data<event_ophit>("opflash");
+    if (!ev_oph) {
+      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, ophit!"));
+      return false;
+    }
+    if (!ev_oph->size()) {
+      print(larlite::msg::kERROR, __FUNCTION__, Form("ophit exists but has zero size!"));
+      return false;
+    }
+
     //Read in trigger data product
     auto trig = storage->get_data<trigger>("triggersim");
     //us with respect to RUN START
     float trigger_time_us;
     if (!trig) {
-      print(larlite::msg::kWARNING, __FUNCTION__, Form("Did not find specified data product, trigger! Using hard-coded 3650 us."));
+      //print(larlite::msg::kWARNING, __FUNCTION__, Form("Did not find specified data product, trigger! Using hard-coded 3650 us."));
       trigger_time_us = 3650.;
     }
     else trigger_time_us = trig->TriggerTime();
@@ -88,6 +125,29 @@ namespace larlite {
     //Reset ttree vars to initialization values
     resetTTreeVars();
 
+    //compute nophit_over_nsimph
+    float simch_sum = 0;
+    for (int i = 0; i < ev_simph->size(); i++)
+      simch_sum += ev_simph->at(i).size();
+    float ophit_sum = 0;
+    for (int i = 0; i < ev_oph->size(); i++) {
+      auto oph = ev_oph->at(i);
+      if (oph.OpChannel() > 31) continue;
+      if (oph.PeakTime() < -_window_us_before_truth_part_time || oph.PeakTime() > _window_us_after_truth_part_time) continue;
+      ophit_sum += oph.PE();
+    }
+    nophit_over_nsimph = simch_sum ? ophit_sum / simch_sum : -9999;
+
+    //compute total energy deposited
+    energy_deposited = 0.;
+    if (ev_mcshower && ev_mctrack) {
+      for (auto const& mcshower : *ev_mcshower)
+        energy_deposited += mcshower.DetProfile().E();
+      for (auto const& mctrack : *ev_mctrack)
+        if (mctrack.size())
+          energy_deposited += mctrack.front().E() - mctrack.back().E();
+    }
+    
     //Run the trigger emulation and store the result
     _myoutput = _my_LLint.Emulate(*ev_odw);
 
@@ -113,16 +173,19 @@ namespace larlite {
     //First find one of the opdetwaveforms that was used by the emulator to generate a trigger
     //(all wfs used by emulator are time-aligned, so just one will suffice)
     float odw_timestamp = -1;
-    for (auto const &wf : *ev_odw) {
+    for (auto const &wf : *ev_odw)
       if ( wf.ChannelNumber() < 31 && wf.size() > 1000 ) {
         odw_timestamp = wf.TimeStamp();
         break;
       }
-    }
+
     if (odw_timestamp == -1) {
       print(larlite::msg::kERROR, __FUNCTION__, Form("Could not locate opdetwaveform used by trigger emulator!"));
       return false;
     }
+
+    emulated_trigger_tick = _myoutput.fire_time_v.at(0) != -1 ?
+                            _myoutput.fire_time_v.at(0) : -999999;
 
     float emulated_trigger_time_us = _myoutput.fire_time_v.at(0) != -1 ?
                                      _myoutput.fire_time_v.at(0) * 0.0156 + odw_timestamp :
@@ -155,32 +218,51 @@ namespace larlite {
     //Loop over ophit and sum the total reconstructed PE within specified time window to save to the ttree
     if (!_use_mc) {
 
-      ///Read in ophit (used to compute some TTree variables)
-      auto ev_oph = storage->get_data<event_ophit>("opflash");
-      if (!ev_oph) {
-        print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, ophit!"));
-        return false;
-      }
-      if (!ev_oph->size()) {
-        print(larlite::msg::kERROR, __FUNCTION__, Form("ophit exists but has zero size!"));
-        return false;
-      }
+
 
       n_reco_PE = 0;
+      double seriouslyfuckyou = 0;
+      size_t gofuckyourself = 0;
       for (auto const& oph : *ev_oph) {
         // Don't count PMTs numbered greater than 31
         if (oph.OpChannel() > 31) continue;
+
+        ophit_peaktime = oph.PeakTime();
+        ftruth_part_arrival_time = truth_part_arrival_time;
+        ftrigger_time_us = trigger_time_us;
+        femtrigger_time_us = emulated_trigger_time_us;
+        ophit_tree->Fill();
+
+
         // Don't sum PEs from ophits that occur outside of specified time window around true particle arrival time
         // Note ophit time == 0 is the trigger data TriggerTime()
-        // Note included 60 ns scintillation + shaping time
-        _debughist->Fill(oph.PeakTime() - truth_part_arrival_time + trigger_time_us);
+        // NOTE! for single particles, trigger data TriggerTime is always 3650.
+        // This is NOT the case for neutrinos. If you have access to the trigger data product, use that value,
+        // but if not, for neutrinos oph.PeakTime() is w.r.t. the particle interaction time,
+        // so you can just use oph.PeakTime() below.
+
+        // Use this if you have trigger data product, or you are using single particles
+        // _debughist->Fill(oph.PeakTime() - truth_part_arrival_time + trigger_time_us);
         if (oph.PeakTime() - truth_part_arrival_time + trigger_time_us < -_window_us_before_truth_part_time ||
             oph.PeakTime() - truth_part_arrival_time + trigger_time_us > _window_us_after_truth_part_time )
           continue;
 
-        n_reco_PE +=  oph.Amplitude() / 20.; //oph.PE();
+        //Use this for neutrino sample if you don't have trigger data product
+        // _debughist->Fill(oph.PeakTime());
+        // if (oph.PeakTime() < -_window_us_before_truth_part_time ||
+        //     oph.PeakTime() > _window_us_after_truth_part_time )
+        //   continue;
+        // if (oph.PeakTime() < -_window_us_before_truth_part_time ||
+        //     oph.PeakTime() > _window_us_after_truth_part_time )
+        //   continue;
+
+        n_reco_PE +=  oph.PE();//oph.Amplitude() / 20.; //oph.PE();
 
       }//End loop over ophits
+
+
+
+
     }
 
 
@@ -190,23 +272,22 @@ namespace larlite {
     // If _use_mc,
     //Loop over simphotons and sum the total PE in the entire event
     else {
-      ///Read in simphotons (used as an alternative to compute some TTree variables)
-      auto ev_simph = storage->get_data<event_simphotons>("largeant");
-      if (!ev_simph) {
-        print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product simphotons!"));
-        return false;
-      }
-      if (ev_simph->empty()) {
-        print(larlite::msg::kERROR, __FUNCTION__, Form("simphotons exist but has zero size!"));
-        return false;
-      }
 
       //Reset ttree vars to initialization values
       n_reco_PE = 0;
       for (auto const& simph_v : *ev_simph) {
         if (simph_v.OpChannel() > 31) continue;
-        n_reco_PE += simph_v.size();
 
+        for (auto const& simph : simph_v) {
+
+          _debughist->Fill(simph.Time / 1000. - truth_part_arrival_time + trigger_time_us);
+
+          if (simph.Time / 1000. - truth_part_arrival_time + trigger_time_us < -_window_us_before_truth_part_time ||
+              simph.Time / 1000. - truth_part_arrival_time + trigger_time_us > _window_us_after_truth_part_time )
+            continue;
+
+          n_reco_PE ++;
+        }
       }
     }
 
@@ -250,6 +331,7 @@ namespace larlite {
         _fout->cd();
         _ana_tree->Write();
       }
+      ophit_tree->Write();
       _debughist->Write();
     }
 
@@ -266,10 +348,13 @@ namespace larlite {
 
   void TrigEffStudy::resetTTreeVars() {
     n_trigs = -1;
-    n_reco_PE = -1;
+    emulated_trigger_tick = -999999;
+    n_reco_PE = -9.e9;
     x_pos = -9.e9;
     pdg = -999999;
     energy = -9.e9;
+    energy_deposited = -9.e9;
+    nophit_over_nsimph = -9.e9;
     em_trig_minus_truth_particle_time_ns = -9.e9;
   }
 
@@ -277,11 +362,22 @@ namespace larlite {
     if (!_ana_tree) {
       _ana_tree = new TTree("ana_tree", "ana_tree");
       _ana_tree->Branch("n_trigs", &n_trigs, "n_trigs/I");
-      _ana_tree->Branch("n_reco_PE", &n_reco_PE, "n_reco_PE/I");
+      _ana_tree->Branch("emulated_trigger_tick", &emulated_trigger_tick, "emulated_trigger_tick/I");
+      _ana_tree->Branch("n_reco_PE", &n_reco_PE, "n_reco_PE/F");
       _ana_tree->Branch("x_pos", &x_pos, "x_pos/F");
       _ana_tree->Branch("pdg", &pdg, "pdg/I");
       _ana_tree->Branch("energy", &energy, "energy/F");
       _ana_tree->Branch("em_trig_minus_truth_particle_time_ns", &em_trig_minus_truth_particle_time_ns, "em_trig_minus_truth_particle_time_ns/F");
+      _ana_tree->Branch("nophit_over_nsimph", &nophit_over_nsimph, "nophit_over_nsimph/F");
+      _ana_tree->Branch("energy_deposited", &energy_deposited, "energy_deposited/F");
+    }
+
+    if (!ophit_tree) {
+      ophit_tree = new TTree("ophit_tree", "ophit_tree");
+      ophit_tree->Branch("ophit_peaktime", &ophit_peaktime, "ophit_peaktime/F");
+      ophit_tree->Branch("ftruth_part_arrival_time", &ftruth_part_arrival_time, "ftruth_part_arrival_time/F");
+      ophit_tree->Branch("ftrigger_time_us", &ftrigger_time_us, "ftrigger_time_us/F");
+      ophit_tree->Branch("femtrigger_time_us", &femtrigger_time_us, "femtrigger_time_us/F");
     }
 
   }

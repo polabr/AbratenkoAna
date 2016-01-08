@@ -40,6 +40,7 @@ namespace larlite {
       _window_us_before_truth_part_time = 0.01;
       _use_mc = true;
       _debughist = 0;
+      ophit_tree = 0;
     }
 
     /// Default destructor
@@ -81,11 +82,21 @@ namespace larlite {
     // Analysis ttree for efficiency plotting later
     TTree *_ana_tree;
     int n_trigs;
-    int n_reco_PE; //or, number of simphotons if _use_mc is true
+    int emulated_trigger_tick;
+    float n_reco_PE; //or, number of simphotons if _use_mc is true
     float x_pos;
     int pdg; //PDG of particle whose x_pos and energy are saved
     float energy; //Truth energy of particle whose x_pos is saved
     float em_trig_minus_truth_particle_time_ns; //Time difference between emulated trigger and actual particle arrival time
+    float nophit_over_nsimph;
+    float energy_deposited;
+
+    //debugging ophit tree
+    TTree *ophit_tree;
+    float ophit_peaktime;
+    float ftruth_part_arrival_time;
+    float ftrigger_time_us;
+    float femtrigger_time_us;
 
     // TTree functionality
     void resetTTreeVars();

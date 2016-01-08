@@ -2,7 +2,7 @@ import os, sys
 
 if len(sys.argv) < 3:
     msg  = '\n'
-    msg += "Usage: %s $INPUT_CFG_FILE $INPUT_ROOT_FILE(s)\n" % sys.argv[0]
+    msg += "Usage: %s $INPUT_CFG_FILE $INPUT_ROOT_FILE(s) $OUTPUT_ROOT_FILE\n" % sys.argv[0]
     msg += '\n'
     sys.stderr.write(msg)
     sys.exit(1)
@@ -27,21 +27,24 @@ if not apply_config(config,cfg_file):
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)):
+for x in xrange(len(sys.argv)-1):
     if x < 2: continue
+
     my_proc.add_input_file(sys.argv[x])
 
 # Specify IO mode
 my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify output root file name
-my_proc.set_ana_output_file("ana_out_TrigEffStudy.root");
+my_proc.set_ana_output_file(sys.argv[-1]);
 
 # Attach a template process
 mod = fmwk.TrigEffStudy()
 mod.setConfig(config)
-mod.setWindowPreTruthPartTime(0.01)
-mod.setWindowPostTruthPartTime(0.1) 
+#mod.setWindowPreTruthPartTime(0.01)
+#mod.setWindowPostTruthPartTime(0.1)
+mod.setWindowPreTruthPartTime(4.)
+mod.setWindowPostTruthPartTime(10.)  
 mod.setUseMC(False)
 my_proc.add_process(mod)
 
