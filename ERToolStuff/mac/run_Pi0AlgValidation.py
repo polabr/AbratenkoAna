@@ -12,7 +12,6 @@ from ROOT import gSystem
 from ROOT import larlite as fmwk
 from ROOT import ertool
 
-from seltool.primarycosmicDef import GetPrimaryCosmicFinderInstance
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
@@ -26,19 +25,11 @@ for x in xrange(len(sys.argv)-1):
 my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify output root file name
-my_proc.set_ana_output_file("cosmicValidation_ana_out.root")
-
-# primary cosmic algoithm 
-# this information is loaded from:
-# $LARLITE_BASEDIR/python/seltool/primarycosmicDef.py
-cosmicprimary_algo = GetPrimaryCosmicFinderInstance()
-cosmicsecondary_algo = ertool.ERAlgoCRSecondary()
-cosmicorphanalgo = ertool.ERAlgoCROrphan()
+my_proc.set_ana_output_file("pi0AlgValidation_ana_out.root")
 
 Ecut = 50 # in MeV
 
-cos_ana = ertool.ERAnaCosmicValidation()
-cos_ana.SetECut(Ecut)
+pi0ana = ertool.ERAnaPi0AlgValidation()
 
 main_anaunit = fmwk.ExampleERSelection()
 main_anaunit._mgr.ClearCfgFile()
@@ -47,25 +38,23 @@ main_anaunit._mgr.AddCfgFile(os.environ['LARLITE_USERDEVDIR']+'/SelectionTool/ER
 main_anaunit.SetShowerProducer(True,'mcreco')
 main_anaunit.SetTrackProducer(True,'mcreco')
 
-from seltool.trackDresserDef import GetTrackDresserInstance
-dresser = GetTrackDresserInstance()
-main_anaunit._mgr.AddAlgo(dresser)
+# Create algorithm
+my_algo = ertool.ERAlgopi0()
+my_algo.setMinMass(40.) #40
+my_algo.setMaxMass(220.) #220
+my_algo.setMaxIP(10.) #10
+my_algo.setMinShrEnergy(10.) #10
 
-main_anaunit._mgr.AddAlgo(cosmicprimary_algo)
-main_anaunit._mgr.AddAlgo(cosmicsecondary_algo)
-main_anaunit._mgr.AddAlgo(cosmicorphanalgo)
-
-main_anaunit._mgr.AddAna(cos_ana)
+main_anaunit._mgr.AddAlgo(my_algo)
+main_anaunit._mgr.AddAna(pi0ana)
 main_anaunit._mgr._profile_mode = True
 
 main_anaunit.SetMinEDep(Ecut)
 main_anaunit._mgr._mc_for_ana = True
 
-# my_proc.add_process(fmwk.MC_CCnue_Filter())
 my_proc.add_process(main_anaunit)
 
-# my_proc.run(32,1) #weird event in corsika noOB
-my_proc.run(0,1000)
+my_proc.run()
 
 # done!
 print

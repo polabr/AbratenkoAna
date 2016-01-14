@@ -11,6 +11,11 @@
 
 
 #pragma link C++ class ertool::ERAnaCosmicValidation+;
+#pragma link C++ class ertool::ERAnaPi0AlgValidation+;
+
+#pragma link C++ class ertool::ERAnaFlashMatchValidation+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
