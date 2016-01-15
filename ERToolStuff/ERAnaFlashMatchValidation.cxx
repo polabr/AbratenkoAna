@@ -49,9 +49,13 @@ namespace ertool {
 
     for (auto const& base_node_id : graph.GetBaseNodes() ) {
 
-      n_qclusters++;
-
       auto const& base_part = graph.GetParticle(base_node_id);
+
+      //To copy UBT0Finder, which only looks for matches to mctracks, ignore
+      //base particles that aren't kTrack
+      if(base_part.RecoType() != kTrack) continue;
+
+      n_qclusters++;
 
       auto flashID = base_part.FlashID();
 
@@ -59,8 +63,8 @@ namespace ertool {
         n_matched_flashes++;
         float flash_time = data.Flash(flashID)._t;
         float mc_time = 1.e-3 * data.Track(base_part)._time;
-        // std::cout << "Flash time is " << flash_time;
-        // std::cout << "MC time is " << mc_time;
+        // std::cout << "Flash time is " << flash_time
+        //           << "MC time is " << mc_time << "." << std::endl;
         _time_diff->Fill(1000 * (flash_time - mc_time));
       }
 
@@ -73,7 +77,7 @@ namespace ertool {
   {
 
     std::cout << "\nEfficiency (#matches/#interactions)  : "
-              << n_matched_flashes / n_qclusters * 100
+              << (float)n_matched_flashes / n_qclusters * 100
               << "%, (" << n_matched_flashes << "/"
               << n_qclusters << ")" << std::endl;
     std::cout << "Correctness (#good matches/#matches) : "

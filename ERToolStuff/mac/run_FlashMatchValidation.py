@@ -26,7 +26,7 @@ my_proc.set_ana_output_file("")
 
 # Create ERTool algorithm
 fm_algo = ertool.ERAlgoFlashMatch()
-fm_algo.Manager().Configure( "%s/SelectionTool/OpT0Finder/App/mac/flashmatch.fcl" % os.environ['LARLITE_USERDEVDIR'])
+
 # Copying configuration from flash_tagging.py
 # TPC Filter Algo
 fm_algo.Manager().SetAlgo(flashana.NPtFilter())
@@ -40,13 +40,16 @@ fm_algo.Manager().SetAlgo(flashana.PhotonLibHypothesis())
 #fm_algo.Manager().SetAlgo( flashana.QLLMatch.GetME() )
 fm_algo.Manager().SetAlgo( flashana.QWeightPoint()   )
 #fm_algo.Manager().SetAlgo( flashana.CommonAmps()      )
-
+fm_algo.Manager().Configure( "%s/SelectionTool/OpT0Finder/App/mac/flashmatch.fcl" % os.environ['LARLITE_USERDEVDIR'])
 
 # Create ERTool analysis
 my_ana = ertool.ERAnaFlashMatchValidation()
 
 # Create larlite interfce analysis unit for ERTool
 my_anaunit = fmwk.ExampleERSelection()
+#setDisableXShift(True) for cosmics. If cosmic gets shifted outside of cryostat, its QCluster will have 0 size
+#from lightpath module
+my_anaunit.setDisableXShift(True)
 
 # Set Producers
 # First Argument: True = MC, False = Reco
@@ -62,7 +65,7 @@ my_ana._mode =True # True = Select. False = Fill mode
 my_proc.add_process(my_anaunit)
 
 # run!
-my_proc.run()
+my_proc.run(0,1)
 
 # done!
 print
