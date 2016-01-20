@@ -5,9 +5,9 @@
 
 namespace ertool {
 
-  ERAnaFlashMatchValidation::ERAnaFlashMatchValidation(const std::string& name) : AnaBase(name)
+  ERAnaFlashMatchValidation::ERAnaFlashMatchValidation(const std::string& name) : AnaBase(name), _time_diff(nullptr)
   {
-    _time_diff = 0;
+//    _time_diff = 0;
   }
 
   void ERAnaFlashMatchValidation::Reset()
@@ -20,6 +20,7 @@ namespace ertool {
   {
 
     _time_diff = new TH1D("time_diff", "Matched Flash vs. MCTrack", 100, 0, 500);
+    // _time_diff = new TH1D("time_diff", "Matched Flash vs. MCTrack", 100, -5000000, 5000000);
 
     n_matched_flashes = 0;
     n_qclusters = 0;
@@ -39,21 +40,40 @@ namespace ertool {
 
     //We also need to fill the _time_diff histogram
     //which requires the mc time for each flash.
-    // _time_diff->Fill(1000 * (_flash_time - _mc_time));
+    // _time_diff->Fill(1000 * (flash_time - mc_time));
     //When a flash is found, get the root particle associated with it, grab the
     //mctrack associated with the root particle, and get the mc time from it
     //Since this code is designed to work for mctrack input, I will use the recoparticle
-    //graph to get the _mc_time, but if someone wants to run this with reco tracks, they
+    //graph to get the mc_time, but if someone wants to run this with reco tracks, they
     //will have to figure out how to find that track in the mcparticlegraph (nontrivial).
 
 
+    //Here is the output:
+//     Efficiency (#matches/#interactions)  : 59.6899%, (77/129)
+// Correctness (#good matches/#matches) : 20.7792%, (16/77)
+
+    // Let's try using MCParticleGraph to see the output
+    // Get MC particle set
+    auto const& mc_graph = MCParticleGraph();
+    // Get the MC data
+    auto const& mc_data = MCEventData();
+
+
+
     for (auto const& base_node_id : graph.GetBaseNodes() ) {
+      // for (auto const& base_node_id : mc_graph.GetBaseNodes() ) {
 
       auto const& base_part = graph.GetParticle(base_node_id);
+      // auto const& base_part = mc_graph.GetParticle(base_node_id);
 
       //To copy UBT0Finder, which only looks for matches to mctracks, ignore
       //base particles that aren't kTrack
-      if(base_part.RecoType() != kTrack) continue;
+      if (base_part.RecoType() != kTrack) continue;
+
+      // Not exactly sure what this means but I am copying what is done in MCQCluster
+      if (base_part.RecoType() == kTrack &&
+          (data.Track(base_part)._time < -2050000 || data.Track(base_part)._time > 2750000 ))
+        continue;
 
       n_qclusters++;
 
@@ -61,10 +81,13 @@ namespace ertool {
 
       if (flashID != kINVALID_FLASH_ID) {
         n_matched_flashes++;
-        float flash_time = data.Flash(flashID)._t;
-        float mc_time = 1.e-3 * data.Track(base_part)._time;
-        // std::cout << "Flash time is " << flash_time
-        //           << "MC time is " << mc_time << "." << std::endl;
+        double flash_time = data.Flash(flashID)._t;
+        double mc_time = 1.e-3 * data.Track(base_part)._time;
+        // double mc_time = 1.e-3 * mc_data.Track(base_part)._time;
+
+        if (mc_time < -2050 || mc_time > 2750)
+          continue;
+
         _time_diff->Fill(1000 * (flash_time - mc_time));
       }
 
@@ -85,6 +108,8 @@ namespace ertool {
               << "%, (" << _time_diff->Integral(1, 80) << "/"
               << n_matched_flashes << ")" << std::endl;
 
+    fout->cd();
+    _time_diff->Write();
 
   }
 
