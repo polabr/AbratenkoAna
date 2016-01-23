@@ -7,7 +7,7 @@ namespace ertool {
 
   ERAnaFlashMatchValidation::ERAnaFlashMatchValidation(const std::string& name) : AnaBase(name), _time_diff(nullptr)
   {
-//    _time_diff = 0;
+    _run_mode = kRUN_MODE_MAX;
   }
 
   void ERAnaFlashMatchValidation::Reset()
@@ -20,10 +20,12 @@ namespace ertool {
   {
 
     _time_diff = new TH1D("time_diff", "Matched Flash vs. MCTrack", 100, 0, 500);
-    // _time_diff = new TH1D("time_diff", "Matched Flash vs. MCTrack", 100, -5000000, 5000000);
 
     n_matched_flashes = 0;
     n_qclusters = 0;
+
+    if ( _run_mode == kRUN_MODE_MAX )
+      throw ertool::ERException(Form("Run Mode for ERAnaFlashMatchValidation not set. Use SetRunMode function."));
 
   }
 
@@ -42,29 +44,21 @@ namespace ertool {
     //which requires the mc time for each flash.
     // _time_diff->Fill(1000 * (flash_time - mc_time));
     //When a flash is found, get the root particle associated with it, grab the
-    //mctrack associated with the root particle, and get the mc time from it
+    //mctrack/mcshower associated with the root particle, and get the mc time from it
     //Since this code is designed to work for mctrack input, I will use the recoparticle
     //graph to get the mc_time, but if someone wants to run this with reco tracks, they
     //will have to figure out how to find that track in the mcparticlegraph (nontrivial).
 
 
-    // Let's try using MCParticleGraph to see the output
-    // Get MC particle set
-    auto const& mc_graph = MCParticleGraph();
-    // Get the MC data
-    auto const& mc_data = MCEventData();
-
-
-
     for (auto const& base_node_id : graph.GetBaseNodes() ) {
-      // for (auto const& base_node_id : mc_graph.GetBaseNodes() ) {
 
       auto const& base_part = graph.GetParticle(base_node_id);
-      // auto const& base_part = mc_graph.GetParticle(base_node_id);
 
       //To copy UBT0Finder, which only looks for matches to mctracks, ignore
       //base particles that aren't kTrack
-      if (base_part.RecoType() != kTrack) continue;
+      if ( ( _run_mode == kSingleMuons || _run_mode == kCosmics ) &&
+           base_part.RecoType() != kTrack )
+        continue;
 
       // Not exactly sure what this means but I am copying what is done in MCQCluster
       if (base_part.RecoType() == kTrack &&
@@ -76,19 +70,18 @@ namespace ertool {
       auto flashID = base_part.FlashID();
 
       if (flashID != kINVALID_FLASH_ID) {
+
         n_matched_flashes++;
         double flash_time = data.Flash(flashID)._t;
-        double mc_time = 1.e-3 * data.Track(base_part)._time;
+        double mc_time = base_part.RecoType() == kTrack ? 1.e-3 * data.Track(base_part)._time : 1.e-3 * data.Shower(base_part)._time;
         // std::cout << "Flash found .Track first point is " << data.Track(base_part).front() << std::endl;
         // std::cout << "Flash found .Track end point is is " << data.Track(base_part).back() << std::endl;
         // std::cout<<"mc and flash time for match : "<<mc_time<<", "<<flash_time<<std::endl;
         // std::cout<<"  -- mct start x is "<<data.Track(base_part).front().at(0)<<std::endl;
         // double mc_time = 1.e-3 * mc_data.Track(base_part)._time;
 
-        if (mc_time < -2050 || mc_time > 2750)
-          continue;
-
         _time_diff->Fill(1000 * (flash_time - mc_time));
+
       }
 
     }// End loop over BaseNodes

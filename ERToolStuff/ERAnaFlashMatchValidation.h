@@ -18,18 +18,25 @@
 #define ERTOOL_ERANAFLASHMATCHVALIDATION_H
 
 #include "ERTool/Base/AnaBase.h"
-// #include "TTree.h"
 #include "TH1.h"
 
 namespace ertool {
 
   /**
      \class ERAnaFlashMatchValidation
-     User custom Analysis class made by kazuhiro
+     User custom Analysis class made by kaleko
    */
   class ERAnaFlashMatchValidation : public AnaBase {
   
   public:
+
+    /// What sample you are validating flashmatch algo performance on
+    enum RunMode_t {
+      kSingleMuons,
+      kSingleElectrons,
+      kCosmics,
+      kRUN_MODE_MAX
+    };
 
     /// Default constructor
     ERAnaFlashMatchValidation(const std::string& name="ERAnaFlashMatchValidation");
@@ -52,37 +59,15 @@ namespace ertool {
     /// Called after processing the last event sample
     void ProcessEnd(TFile* fout=nullptr);
 
+    /// Set whether you are running on single mu, single e, or cosmics
+    void SetRunMode(RunMode_t runmode) { _run_mode = runmode; }
 
   private:
 
     size_t n_matched_flashes;
     size_t n_qclusters;
 
-
-   // TTree* _flashmatch_tree;
-   //  double _npe;
-   //  double _npts;
-   //  double _flash_x;
-   //  double _flash_y;
-   //  double _flash_z;
-   //  double _tpc_x;
-   //  double _tpc_y;
-   //  double _tpc_z;
-   //  double _score;
-   //  double _flash_time;
-   //  double _mc_time;
-   //  double _mc_x;
-   //  double _mc_y;
-   //  double _mc_z;
-   //  double _mc_dx;
-   //  double _mc_edep;
-   //  double _trk_shift;
-
-   //   TTree* _int_tree;
-   //  double _t0 ;
-   //  double _n_pe ;
-   //  double _int_e ;
-   //  double _n_flash ;
+    RunMode_t _run_mode;
 
     TH1D * _time_diff ;
 
