@@ -8,7 +8,8 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 import ROOT as rt
-#rt.gSystem.Load("libFEMemulator.so")
+rt.gSystem.Load("libFEMemulator.so")
+rt.gSystem.Load("libKalekoAna_SoftwareTrigger.so")
 from ROOT import fememu
 from ROOT import larlite as fmwk
 from fememu_pycfg import apply_config
