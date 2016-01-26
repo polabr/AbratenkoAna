@@ -40,6 +40,7 @@ my_proc.set_ana_output_file("flashmashvalidation_anaout.root")
 fm_algo = ertool.ERAlgoFlashMatch()
 # ERAlgoFlashMatch ignores showers if running on cosmics or single mus
 fm_algo.SetIgnoreShowers(myrunmode in ['cosmic', 'mu'])
+fm_algo.SetIgnoreCosmics(False)
 
 # Create larlite interfce analysis unit for ERTool
 my_anaunit = fmwk.ExampleERSelection()
