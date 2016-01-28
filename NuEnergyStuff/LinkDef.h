@@ -11,7 +11,6 @@
 
 #pragma link C++ class larlite::NuEnergyReco_mctruth+;
 #pragma link C++ class larlite::CheckGenieOutput+;
-#pragma link C++ class larlite::util::ECCQECalculator+;
 #pragma link C++ class larlite::NuEnergyReco_perfectreco+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
