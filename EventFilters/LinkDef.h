@@ -25,7 +25,7 @@
 #pragma link C++ class larlite::MC_NC_Filter+;
 #pragma link C++ class larlite::MC_cosmic_Filter+;
 #pragma link C++ class larlite::MC_dirt_Filter+;
-
+#pragma link C++ class larlite::MBLEESelectionFilter+;
 
 
 //ADD_NEW_CLASS ... do not change this line
