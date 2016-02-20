@@ -16,6 +16,8 @@ namespace larlite {
         _tree->Branch("flipped", &flipped, "flipped/O");
         _tree->Branch("nrecotracks", &nrecotracks, "nrecotracks/I");
         _tree->Branch("mclength", &mclength, "mclength/F");
+        _tree->Branch("mctheta", &mctheta, "mctheta/F");
+        _tree->Branch("mcphi", &mcphi, "mcphi/F");
         _tree->Branch("recolength", &recolength, "recolength/F");
         _tree->Branch("startptdiff", &startptdiff, "startptdiff/F");
         _tree->Branch("startanglediff", &startanglediff, "startanglediff/F");
@@ -44,6 +46,8 @@ namespace larlite {
         mcstart_x = -1.;
         mcstart_y = -1.;
         mcstart_z = -1.;
+        mctheta = -999.;
+        mcphi = -999.;
         recostart_x = -1.;
         recostart_y = -1.;
         recostart_z = -1.;
@@ -60,7 +64,7 @@ namespace larlite {
         }
 
         ///Read in reco tracks
-        auto ev_track = storage->get_data<event_track>("trackkalmanhit");
+        auto ev_track = storage->get_data<event_track>("recoemu");
         if (!ev_track) {
             print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
             return false;
@@ -74,6 +78,9 @@ namespace larlite {
         mcstart_x = mct.Start().Position().X();
         mcstart_y = mct.Start().Position().Y();
         mcstart_z = mct.Start().Position().Z();
+        mctheta = (mct.back().Position().Vect() - mct.front().Position().Vect()).Theta();
+        mcphi =  (mct.back().Position().Vect() - mct.front().Position().Vect()).Phi();
+
 
         if (!ev_track->size()) {
             print(larlite::msg::kERROR, __FUNCTION__, Form("track exists but has zero size!"));

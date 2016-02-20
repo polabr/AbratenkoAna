@@ -60,7 +60,8 @@ namespace larlite {
     int nrecotracks;
     float startptdiff;
     float startanglediff;
-
+    float mctheta;
+    float mcphi;
     float mcstart_x;
     float mcstart_y;
     float mcstart_z;
