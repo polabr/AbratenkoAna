@@ -20,17 +20,14 @@
 //#pragma link C++ class ertool::ERAnaLowEExcess+;
 //#pragma link C++ class ertool::ERAnaSimpleAna+;
 
-#pragma link C++ class larlite::MC_CCnue_Filter+;
-#pragma link C++ class larlite::MC_CCnumu_Filter+;
-#pragma link C++ class larlite::MC_NC_Filter+;
-#pragma link C++ class larlite::MC_cosmic_Filter+;
-#pragma link C++ class larlite::MC_dirt_Filter+;
 #pragma link C++ class larlite::MBLEESelectionFilter+;
 
 
+#pragma link C++ class larlite::CleanPi0Filter+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
+
 
 
 
