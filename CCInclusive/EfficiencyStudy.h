@@ -32,7 +32,13 @@ namespace larlite {
   public:
 
     /// Default constructor
-    EfficiencyStudy() { _name = "EfficiencyStudy"; _fout = 0; _tree = 0; }
+    EfficiencyStudy() { 
+      _name = "EfficiencyStudy"; 
+      _fout = 0; 
+      _vtx_tree = 0; 
+      _evt_tree = 0;
+      _flash_tree = 0;
+    }
 
     /// Default destructor
     virtual ~EfficiencyStudy() {}
@@ -45,11 +51,28 @@ namespace larlite {
 
   protected:
 
-    TTree *_tree;
+    // This tree is filled once per reconstructed neutrino vertex
+    TTree *_vtx_tree;
     double _dist_vtx_truth;
-    bool _is_truth_fiducial;
 
-    //Geometry algo instance
+    // This tree is filled once per art event
+    TTree *_evt_tree;
+    bool _is_truth_fiducial;
+    bool _is_numuCC;
+    bool _flash_in_bgw;
+    bool _is_areco_vtx_in_fidvol;
+    bool _is_atrack_fromvtx;
+    bool _longest_track_nearflash_z;
+    bool _longest_trk_contained;
+    bool _longest_trk_range_longenough;
+
+
+    // This tree is to debug flash timing and is filled once per flash
+    TTree *_flash_tree;
+    double _flash_time; //in us
+
+    //Geometry algo instances
+    geoalgo::GeoAlgo _geoAlgo;
     geoalgo::AABox _myGeoAABox;
   };
 }
