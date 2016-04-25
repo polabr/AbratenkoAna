@@ -13,15 +13,16 @@ namespace larlite {
 
     bool EfficiencyStudy::initialize() {
 
+        double fidvol_dist = 10.;
 
         //Box here is TPC
-        _myGeoAABox.Min( 0,
-                         -(::larutil::Geometry::GetME()->DetHalfHeight()),
-                         0);
+        _myGeoAABox.Min( 0 + fidvol_dist,
+                         -(::larutil::Geometry::GetME()->DetHalfHeight()) + fidvol_dist,
+                         0 + fidvol_dist);
 
-        _myGeoAABox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()),
-                         ::larutil::Geometry::GetME()->DetHalfHeight(),
-                         ::larutil::Geometry::GetME()->DetLength());
+        _myGeoAABox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist,
+                         ::larutil::Geometry::GetME()->DetHalfHeight() - fidvol_dist,
+                         ::larutil::Geometry::GetME()->DetLength() - fidvol_dist);
 
 
         if (!_vtx_tree) {
@@ -72,7 +73,7 @@ namespace larlite {
             return false;
         }
 
-        auto ev_track = storage->get_data<event_track>("pandoraNuKHit");
+        auto ev_track = storage->get_data<event_track>("pandoraNu");
         if (!ev_track) {
             print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
             return false;
@@ -109,7 +110,7 @@ namespace larlite {
                                           neutrino.Nu().Trajectory().at(0).Z());
 
         // 10cm fiducial volume
-        _is_truth_fiducial = _myGeoAABox.Contain(nustart) && _geoAlgo.SqDist(_myGeoAABox, nustart) > 100.;
+        _is_truth_fiducial = _myGeoAABox.Contain(nustart);
 
         // Loop over vertices.
         // For each vertex in fiducial volume, loop over reco tracks
@@ -122,7 +123,7 @@ namespace larlite {
             _dist_vtx_truth = vertex.Dist(nustart);
             _vtx_tree->Fill();
 
-            if (_myGeoAABox.Contain(vertex) && _geoAlgo.SqDist(_myGeoAABox, vertex) > 100.)
+            if (_myGeoAABox.Contain(vertex))
                 _is_areco_vtx_in_fidvol = true;
 
             for (auto const& trk : *ev_track) {
@@ -142,9 +143,9 @@ namespace larlite {
             }
         }
 
-        if(longest_trk_len > 0)
-        _longest_trk_contained = _myGeoAABox.Contain(::geoalgo::Vector(longest_track.Vertex())) &&
-                                 _myGeoAABox.Contain(::geoalgo::Vector(longest_track.End()));
+        if (longest_trk_len > 0)
+            _longest_trk_contained = _myGeoAABox.Contain(::geoalgo::Vector(longest_track.Vertex())) &&
+                                     _myGeoAABox.Contain(::geoalgo::Vector(longest_track.End()));
 
         _longest_trk_range_longenough = longest_trk_len > 75.;
 

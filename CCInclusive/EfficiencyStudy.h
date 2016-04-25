@@ -73,6 +73,7 @@ namespace larlite {
 
     //Geometry algo instances
     geoalgo::GeoAlgo _geoAlgo;
+    // Fiducial volume box
     geoalgo::AABox _myGeoAABox;
   };
 }
