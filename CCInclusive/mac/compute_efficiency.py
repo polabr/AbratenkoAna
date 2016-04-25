@@ -12,7 +12,10 @@ from root_numpy import root2array
 
 df = pd.DataFrame( root2array( infile, 'evttree' ) )
 
-cuts = "is_truth_fiducial and is_numuCC and flash_in_bgw and is_areco_vtx_in_fidvol and is_atrack_fromvtx and longest_trk_contained and longest_trk_range_longenough"
+cuts = "flash_in_bgw and is_areco_vtx_in_fidvol and is_atrack_fromvtx and longest_trk_contained and longest_trk_range_longenough"
+
+if issignalsample:
+    cuts += ' and is_truth_fiducial and is_numuCC'
 
 nocuts = "is_truth_fiducial and is_numuCC"
 
