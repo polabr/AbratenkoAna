@@ -21,6 +21,9 @@
 #include "GeoAlgo/GeoVector.h"
 #include "GeoAlgo/GeoAABox.h"
 #include "LArUtil/Geometry.h"
+#include "DataFormat/track.h"
+#include "MuTrackMomentumSpline.h"
+#include "CCQECalc.h"
 
 namespace larlite {
   /**
@@ -49,6 +52,8 @@ namespace larlite {
 
     virtual bool finalize();
 
+    double flashDistZ(const track &longest_track, const double flash_z);
+
   protected:
 
     // This tree is filled once per reconstructed neutrino vertex
@@ -65,8 +70,17 @@ namespace larlite {
     bool _longest_track_nearflash_z;
     bool _longest_trk_contained;
     bool _longest_trk_range_longenough;
+    bool _longest_trk_start_near_truth_nu;
+    double _dist_trk_flash;
+    bool _passes_all_cuts;
 
 
+    double _true_nu_E;
+    double _ccqe_nu_E;
+    double _true_mu_E;
+    double _reco_mu_E;
+
+    
     // This tree is to debug flash timing and is filled once per flash
     TTree *_flash_tree;
     double _flash_time; //in us
@@ -75,6 +89,9 @@ namespace larlite {
     geoalgo::GeoAlgo _geoAlgo;
     // Fiducial volume box
     geoalgo::AABox _myGeoAABox;
+
+    MuTrackMomentumSpline *myspline;
+    CCQECalc *mycalc;
   };
 }
 #endif

@@ -12,15 +12,39 @@ from root_numpy import root2array
 
 df = pd.DataFrame( root2array( infile, 'evttree' ) )
 
-cuts = "flash_in_bgw and is_areco_vtx_in_fidvol and is_atrack_fromvtx and longest_trk_contained and longest_trk_range_longenough"
+print "Total number of events analyzed: ",len(df)
+
+cuts = []
 
 if issignalsample:
-    cuts += ' and is_truth_fiducial and is_numuCC'
+    cuts.append('is_truth_fiducial')
+    cuts.append('is_numuCC')
+    
+
+cuts.append('flash_in_bgw')
+cuts.append('is_areco_vtx_in_fidvol')
+cuts.append('is_atrack_fromvtx')
+cuts.append('longest_track_nearflash_z')
+cuts.append('longest_trk_contained')
+cuts.append('longest_trk_range_longenough')
+
+
+if issignalsample:
+	cuts.append('longest_trk_start_near_truth_nu')
 
 nocuts = "is_truth_fiducial and is_numuCC"
 
-num = float(len(df.query(cuts)))
+mycut = ''
+for x in xrange(len(cuts)):
+    if not x:
+        mycut += cuts[x]
+    else:
+        mycut += ' and %s' % cuts[x]
+    print 'After applying cut on %s, %d events remain.' % (cuts[x],len(df.query(mycut)))
+
+
+num = float(len(df.query(mycut)))
 
 denom = len(df) if not issignalsample else len(df.query(nocuts))
 
-print "Efficiency: %d/%d = %0.2f%%" % (num,denom,100*(num/denom))
+print "Total Efficiency: %d/%d = %0.2f%%" % (num,denom,100*(num/denom))

@@ -10,6 +10,10 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::EfficiencyStudy+;
+#pragma link C++ class larlite::MuTrackMomentumSpline+;
+#pragma link C++ class larlite::CCQECalc+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
