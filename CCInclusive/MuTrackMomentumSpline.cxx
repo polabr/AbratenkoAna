@@ -28,7 +28,10 @@ namespace larlite {
 	}
 
 	double MuTrackMomentumSpline::GetMuMomentum(const double muon_range_cm) {
-		return KEvsR_spline3->Eval(muon_range_cm);
+		double argon_density = 1.396; //g/cm^3
+		// input to spline should be grams per cm^2
+		// take range in cm and multiply by argon_density
+		return KEvsR_spline3->Eval(muon_range_cm*argon_density);
 	}
 
 
