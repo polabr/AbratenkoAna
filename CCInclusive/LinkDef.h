@@ -14,8 +14,12 @@
 #pragma link C++ class larlite::CCQECalc+;
 #pragma link C++ class larlite::TestCCQECalc+;
 #pragma link C++ class larlite::TestSpline+;
+#pragma link C++ class larlite::EventSelector+;
+#pragma link C++ class larlite::TestKinematicNuReco+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
 
 
