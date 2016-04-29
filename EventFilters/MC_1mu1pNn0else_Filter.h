@@ -1,9 +1,9 @@
 /**
- * \file CleanPi0Filter.h
+ * \file MC_1mu1pNn0else_Filter.h
  *
  * \ingroup EventFilters
  * 
- * \brief Class def header for a class CleanPi0Filter
+ * \brief Class def header for a class MC_1mu1pNn0else_Filter
  *
  * @author davidkaleko
  */
@@ -12,45 +12,46 @@
 
     @{*/
 
-#ifndef LARLITE_CLEANPI0FILTER_H
-#define LARLITE_CLEANPI0FILTER_H
+#ifndef LARLITE_MC_1MU1PNN0ELSE_FILTER_H
+#define LARLITE_MC_1MU1PNN0ELSE_FILTER_H
 
 #include "Analysis/ana_base.h"
 
 namespace larlite {
   /**
-     \class CleanPi0Filter
+     \class MC_1mu1pNn0else_Filter
      User custom analysis class made by SHELL_USER_NAME
    */
-  class CleanPi0Filter : public ana_base{
+  class MC_1mu1pNn0else_Filter : public ana_base{
   
   public:
 
     /// Default constructor
-    CleanPi0Filter(){ _name="CleanPi0Filter"; _fout=0;}
+    MC_1mu1pNn0else_Filter(){ _name="MC_1mu1pNn0else_Filter"; _fout=0;}
 
     /// Default destructor
-    virtual ~CleanPi0Filter(){}
+    virtual ~MC_1mu1pNn0else_Filter(){}
 
-    /** IMPLEMENT in CleanPi0Filter.cc!
+    /** IMPLEMENT in MC_1mu1pNn0else_Filter.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in CleanPi0Filter.cc! 
+    /** IMPLEMENT in MC_1mu1pNn0else_Filter.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in CleanPi0Filter.cc! 
+    /** IMPLEMENT in MC_1mu1pNn0else_Filter.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
   protected:
     
-    size_t n_total_evts;
-    size_t n_kept_events;
+
+    size_t total_events;
+    size_t kept_events;
     
   };
 }
