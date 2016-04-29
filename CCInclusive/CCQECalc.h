@@ -19,6 +19,7 @@
 #include <iostream>
 #include <math.h> //pow
 #include "TMath.h"
+#include "TVector3.h"
 
 /**
    \class CCQECalc
@@ -39,6 +40,8 @@ namespace larlite{
       /// Method using manually-input energy (IE if you smear energy first)
       /// Energy should be in MeV, direction can be (doesn't have to be) unit-normalized
       double ComputeECCQE(double energy, const std::vector<double> &lepton_dir, bool is_electron = true);
+
+      double ComputeECCQE(double energy, const TVector3 &lepton_dir, bool is_electron = true);
 
 
     };
