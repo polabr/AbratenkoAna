@@ -16,8 +16,10 @@
 #pragma link C++ class larlite::TestSpline+;
 #pragma link C++ class larlite::EventSelector+;
 #pragma link C++ class larlite::TestKinematicNuReco+;
+#pragma link C++ class larlite::XiaoEventSelector+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 
