@@ -18,6 +18,7 @@
 #include "Analysis/ana_base.h"
 #include "TTree.h"
 #include "TVector3.h"
+#include "CCQECalc.h"
 
 namespace larlite {
   /**
@@ -42,8 +43,15 @@ namespace larlite {
     void resetTTreeVars();
     TTree* _tree;
     double _true_nu_E;
-    double _reco_nu_E;
+    double _reco_nu_E_frompp;
     double _plane_Z_anglediff;
+    double _true_mu_E;
+    double _reco_mu_E;
+    double _reco_nu_E_frommuE;
+    double _reco_CCQE_E;
+
+
+    CCQECalc *mycalc;
   };
 }
 #endif

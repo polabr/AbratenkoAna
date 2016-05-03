@@ -10,16 +10,27 @@ namespace larlite {
     bool TestKinematicNuReco::initialize() {
 
         if (!_tree) {
+            std::cout << "poop fart" << std::endl;
             _tree = new TTree("tree", "tree");
             _tree->Branch("true_nu_E", &_true_nu_E, "true_nu_E/D");
-            _tree->Branch("reco_nu_E", &_reco_nu_E, "reco_nu_E/D");
+            _tree->Branch("reco_nu_E_frompp", &_reco_nu_E_frompp, "reco_nu_E_frompp/D");
             _tree->Branch("plane_Z_anglediff", &_plane_Z_anglediff, "plane_Z_anglediff/D");
+            _tree->Branch("true_mu_E", &_true_mu_E, "true_mu_E/D");
+            _tree->Branch("reco_mu_E", &_reco_mu_E, "reco_mu_E/D");
+            _tree->Branch("reco_nu_E_frommuE", &_reco_nu_E_frommuE, "reco_nu_E_frommuE/D");
+            _tree->Branch("reco_CCQE_E", &_reco_CCQE_E, "reco_CCQE_E/D");
         }
+        
 
+        mycalc = new CCQECalc();
         return true;
     }
 
     bool TestKinematicNuReco::analyze(storage_manager* storage) {
+
+        resetTTreeVars();
+
+        double mumass_MEV = 105.6583715;
 
         auto ev_mctruth = storage->get_data<event_mctruth>("generator");
         if (!ev_mctruth) {
@@ -43,17 +54,23 @@ namespace larlite {
 
         _true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
 
+        double prot_depE = 0.;
+
         TVector3 muvec;
         TVector3 pvec;
 
         for (auto const& mct : *ev_mctrack) {
-            
-            if(!mct.size()) continue;
 
-            if (mct.PdgCode() == 13)
+            if (!mct.size()) continue;
+
+            if (mct.PdgCode() == 13) {
                 muvec = mct.front().Momentum().Vect();
-            else if (mct.PdgCode() == 2212)
+                _true_mu_E = mct.front().E();
+            }
+            else if (mct.PdgCode() == 2212) {
                 pvec = mct.front().Momentum().Vect();
+                prot_depE = mct.front().E() - mct.back().E();
+            }
             else {
                 print(larlite::msg::kWARNING, __FUNCTION__, Form("Found a mctrack that wasn't p or mu!"));
                 return false;
@@ -66,22 +83,30 @@ namespace larlite {
         }
 
         TVector3 cross = muvec.Cross(pvec);
-        TVector3 zdir(0,0,1.);
+        TVector3 zdir(0, 0, 1.);
 
-        _plane_Z_anglediff = cross.Angle(zdir) * (180./3.14159265);
+        _plane_Z_anglediff = cross.Angle(zdir) * (180. / 3.14159265);
 
         double thetamu = muvec.Angle(zdir);
         double thetap  = pvec.Angle(zdir);
 
-        _reco_nu_E = ( pvec*(sin(thetap)/tan(thetamu) + cos(thetap)) ).Mag() / 1000.;
+        _reco_nu_E_frompp = ( pvec * (sin(thetap) / tan(thetamu) + cos(thetap)) ).Mag() / 1000.;
+
+        double reco_mu_p = pvec.Mag() * sin(thetap) / sin(thetamu);
+        _reco_mu_E = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
+
+        _reco_nu_E_frommuE = (_reco_mu_E + prot_depE) / 1000.;
+
+        _reco_CCQE_E = mycalc->ComputeECCQE((_reco_mu_E + mumass_MEV), muvec, false);
 
         _tree->Fill();
+
         return true;
     }
 
     bool TestKinematicNuReco::finalize() {
 
-        if(_fout){
+        if (_fout) {
             _fout->cd();
             _tree->Write();
         }
@@ -91,8 +116,12 @@ namespace larlite {
 
     void TestKinematicNuReco::resetTTreeVars() {
         _true_nu_E = -999.;
-        _reco_nu_E = -999.;
+        _reco_nu_E_frompp = -999.;
         _plane_Z_anglediff = -999.;
+        _true_mu_E = -999.;
+        _reco_mu_E = -999.;
+        _reco_nu_E_frommuE = -999.;
+        _reco_CCQE_E = -999.;
     }
 
 }
