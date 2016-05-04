@@ -25,7 +25,6 @@
 
 #pragma link C++ class larlite::CleanPi0Filter+;
 #pragma link C++ class larlite::MCShowersContainedFilter+;
-#pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
 //ADD_NEW_CLASS ... do not change this line
 
 #endif
