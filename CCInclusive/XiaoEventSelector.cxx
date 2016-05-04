@@ -3,6 +3,7 @@
 
 #include "XiaoEventSelector.h"
 #include "DataFormat/opflash.h"
+#include "DataFormat/mctruth.h"
 
 
 namespace larlite {
@@ -26,7 +27,7 @@ namespace larlite {
 
         _hmult = new TH1F("hmult", "Track Multiplicity", 10, -0.5, 9.5);
         _hdedx = new TH2D("hdedx", "End dEdx vs Start dEdx;End dEdx;Start dEdx", 50, 0, 20, 50, 0, 20);
-
+        _hcorrect_ID = new TH1F("hcorrectID", "Was Neutrino Vtx Correctly Identified?", 2, -0.5, 1.5);
         return true;
     }
 
@@ -60,15 +61,6 @@ namespace larlite {
             print(larlite::msg::kERROR, __FUNCTION__, Form("opflash size is zero!"));
             return false;
         }
-        // auto ev_calo = storage->get_data<event_calorimetry>("pandoraNuPMAcalo");
-        // if (!ev_calo) {
-        //     print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, calorimetry!"));
-        //     return false;
-        // }
-        // if (!ev_calo->size()) {
-        //     print(larlite::msg::kERROR, __FUNCTION__, Form("Zero reconstructed calorimetry objects in this event!"));
-        //     return false;
-        // }
         event_calorimetry* ev_calo = nullptr;
         auto const& ass_calo_v = storage->find_one_ass(ev_track->id(),
                                  ev_calo,
@@ -83,6 +75,7 @@ namespace larlite {
             std::cout << "ev_calo empty" << std::endl;
             return false;
         }
+
 
 
         // Loop over flashes, store the brightest flash in the BGW
@@ -107,6 +100,7 @@ namespace larlite {
         // Also keep track of multiplicities
         // Keep track of number of vertices that pass all cuts
         size_t n_viable_vertices = 0;
+        ::geoalgo::Sphere thevertexsphere(0, 0, 0, 3.);
         for (auto const& vtx : *ev_vtx) {
 
             // Make a 3cm geosphere around the vertex
@@ -148,8 +142,10 @@ namespace larlite {
                                  associated_track_idx_vec,
                                  ev_track,
                                  ev_calo,
-                                 ass_calo_v))
+                                 ass_calo_v)) {
                     n_viable_vertices++;
+                    thevertexsphere.Center(vtx_sphere.Center());
+                }
 
             }// End mult == 2
 
@@ -160,6 +156,23 @@ namespace larlite {
         // If this event doesn't contain any possible neutrino vertices that pass cuts
         // Or if it contains several, throw that out too! (KALEKO)
         if (!n_viable_vertices || n_viable_vertices > 1) return false;
+
+        // If we found a vertex and we are running over MC, let's check if it is accurate
+        if (!_running_on_data) {
+            auto ev_mctruth = storage->get_data<event_mctruth>("generator");
+            if (!ev_mctruth) {
+                print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, mctruth!"));
+                return false;
+            }
+            if (ev_mctruth->size() != 1) {
+                print(larlite::msg::kERROR, __FUNCTION__, Form("MCTruth size doesn't equal one!"));
+                return false;
+            }
+            std::cout << "The reconstructed vertex is at : " << thevertexsphere.Center() << std::endl;
+            std::cout << "The true vertex is at : "
+                      <<::geoalgo::Vector(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()) << std::endl;
+            _hcorrect_ID->Fill(thevertexsphere.Contain(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()));
+        }
 
         passed_events++;
         return true;
@@ -301,6 +314,7 @@ namespace larlite {
             _fout->cd();
             _hmult->Write();
             _hdedx->Write();
+            _hcorrect_ID->Write();
         }
 
         return true;

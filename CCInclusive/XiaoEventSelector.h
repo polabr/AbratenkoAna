@@ -44,7 +44,14 @@ namespace larlite {
   public:
 
     /// Default constructor
-    XiaoEventSelector() { _name = "XiaoEventSelector"; _fout = 0; _hmult = 0; _hdedx = 0;}
+    XiaoEventSelector() { 
+      _name = "XiaoEventSelector"; 
+    _fout = 0;
+     _hmult = 0; 
+     _hdedx = 0;
+     _hcorrect_ID = 0;
+     _running_on_data = false;
+   }
 
     /// Default destructor
     virtual ~XiaoEventSelector() {}
@@ -54,6 +61,8 @@ namespace larlite {
     virtual bool analyze(storage_manager* storage);
 
     virtual bool finalize();
+
+    void setRunningOnData(bool flag) { _running_on_data = flag; }
 
   protected:
 
@@ -81,6 +90,10 @@ namespace larlite {
 
     TH1F *_hmult;
     TH2D *_hdedx;
+    TH1F *_hcorrect_ID;
+
+    bool _running_on_data;
+
 
   };
 }
