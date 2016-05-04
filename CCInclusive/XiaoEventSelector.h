@@ -33,6 +33,7 @@
 #include "LArUtil/Geometry.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TTree.h"
 
 namespace larlite {
   /**
@@ -51,6 +52,7 @@ namespace larlite {
      _hdedx = 0;
      _hcorrect_ID = 0;
      _running_on_data = false;
+     _tree = 0;
    }
 
     /// Default destructor
@@ -80,6 +82,8 @@ namespace larlite {
 
     ::geoalgo::Sphere getVertexSphere(const vertex &vtx);
 
+    void resetTTreeVars();
+    
     size_t total_events;
     size_t passed_events;
     double fidvol_dist;
@@ -93,6 +97,19 @@ namespace larlite {
     TH1F *_hcorrect_ID;
 
     bool _running_on_data;
+
+
+    TTree *_tree;
+    double _mu_start_dedx;
+    double _mu_end_dedx;
+    bool   _correct_ID;
+    // double _mu_phi;
+    // double _p_phi;
+    // double _mu_contained;
+    double _true_nu_E;
+    int    _true_nu_pdg;
+
+
 
 
   };

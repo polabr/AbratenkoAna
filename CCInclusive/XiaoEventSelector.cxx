@@ -28,11 +28,39 @@ namespace larlite {
         _hmult = new TH1F("hmult", "Track Multiplicity", 10, -0.5, 9.5);
         _hdedx = new TH2D("hdedx", "End dEdx vs Start dEdx;End dEdx;Start dEdx", 50, 0, 20, 50, 0, 20);
         _hcorrect_ID = new TH1F("hcorrectID", "Was Neutrino Vtx Correctly Identified?", 2, -0.5, 1.5);
+
+
+        if (!_tree) {
+            _tree = new TTree("tree", "tree");
+            _tree->Branch("true_nu_pdg", &_true_nu_pdg, "true_nu_pdg/I");
+            _tree->Branch("true_nu_E", &_true_nu_E, "true_nu_E/D");
+            // _tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
+            // _tree->Branch("p_phi", &_p_phi, "p_phi/D");
+            // _tree->Branch("mu_phi", &_mu_phi, "mu_phi/D");
+            _tree->Branch("correct_ID", &_correct_ID, "correct_ID/O");
+            _tree->Branch("mu_end_dedx", &_mu_end_dedx, "mu_end_dedx/D");
+            _tree->Branch("mu_start_dedx", &_mu_start_dedx, "mu_start_dedx/D");
+        }
         return true;
     }
 
+    void XiaoEventSelector::resetTTreeVars() {
+        _mu_start_dedx = -999.;
+        _mu_end_dedx = -999.;
+        _correct_ID = false;
+        // _mu_phi = -999.;
+        // _p_phi = -999.;
+        // _mu_contained = false;
+        _true_nu_E = -999.;
+        _true_nu_pdg = -999;
+    }
+
     bool XiaoEventSelector::analyze(storage_manager* storage) {
+
         total_events++;
+
+        resetTTreeVars();
+
         auto ev_vtx = storage->get_data<event_vertex>("pmtrack");
         if (!ev_vtx) {
             print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, vertex!"));
@@ -114,7 +142,7 @@ namespace larlite {
             // Loop over tracks, store index of the ones associated with this vertex
             std::vector<size_t> associated_track_idx_vec;
             associated_track_idx_vec.clear();
-            bool _at_least_one_track_matches_flash;
+            bool _at_least_one_track_matches_flash = false;
 
             for (size_t i = 0; i < ev_track->size(); ++i) {
                 auto const trk = ev_track->at(i);
@@ -168,12 +196,16 @@ namespace larlite {
                 print(larlite::msg::kERROR, __FUNCTION__, Form("MCTruth size doesn't equal one!"));
                 return false;
             }
-            std::cout << "The reconstructed vertex is at : " << thevertexsphere.Center() << std::endl;
-            std::cout << "The true vertex is at : "
-                      <<::geoalgo::Vector(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()) << std::endl;
-            _hcorrect_ID->Fill(thevertexsphere.Contain(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()));
+            // std::cout << "The reconstructed vertex is at : " << thevertexsphere.Center() << std::endl;
+            // std::cout << "The true vertex is at : "
+            //           <<::geoalgo::Vector(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()) << std::endl;
+            _true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
+            _true_nu_pdg = ev_mctruth->at(0).GetNeutrino().Nu().PdgCode();
+            _correct_ID = thevertexsphere.Contain(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position());
+            _hcorrect_ID->Fill(_correct_ID);
         }
 
+        _tree->Fill();
         passed_events++;
         return true;
     }
@@ -288,6 +320,8 @@ namespace larlite {
                 short_trk.Length() < 30. )
             return true;
 
+        _mu_start_dedx = vertex_dedx;
+        _mu_end_dedx = far_dedx;
         return false;
     }
 
@@ -315,6 +349,7 @@ namespace larlite {
             _hmult->Write();
             _hdedx->Write();
             _hcorrect_ID->Write();
+            _tree->Write();
         }
 
         return true;
