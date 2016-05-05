@@ -45,15 +45,15 @@ namespace larlite {
   public:
 
     /// Default constructor
-    XiaoEventSelector() { 
-      _name = "XiaoEventSelector"; 
-    _fout = 0;
-     _hmult = 0; 
-     _hdedx = 0;
-     _hcorrect_ID = 0;
-     _running_on_data = false;
-     _tree = 0;
-   }
+    XiaoEventSelector() {
+      _name = "XiaoEventSelector";
+      _fout = 0;
+      _hmult = 0;
+      _hdedx = 0;
+      _hcorrect_ID = 0;
+      _running_on_data = false;
+      _tree = 0;
+    }
 
     /// Default destructor
     virtual ~XiaoEventSelector() {}
@@ -68,6 +68,11 @@ namespace larlite {
 
   protected:
 
+    std::pair<larlite::vertex, std::vector<larlite::track> > findNeutrino(const event_track *ev_track,
+        const event_calorimetry *ev_calo,
+        const larlite::AssSet_t & ass_calo_v,
+        const event_vertex *ev_vtx,
+        const event_opflash *ev_flash);
 
     double flashDistZ(const track &longest_track, const double flash_z);
 
@@ -83,7 +88,7 @@ namespace larlite {
     ::geoalgo::Sphere getVertexSphere(const vertex &vtx);
 
     void resetTTreeVars();
-    
+
     size_t total_events;
     size_t passed_events;
     double fidvol_dist;
@@ -103,9 +108,9 @@ namespace larlite {
     double _mu_start_dedx;
     double _mu_end_dedx;
     bool   _correct_ID;
-    // double _mu_phi;
-    // double _p_phi;
-    // double _mu_contained;
+    double _mu_phi;
+    double _p_phi;
+    double _mu_contained;
     double _true_nu_E;
     int    _true_nu_pdg;
 

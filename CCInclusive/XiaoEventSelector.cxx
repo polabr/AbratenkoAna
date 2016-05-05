@@ -34,9 +34,9 @@ namespace larlite {
             _tree = new TTree("tree", "tree");
             _tree->Branch("true_nu_pdg", &_true_nu_pdg, "true_nu_pdg/I");
             _tree->Branch("true_nu_E", &_true_nu_E, "true_nu_E/D");
-            // _tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
-            // _tree->Branch("p_phi", &_p_phi, "p_phi/D");
-            // _tree->Branch("mu_phi", &_mu_phi, "mu_phi/D");
+            _tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
+            _tree->Branch("p_phi", &_p_phi, "p_phi/D");
+            _tree->Branch("mu_phi", &_mu_phi, "mu_phi/D");
             _tree->Branch("correct_ID", &_correct_ID, "correct_ID/O");
             _tree->Branch("mu_end_dedx", &_mu_end_dedx, "mu_end_dedx/D");
             _tree->Branch("mu_start_dedx", &_mu_start_dedx, "mu_start_dedx/D");
@@ -48,9 +48,9 @@ namespace larlite {
         _mu_start_dedx = -999.;
         _mu_end_dedx = -999.;
         _correct_ID = false;
-        // _mu_phi = -999.;
-        // _p_phi = -999.;
-        // _mu_contained = false;
+        _mu_phi = -999.;
+        _p_phi = -999.;
+        _mu_contained = false;
         _true_nu_E = -999.;
         _true_nu_pdg = -999;
     }
@@ -105,85 +105,32 @@ namespace larlite {
         }
 
 
-
-        // Loop over flashes, store the brightest flash in the BGW
-        opflash theflash;
-        bool _flash_in_bgw = false;
-        for (auto const& flash : *ev_opflash) {
-
-            if (flash.Time() > 3.55 && flash.Time() < 5.15 && flash.TotalPE() > 50.) {
-                _flash_in_bgw = true;
-                // Keep track of the brightest flash in the BGW
-                if (flash.TotalPE() > theflash.TotalPE())
-                    theflash = flash;
-            }
+        // Try to find a neutrino vertex in this event... return a reco vertex,
+        // and a std::vector (length two) of tracks that are associated with that vertex
+        std::pair<larlite::vertex, std::vector<larlite::track> > reco_neutrino;
+        try {
+            reco_neutrino = findNeutrino(ev_track, ev_calo, ass_calo_v, ev_vtx, ev_opflash);
         }
-        // Require there is at least one >50 PE flash inside of BGW
-        if (!_flash_in_bgw) return false;
+        catch (...) {
+            return false;
+        }
 
+        if (reco_neutrino.second.size() != 2) {
+            print(larlite::msg::kERROR, __FUNCTION__, Form("uhhh why does reco neutrino ahve more than 2 tracks associated with it"));
+            return false;
+        }
 
-        // Loop over vertices.
-        // For each vertex in fiducial volume, loop over reco tracks
-        // If you find a reco track starting or ending w/in 3cm from the vertex
-        // Also keep track of multiplicities
-        // Keep track of number of vertices that pass all cuts
-        size_t n_viable_vertices = 0;
-        ::geoalgo::Sphere thevertexsphere(0, 0, 0, 3.);
-        for (auto const& vtx : *ev_vtx) {
+        // Now that we found a neutrino interaction, let's pick which track is the muon and which is the proton
+        // then store some ttree variables about each
+        auto const &mutrack = reco_neutrino.second.at(0).Length() > reco_neutrino.second.at(1).Length() ?
+                              reco_neutrino.second.at(0)          : reco_neutrino.second.at(1);
+        auto const &ptrack  = reco_neutrino.second.at(0).Length() > reco_neutrino.second.at(1).Length() ?
+                              reco_neutrino.second.at(1)          : reco_neutrino.second.at(0);
 
-            // Make a 3cm geosphere around the vertex
-            ::geoalgo::Sphere vtx_sphere = getVertexSphere(vtx);
-
-            // std::cout<<"Centering sphere! Center is now "<<vtx_sphere.Center()<<std::endl;
-
-            // Make sure vertex is in fiducial volume
-            if (!_fidvolBox.Contain(vtx_sphere.Center())) continue;
-
-            // Loop over tracks, store index of the ones associated with this vertex
-            std::vector<size_t> associated_track_idx_vec;
-            associated_track_idx_vec.clear();
-            bool _at_least_one_track_matches_flash = false;
-
-            for (size_t i = 0; i < ev_track->size(); ++i) {
-                auto const trk = ev_track->at(i);
-
-                if ( trackAssociatedWithVtx(trk, vtx_sphere) ) {
-                    associated_track_idx_vec.push_back(i);
-
-                    if ( flashDistZ(trk, theflash.ZCenter()) < 70. )
-                        _at_least_one_track_matches_flash = true;
-                }
-
-            } //done looping over tracks
-
-            // Require at least one vertex-associated track matches the BGW flash
-            // (and, in there too is that there exists at least 1 such track)
-            // KALEKO: requiring == 2 tracks coming from vertex to explore
-            // possible CCQE phase space. This is different from Xiao!
-
-            if (_at_least_one_track_matches_flash &&
-                    associated_track_idx_vec.size() == 2) { //_mult == 2) {
-
-                // Now we have a vertex (vtx) that has exactly two tracks associated with it
-                // Let's do some michel removal!
-                if (!isMichelMID(vtx_sphere,
-                                 associated_track_idx_vec,
-                                 ev_track,
-                                 ev_calo,
-                                 ass_calo_v)) {
-                    n_viable_vertices++;
-                    thevertexsphere.Center(vtx_sphere.Center());
-                }
-
-            }// End mult == 2
-
-            _hmult->Fill(associated_track_idx_vec.size());
-
-        } //done looping over vertices
-
-        // If this event doesn't contain any possible neutrino vertices that pass cuts
-        // Or if it contains several, throw that out too! (KALEKO)
-        if (!n_viable_vertices || n_viable_vertices > 1) return false;
+        _mu_contained = _fidvolBox.Contain(::geoalgo::Vector(mutrack.Vertex())) &&
+                        _fidvolBox.Contain(::geoalgo::Vector(mutrack.End()));
+        _mu_phi = ::geoalgo::Vector(mutrack.VertexDirection()).Phi();
+        _p_phi  = ::geoalgo::Vector( ptrack.VertexDirection()).Phi();
 
         // If we found a vertex and we are running over MC, let's check if it is accurate
         if (!_running_on_data) {
@@ -201,6 +148,10 @@ namespace larlite {
             //           <<::geoalgo::Vector(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()) << std::endl;
             _true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
             _true_nu_pdg = ev_mctruth->at(0).GetNeutrino().Nu().PdgCode();
+            ::geoalgo::Sphere thevertexsphere(reco_neutrino.first.X(),
+                                              reco_neutrino.first.Y(),
+                                              reco_neutrino.first.Z(),
+                                              3.0);
             _correct_ID = thevertexsphere.Contain(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position());
             _hcorrect_ID->Fill(_correct_ID);
         }
@@ -336,6 +287,98 @@ namespace larlite {
 
     }
 
+    std::pair<larlite::vertex, std::vector<larlite::track> > XiaoEventSelector::findNeutrino(const event_track *ev_track,
+            const event_calorimetry *ev_calo,
+            const larlite::AssSet_t & ass_calo_v,
+            const event_vertex *ev_vtx,
+            const event_opflash *ev_opflash) {
+
+        std::pair<larlite::vertex, std::vector<larlite::track> > result;
+
+        // Loop over flashes, store the brightest flash in the BGW
+        opflash theflash;
+        bool _flash_in_bgw = false;
+        for (auto const& flash : *ev_opflash) {
+
+            if (flash.Time() > 3.55 && flash.Time() < 5.15 && flash.TotalPE() > 50.) {
+                _flash_in_bgw = true;
+                // Keep track of the brightest flash in the BGW
+                if (flash.TotalPE() > theflash.TotalPE())
+                    theflash = flash;
+            }
+        }
+        // Require there is at least one >50 PE flash inside of BGW
+        if (!_flash_in_bgw) throw std::exception();
+
+
+        // Loop over vertices.
+        // For each vertex in fiducial volume, loop over reco tracks
+        // If you find a reco track starting or ending w/in 3cm from the vertex
+        // Also keep track of multiplicities
+        // Keep track of number of vertices that pass all cuts
+        size_t n_viable_vertices = 0;
+        // ::geoalgo::Sphere thevertexsphere(0, 0, 0, 3.);
+        for (auto const& vtx : *ev_vtx) {
+
+            // Make a 3cm geosphere around the vertex
+            ::geoalgo::Sphere vtx_sphere = getVertexSphere(vtx);
+
+            // Make sure vertex is in fiducial volume
+            if (!_fidvolBox.Contain(vtx_sphere.Center())) continue;
+
+            // Loop over tracks, store index of the ones associated with this vertex
+            std::vector<size_t> associated_track_idx_vec;
+            associated_track_idx_vec.clear();
+            bool _at_least_one_track_matches_flash = false;
+
+            for (size_t i = 0; i < ev_track->size(); ++i) {
+                auto const trk = ev_track->at(i);
+
+                if ( trackAssociatedWithVtx(trk, vtx_sphere) ) {
+                    associated_track_idx_vec.push_back(i);
+
+                    if ( flashDistZ(trk, theflash.ZCenter()) < 70. )
+                        _at_least_one_track_matches_flash = true;
+                }
+
+            } //done looping over tracks
+
+            // Require at least one vertex-associated track matches the BGW flash
+            // (and, in there too is that there exists at least 1 such track)
+            // KALEKO: requiring == 2 tracks coming from vertex to explore
+            // possible CCQE phase space. This is different from Xiao!
+
+            if (_at_least_one_track_matches_flash &&
+                    associated_track_idx_vec.size() == 2) {
+
+                // Now we have a vertex (vtx) that has exactly two tracks associated with it
+                // Let's do some michel removal!
+                if (!isMichelMID(vtx_sphere,
+                                 associated_track_idx_vec,
+                                 ev_track,
+                                 ev_calo,
+                                 ass_calo_v)) {
+                    n_viable_vertices++;
+                    result.first = vtx;
+                    std::vector<track> temp;
+                    temp.clear();
+                    temp.push_back(ev_track->at(associated_track_idx_vec[0]));
+                    temp.push_back(ev_track->at(associated_track_idx_vec[1]));
+                    result.second = temp;
+                }
+
+            }// End mult == 2
+
+            _hmult->Fill(associated_track_idx_vec.size());
+
+        } //done looping over vertices
+
+        // If this event doesn't contain any possible neutrino vertices that pass cuts
+        // Or if it contains several, throw that out too! (KALEKO)
+        if (n_viable_vertices != 1) throw std::exception();
+
+        return result;
+    }
 
     bool XiaoEventSelector::finalize() {
 
