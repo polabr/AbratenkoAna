@@ -224,6 +224,7 @@ namespace larlite {
             short_track_idx = associated_track_idx_vec.at(0);
         }
 
+        // idea: maybe cosmic MIDs are at gaps... try loweirng 3cm
 
         // Make a cut on dE/dx of longer track
         double vertex_dedx = 0.;
@@ -249,17 +250,42 @@ namespace larlite {
         ::geoalgo::Vector trkstart = ::geoalgo::Vector( long_trk.Vertex() );
         ::geoalgo::Vector trkend   = ::geoalgo::Vector( long_trk.End()    );
 
+
+        // xiao says:
+        // use first ten hits and last ten hits if track has more than 50 hits
+        // otherwise use first 50% of hits and last 50% of hits
+        double avg_front_dedx = 0.;
+        double avg_back_dedx = 0.;
+        if (tmp_nhits > 50) {
+            for (size_t i = 0; i < 20; ++i) {
+                avg_front_dedx += thecalo.dEdx()[i];
+                avg_back_dedx += thecalo.dEdx()[tmp_nhits - 1 - i];
+            }
+            avg_front_dedx /= 20.;
+            avg_back_dedx /= 20.;
+        }
+        else {
+            size_t nhits_to_use = (size_t)tmp_nhits / 5.;
+            for (size_t i = 0; i < nhits_to_use; ++i) {
+                avg_front_dedx += thecalo.dEdx()[i];
+                avg_back_dedx += thecalo.dEdx()[tmp_nhits - 1 - i];
+            }
+            avg_front_dedx /= (double)nhits_to_use;
+            avg_back_dedx /= (double)nhits_to_use;
+        }
+
+
         // If track is fully contained in the 3cm sphere then throw it out it
         if ( vtx_sphere.Contain(trkstart) && vtx_sphere.Contain(trkend) )
             return true;
         if (vtx_sphere.Contain(trkstart)) {
-            vertex_dedx = thecalo.dEdx().front();
-            far_dedx    = thecalo.dEdx().back();
+            vertex_dedx = avg_front_dedx;
+            far_dedx    = avg_back_dedx;
             far_max_y   = trkend.at(1);
         }
         else if (vtx_sphere.Contain(trkend)) {
-            vertex_dedx = thecalo.dEdx().back();
-            far_dedx    = thecalo.dEdx().front();
+            vertex_dedx = avg_back_dedx;
+            far_dedx    = avg_front_dedx;
             far_max_y   = trkstart.at(1);
         }
 
@@ -273,6 +299,7 @@ namespace larlite {
 
         _mu_start_dedx = vertex_dedx;
         _mu_end_dedx = far_dedx;
+
         return false;
     }
 

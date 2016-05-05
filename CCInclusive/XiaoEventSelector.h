@@ -103,7 +103,6 @@ namespace larlite {
 
     bool _running_on_data;
 
-
     TTree *_tree;
     double _mu_start_dedx;
     double _mu_end_dedx;
@@ -113,9 +112,6 @@ namespace larlite {
     double _mu_contained;
     double _true_nu_E;
     int    _true_nu_pdg;
-
-
-
 
   };
 }
