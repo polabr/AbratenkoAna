@@ -11,6 +11,18 @@ namespace larlite {
         total_events = 0;
         kept_events = 0;
 
+        fidvol_dist = 10.;
+        fidvol_dist_y = 20.;
+
+        //Box here is TPC
+        _fidvolBox.Min( 0 + fidvol_dist,
+                        -(::larutil::Geometry::GetME()->DetHalfHeight()) + fidvol_dist_y,
+                        0 + fidvol_dist);
+
+        _fidvolBox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist,
+                        ::larutil::Geometry::GetME()->DetHalfHeight() - fidvol_dist_y,
+                        ::larutil::Geometry::GetME()->DetLength() - fidvol_dist);
+
         return true;
     }
 
@@ -25,6 +37,15 @@ namespace larlite {
 
         total_events++;
 
+        // Require exactly one neutrino interaction
+        if (ev_mctruth->size() != 1) {
+            print(larlite::msg::kINFO, __FUNCTION__, Form("ev_mctruth size is not 1!"));
+            return false;
+        }
+
+        // Require the neutrino interaction is inside the fiducial volume
+        if (!_fidvolBox.Contain(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()))
+            return false;
 
         //Enforce that there is exactly 1 electron, above 20MeV kinetic energy
         //Don't care about neutrons, protons.
@@ -48,7 +69,7 @@ namespace larlite {
             if ( particle.PdgCode() == 13 )
                 n_muons++;
 
-    //Count up the number of protons
+            //Count up the number of protons
             if ( particle.PdgCode() == 2212 )
                 n_protons++;
 
