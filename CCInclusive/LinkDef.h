@@ -18,8 +18,10 @@
 #pragma link C++ class larlite::TestKinematicNuReco+;
 #pragma link C++ class larlite::XiaoEventSelector+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
+#pragma link C++ class larlite::TestMCTruth+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 
