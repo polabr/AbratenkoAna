@@ -39,7 +39,7 @@ namespace larlite {
     double nu_energy_den = 2.0 * (M_n - bindingE - l_energy + l_mom * TMath::Cos(l_theta));
 
     // For a result in GEV, divide by 1000.
-    return ( (nu_energy_num / nu_energy_den) - leptonmass )/ 1000.;
+    return ( (nu_energy_num / nu_energy_den) )/ 1000.;
 
   }
 
