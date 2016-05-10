@@ -23,6 +23,7 @@
 #include "TH1.h"
 #include "TTree.h"
 #include "GeoAlgo/GeoVector.h"
+#include "CCQECalc.h"
 
 namespace larlite {
   /**
@@ -34,7 +35,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    TestMCTruth() { _name = "TestMCTruth"; _fout = 0; _h_mup = 0; _h_mup_diff = 0; _tree = 0;}
+    TestMCTruth() { _name = "TestMCTruth"; _fout = 0; _h_mup = 0; _h_mup_diff = 0; _tree = 0; _ccqecalc = 0;}
 
     /// Default destructor
     virtual ~TestMCTruth() {}
@@ -56,8 +57,6 @@ namespace larlite {
     size_t evt_counter;
     size_t kept_events;
 
-    double _reco_mu_E;
-
     TH2D* _h_mup;
     TH1F* _h_mup_diff;
 
@@ -67,8 +66,16 @@ namespace larlite {
     double true_mu_p;
     double premnant;
     double ptremnant;
+    double Eremnant;
     double plane_Z_anglediff;
     double true_nu_E;
+    double Eccqe_truemumom;
+    double Eccqe_recomumom;
+    double true_mu_TotE;
+    double true_p_KE;
+    double reco_mu_TotE;
+
+    CCQECalc *_ccqecalc;
   };
 }
 #endif

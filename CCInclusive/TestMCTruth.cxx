@@ -34,7 +34,15 @@ namespace larlite {
         _tree->Branch("premnant", &premnant, "premnant/D");
         _tree->Branch("ptremnant", &ptremnant, "ptremnant/D");
         _tree->Branch("plane_Z_anglediff", &plane_Z_anglediff, "plane_Z_anglediff/D");
-_tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");  
+        _tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");
+        _tree->Branch("Eremnant", &Eremnant, "Eremnant/D");
+        _tree->Branch("Eccqe_truemumom", &Eccqe_truemumom, "Eccqe_truemumom/D");
+        _tree->Branch("Eccqe_recomumom", &Eccqe_recomumom, "Eccqe_recomumom/D");
+        _tree->Branch("true_mu_TotE", &true_mu_TotE, "true_mu_TotE/D");
+        _tree->Branch("true_p_KE", &true_p_KE, "true_p_KE/D");
+        _tree->Branch("reco_mu_TotE", &reco_mu_TotE, "reco_mu_TotE/D");
+
+        _ccqecalc = new CCQECalc();
         return true;
     }
 
@@ -44,8 +52,14 @@ _tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");
         true_mu_p = -999.;
         premnant = -999.;
         ptremnant = -999.;
+        Eremnant = -999.;
         plane_Z_anglediff = -999.;
         true_nu_E = -999.;
+        Eccqe_truemumom = -999.;
+        Eccqe_recomumom = -999.;
+        true_mu_TotE = -999.;
+        true_p_KE = -999.;
+        reco_mu_TotE = -999.;
 
         //std::cout << " --- New event --- " << std::endl;
         evt_counter++;
@@ -75,9 +89,10 @@ _tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");
         TVector3 zdir(0, 0, 1.);
         for (auto const& particle : ev_mctruth->at(0).GetParticles()) {
 
-            if ( particle.StatusCode() == 15 ){
+            if ( particle.StatusCode() == 15 ) {
                 premnant = particle.Trajectory().at(0).Momentum().Vect().Mag();
                 ptremnant = premnant * sin(particle.Trajectory().at(0).Momentum().Vect().Angle(zdir));
+                Eremnant = particle.Trajectory().at(0).E();
             }
             // Only particles with status code 1 are relevant
             if ( particle.StatusCode() != 1) continue;
@@ -142,21 +157,27 @@ _tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");
         // std::cout << "evt_counter is " << evt_counter << std::endl;
         true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
         double mumass_MEV = 105.6583715;
-        double pmass_MEV = 938.;
+        double pmass_MEV = 938.272;
+
         // TVector3 zdir(0, 0, 1.);
         TVector3 muvec = mu_momentum.Vect();
         TVector3 pvec = p_momentum.Vect();
         double thetamu = muvec.Angle(zdir);
         double thetap  = pvec.Angle(zdir);
+        true_mu_TotE = mu_momentum.E();
+        true_p_KE = p_momentum.E() - pmass_MEV/1000.;
+
         // std::cout<<"thetamu is "<<thetamu<<", thetap is "<<thetap<<std::endl;
         // std::cout<<"proton TOTAL ENERGY is pvec mag squared plus proton mass squared sqrt is "
         // <<std::pow(std::pow(pvec.Mag(),2) + std::pow(pmass_MEV/1000.,2),0.5)<<std::endl;
         // std::cout<<"p energy from TLorentzVector is "<<p_momentum.E()<<std::endl;
         reco_mu_p = pvec.Mag() * sin(thetap) / sin(thetamu);
         true_mu_p = muvec.Mag();
-        _reco_mu_E = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
-        absphidiff_minuspi = std::abs(::geoalgo::Vector(pvec).Phi() - ::geoalgo::Vector(muvec).Phi())-3.14159265;
-        // std::cout<<"Reco mu E is "<<_reco_mu_E<<", true mu E is "<<mu_momentum.E()<<std::endl;
+        reco_mu_TotE = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
+        Eccqe_recomumom = _ccqecalc->ComputeECCQE(reco_mu_TotE * 1000., muvec, false);
+        Eccqe_truemumom = _ccqecalc->ComputeECCQE(mu_momentum.E() * 1000., muvec, false);
+        absphidiff_minuspi = std::abs(::geoalgo::Vector(pvec).Phi() - ::geoalgo::Vector(muvec).Phi()) - 3.14159265;
+        // std::cout<<"Reco mu E is "<<reco_mu_TotE<<", true mu E is "<<mu_momentum.E()<<std::endl;
         // std::cout << "Reco mu p is " << reco_mu_p << ", true mu p is " << true_mu_p << std::endl;
         _h_mup->Fill(reco_mu_p, muvec.Mag());
         _h_mup_diff->Fill((reco_mu_p - muvec.Mag()) / muvec.Mag());
@@ -193,15 +214,15 @@ _tree->Branch("true_nu_E", &true_nu_E, "true_nu_E/D");
             // Only particles with status code 1 are relevant
             if ( particle.StatusCode() != 1 && particle.StatusCode() != 0 && particle.StatusCode() != 15    ) continue;
 
-            // // //Note: this KE is in units of GEV!
-            // double KE = particle.Trajectory().at(0).E() - particle.Mass();
+            // //Note: this KE is in units of GEV!
+            double KE = particle.Trajectory().at(0).E() - particle.Mass();
 
-            // std::cout << " -- Particle with Status " << particle.StatusCode()
-            //           << " and PDG " << particle.PdgCode()
-            //           << " has TOTAL ENERGY " << particle.Trajectory().at(0).E() << " GEV."
-            //           << " and MASS " << particle.Mass() << std::endl;
-            // std::cout << " This particle's 3-Momentum magnitude is "
-            // << particle.Trajectory().at(0).Momentum().Vect().Mag() << std::endl;
+            std::cout << " -- Particle with Status " << particle.StatusCode()
+                      << " and PDG " << particle.PdgCode()
+                      << " has TOTAL ENERGY " << particle.Trajectory().at(0).E() << " GEV."
+                      << " and MASS " << particle.Mass() << std::endl;
+            std::cout << " This particle's 3-Momentum magnitude is "
+                      << particle.Trajectory().at(0).Momentum().Vect().Mag() << std::endl;
 
             if (particle.StatusCode() == 0 && particle.PdgCode() == 14)
                 numom = particle.Trajectory().at(0).Momentum().Vect();
