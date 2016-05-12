@@ -11,7 +11,7 @@ namespace larlite {
 
     _h = new TH2D("h", "CCQE Energy vs True Energy", 100, 0, 3, 100, 0, 3);
 
-    mycalc = new CCQECalc();
+    mycalc = new NuEnergyCalc();
 
 
     double fidvol_dist = 10.;

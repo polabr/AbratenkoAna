@@ -18,7 +18,7 @@
 #include "Analysis/ana_base.h"
 #include "TTree.h"
 #include "TVector3.h"
-#include "CCQECalc.h"
+#include "NuEnergyCalc.h"
 
 namespace larlite {
   /**
@@ -51,7 +51,7 @@ namespace larlite {
     double _reco_CCQE_E;
 
 
-    CCQECalc *mycalc;
+    NuEnergyCalc *mycalc;
   };
 }
 #endif

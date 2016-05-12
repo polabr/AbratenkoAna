@@ -42,7 +42,7 @@ namespace larlite {
         _tree->Branch("true_p_KE", &true_p_KE, "true_p_KE/D");
         _tree->Branch("reco_mu_TotE", &reco_mu_TotE, "reco_mu_TotE/D");
 
-        _ccqecalc = new CCQECalc();
+        _Ecalc = new NuEnergyCalc();
         return true;
     }
 
@@ -174,8 +174,8 @@ namespace larlite {
         reco_mu_p = pvec.Mag() * sin(thetap) / sin(thetamu);
         true_mu_p = muvec.Mag();
         reco_mu_TotE = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
-        Eccqe_recomumom = _ccqecalc->ComputeECCQE(reco_mu_TotE * 1000., muvec, false);
-        Eccqe_truemumom = _ccqecalc->ComputeECCQE(mu_momentum.E() * 1000., muvec, false);
+        Eccqe_recomumom = _Ecalc->ComputeECCQE(reco_mu_TotE * 1000., muvec, false);
+        Eccqe_truemumom = _Ecalc->ComputeECCQE(mu_momentum.E() * 1000., muvec, false);
         absphidiff_minuspi = std::abs(::geoalgo::Vector(pvec).Phi() - ::geoalgo::Vector(muvec).Phi()) - 3.14159265;
         // std::cout<<"Reco mu E is "<<reco_mu_TotE<<", true mu E is "<<mu_momentum.E()<<std::endl;
         // std::cout << "Reco mu p is " << reco_mu_p << ", true mu p is " << true_mu_p << std::endl;

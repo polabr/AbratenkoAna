@@ -1,4 +1,4 @@
-//
+ //
 // cint script to generate libraries
 // Declaire namespace & classes you defined
 // #pragma statement: order matters! Google it ;)
@@ -11,7 +11,7 @@
 
 #pragma link C++ class larlite::EfficiencyStudy+;
 #pragma link C++ class larlite::MuTrackMomentumSpline+;
-#pragma link C++ class larlite::CCQECalc+;
+#pragma link C++ class larlite::NuEnergyCalc+;
 #pragma link C++ class larlite::TestCCQECalc+;
 #pragma link C++ class larlite::TestSpline+;
 #pragma link C++ class larlite::EventSelector+;

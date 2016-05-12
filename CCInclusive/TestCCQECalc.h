@@ -17,7 +17,7 @@
 
 #include "Analysis/ana_base.h"
 #include "TH2.h"
-#include "CCQECalc.h"
+#include "NuEnergyCalc.h"
 #include "GeoAlgo/GeoAABox.h"
 #include "GeoAlgo/GeoVector.h"
 #include "LArUtil/Geometry.h"
@@ -56,7 +56,7 @@ namespace larlite {
 
     TH2D *_h;
 
-    CCQECalc *mycalc;
+    NuEnergyCalc *mycalc;
     geoalgo::AABox _myGeoAABox;
 
   };

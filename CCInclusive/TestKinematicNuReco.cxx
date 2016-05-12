@@ -22,7 +22,7 @@ namespace larlite {
         }
         
 
-        mycalc = new CCQECalc();
+        mycalc = new NuEnergyCalc();
         return true;
     }
 

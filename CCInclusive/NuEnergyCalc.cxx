@@ -1,11 +1,11 @@
-#ifndef CCQECALC_CXX
-#define CCQECALC_CXX
+#ifndef NUENERGYCALC_CXX
+#define NUENERGYCALC_CXX
 
-#include "CCQECalc.h"
+#include "NuEnergyCalc.h"
 namespace larlite {
 
 
-  double CCQECalc::ComputeECCQE(double totalenergy, const std::vector<double> &lepton_dir, bool is_electron) {
+  double NuEnergyCalc::ComputeECCQE(double totalenergy, const std::vector<double> &lepton_dir, bool is_electron) {
 
     if ( lepton_dir.size() != 3 ) {
       std::cerr << "From ComputeECCQE: input direction vector doesn't have size 3! Quitting..." << std::endl;
@@ -43,7 +43,7 @@ namespace larlite {
 
   }
 
-  double CCQECalc::ComputeECCQE(double totalenergy, const TVector3 &lepton_dir, bool is_electron) {
+  double NuEnergyCalc::ComputeECCQE(double totalenergy, const TVector3 &lepton_dir, bool is_electron) {
 
     std::vector<double> temp;
     temp.clear();

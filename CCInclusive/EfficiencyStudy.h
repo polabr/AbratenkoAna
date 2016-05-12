@@ -23,7 +23,7 @@
 #include "LArUtil/Geometry.h"
 #include "DataFormat/track.h"
 #include "MuTrackMomentumSpline.h"
-#include "CCQECalc.h"
+#include "NuEnergyCalc.h"
 
 namespace larlite {
   /**
@@ -91,7 +91,7 @@ namespace larlite {
     geoalgo::AABox _myGeoAABox;
 
     MuTrackMomentumSpline *myspline;
-    CCQECalc *mycalc;
+    NuEnergyCalc *mycalc;
   };
 }
 #endif
