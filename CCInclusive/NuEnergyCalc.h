@@ -45,6 +45,15 @@ namespace larlite{
 
       double ComputeECCQE(double energy, const TVector3 &lepton_dir, bool is_electron = true);
 
+      /// Method using 4-momentum conservation for numu interacting on neutron (with unknown magnitude
+      /// of fermi momentum), with exiting proton and muon.
+      /// Input are muon and proton momentum magnitude and direction
+      /// The direction can be unit vector, the momentum magnitude should match
+      /// E_tot^2 = sqrt( p^2 + m^2 )
+      /// and should be in units of MEV
+      /// Return value is GEV even though input is MEV
+      double ComputeEnu1mu1p(const TVector3 &mu_dir, double mu_mom_mag_MEV, const TVector3 &p_dir, double p_mom_mag_MEV);
+
 
     };
 

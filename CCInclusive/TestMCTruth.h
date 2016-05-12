@@ -74,6 +74,7 @@ namespace larlite {
     double true_mu_TotE;
     double true_p_KE;
     double reco_mu_TotE;
+    double reco_nu_E_4momentum;
 
     NuEnergyCalc *_Ecalc;
   };

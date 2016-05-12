@@ -41,6 +41,7 @@ namespace larlite {
         _tree->Branch("true_mu_TotE", &true_mu_TotE, "true_mu_TotE/D");
         _tree->Branch("true_p_KE", &true_p_KE, "true_p_KE/D");
         _tree->Branch("reco_mu_TotE", &reco_mu_TotE, "reco_mu_TotE/D");
+        _tree->Branch("reco_nu_E_4momentum",&reco_nu_E_4momentum,"reco_nu_E_4momentum/D");
 
         _Ecalc = new NuEnergyCalc();
         return true;
@@ -60,6 +61,7 @@ namespace larlite {
         true_mu_TotE = -999.;
         true_p_KE = -999.;
         reco_mu_TotE = -999.;
+reco_nu_E_4momentum = -999.;
 
         //std::cout << " --- New event --- " << std::endl;
         evt_counter++;
@@ -173,6 +175,7 @@ namespace larlite {
         // std::cout<<"p energy from TLorentzVector is "<<p_momentum.E()<<std::endl;
         reco_mu_p = pvec.Mag() * sin(thetap) / sin(thetamu);
         true_mu_p = muvec.Mag();
+        reco_nu_E_4momentum = _Ecalc->ComputeEnu1mu1p(muvec, true_mu_p*1000., pvec, pvec.Mag()*1000.);
         reco_mu_TotE = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
         Eccqe_recomumom = _Ecalc->ComputeECCQE(reco_mu_TotE * 1000., muvec, false);
         Eccqe_truemumom = _Ecalc->ComputeECCQE(mu_momentum.E() * 1000., muvec, false);
