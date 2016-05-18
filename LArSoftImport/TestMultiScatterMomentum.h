@@ -28,34 +28,30 @@ namespace larlite {
   public:
 
     /// Default constructor
-    TestMultiScatterMomentum() { _name = "TestMultiScatterMomentum"; _fout = 0; _ana_tree = 0;}
+    TestMultiScatterMomentum() { _name = "TestMultiScatterMomentum"; _fout = 0; _ana_tree = 0; _using_mctracks = true;}
 
     /// Default destructor
     virtual ~TestMultiScatterMomentum() {}
 
-    /** IMPLEMENT in TestMultiScatterMomentum.cc!
-        Initialization method to be called before the analysis event loop.
-    */
     virtual bool initialize();
 
-    /** IMPLEMENT in TestMultiScatterMomentum.cc!
-        Analyze a data event-by-event
-    */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in TestMultiScatterMomentum.cc!
-        Finalize method to be called after all events processed.
-    */
     virtual bool finalize();
 
+    void SetUseMCTracks(bool flag) { _using_mctracks = flag; }
+
   protected:
+
+    bool _using_mctracks;
 
     TrackMomentumCalculator _tmc;
 
     TTree* _ana_tree;
     double _true_mom;
     double _mcs_reco_mom;
-    double _length;
+    double _true_length;
+    double _reco_length;
   };
 }
 #endif

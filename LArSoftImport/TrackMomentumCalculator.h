@@ -21,8 +21,12 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "DataFormat/mctrack.h"
+#include "DataFormat/track.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
+#include "TAxis.h"
+// #include "Minuit2/Minuit2Minimizer.h"
+#include "TMath.h"
 
 /**
    \class TrackMomentumCalculator
@@ -92,6 +96,8 @@ namespace larlite {
         Double_t my_mcs_llhd( Double_t x0, Double_t x1 );
 
         Double_t GetMomentumMultiScatterLLHD( const larlite::mctrack &trk );
+        Double_t GetMomentumMultiScatterLLHD( const larlite::track   &trk );
+        // Double_t GetMomentumMultiScatterChi2( const larlite::mctrack &trk );
 
         Double_t p_mcs_2; Double_t LLbf;
 

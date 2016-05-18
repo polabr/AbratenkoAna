@@ -27,7 +27,14 @@ my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 my_proc.set_ana_output_file("testmultiscattermomentum_output.root")
 
 # Attach a template process
-my_proc.add_process(fmwk.TestMultiScatterMomentum())
+mymod = fmwk.TestMultiScatterMomentum()
+usemctracks = False
+mymod.SetUseMCTracks(usemctracks)
+if usemctracks:
+	print "\n\n\n TestMultiScatterMomentum is USING MCTRACKS.\n\n\n"
+else:
+	print "\n\n\n TestMultiScatterMomentum is USING RECONSTRUCTED TRACKS.\n\n\n"
+my_proc.add_process(mymod)
 
 print
 print "Finished configuring ana_processor. Start event loop!"
