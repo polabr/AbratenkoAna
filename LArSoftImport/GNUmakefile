@@ -3,7 +3,7 @@
 #
 
 # specific names for this package
-DICT  = LArSoftImportCint
+DICT  = KalekoAna_LArSoftImportDict
 SHLIB = libKalekoAna_LArSoftImport.so
 SOURCES = $(filter-out $(DICT).cxx, $(wildcard *.cxx))
 FMWK_HEADERS = LinkDef.h $(DICT).h
