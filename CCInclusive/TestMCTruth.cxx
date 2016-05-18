@@ -28,9 +28,18 @@ namespace larlite {
         _h_mup_diff = new TH1F("h_mup_diff", "Reco - True / True Mu Momentum [GeV]", 100, -1, 1);
 
         _tree = new TTree("tree", "tree");
+        _tree->Branch("true_mu_TotE", &true_mu_TotE, "true_mu_TotE/D");
+        _tree->Branch("true_p_TotE", &true_p_TotE, "true_p_TotE/D");
+        _tree->Branch("true_n_TotE", &true_n_TotE, "true_n_TotE/D");
+        _tree->Branch("true_p_p", &true_p_p, "true_p_p/D");
+        _tree->Branch("thetap", &thetap, "thetap/D");
+        _tree->Branch("true_mu_p", &true_mu_p, "true_mu_p/D");
+        _tree->Branch("thetamu", &thetamu, "thetamu/D");
+
         _tree->Branch("absphidiff_minuspi", &absphidiff_minuspi, "absphidiff_minuspi/D");
         _tree->Branch("reco_mu_p", &reco_mu_p, "reco_mu_p/D");
-        _tree->Branch("true_mu_p", &true_mu_p, "true_mu_p/D");
+
+
         _tree->Branch("premnant", &premnant, "premnant/D");
         _tree->Branch("ptremnant", &ptremnant, "ptremnant/D");
         _tree->Branch("plane_Z_anglediff", &plane_Z_anglediff, "plane_Z_anglediff/D");
@@ -38,11 +47,20 @@ namespace larlite {
         _tree->Branch("Eremnant", &Eremnant, "Eremnant/D");
         _tree->Branch("Eccqe_truemumom", &Eccqe_truemumom, "Eccqe_truemumom/D");
         _tree->Branch("Eccqe_recomumom", &Eccqe_recomumom, "Eccqe_recomumom/D");
-        _tree->Branch("true_mu_TotE", &true_mu_TotE, "true_mu_TotE/D");
+
         _tree->Branch("true_p_KE", &true_p_KE, "true_p_KE/D");
         _tree->Branch("reco_mu_TotE", &reco_mu_TotE, "reco_mu_TotE/D");
-        _tree->Branch("reco_nu_E_4momentum",&reco_nu_E_4momentum,"reco_nu_E_4momentum/D");
+        _tree->Branch("reco_nu_E_4momentum", &reco_nu_E_4momentum, "reco_nu_E_4momentum/D");
+        _tree->Branch("reco_mu_TotE_quadratic", &reco_mu_TotE_quadratic, "reco_mu_TotE_quadratic/D");
+        _tree->Branch("reco_mu_p_quadratic", &reco_mu_p_quadratic, "reco_mu_p_quadratic/D");
 
+
+        _tree->Branch("thetamup", &thetamup, "thetamup/D");
+        _tree->Branch("bindinoE", &bindinoE, "bindinoE/D");
+        _tree->Branch("bindinop", &bindinop, "bindinop/D");
+
+        _tree->Branch("genieCCQE", &genieCCQE, "genieCCQE/O");
+        _tree->Branch("genieMomDiff", &genieMomDiff, "genieMomDiff/D");
         _Ecalc = new NuEnergyCalc();
         return true;
     }
@@ -51,6 +69,7 @@ namespace larlite {
         absphidiff_minuspi = -999.;
         reco_mu_p = -999.;
         true_mu_p = -999.;
+        true_p_p = -999.;
         premnant = -999.;
         ptremnant = -999.;
         Eremnant = -999.;
@@ -59,9 +78,22 @@ namespace larlite {
         Eccqe_truemumom = -999.;
         Eccqe_recomumom = -999.;
         true_mu_TotE = -999.;
+        true_p_TotE = -999.;
         true_p_KE = -999.;
         reco_mu_TotE = -999.;
-reco_nu_E_4momentum = -999.;
+        reco_nu_E_4momentum = -999.;
+        reco_mu_TotE_quadratic = -999.;
+        reco_mu_p_quadratic = -999.;
+        bindinoE = -999.;
+        bindinop = -999.;
+        genieCCQE = false;
+        genieMomDiff = -999.;
+
+
+        double mumass_MEV = 105.6583715;
+        double pmass_MEV = 938.272;
+        double nmass_MEV = 939.565;
+
 
         //std::cout << " --- New event --- " << std::endl;
         evt_counter++;
@@ -85,22 +117,37 @@ reco_nu_E_4momentum = -999.;
         // Require two particles in the final state
         TLorentzVector p_momentum;
         TLorentzVector mu_momentum;
+        TLorentzVector remnant_momentum;
+        TLorentzVector bindino_momentum;
+        TLorentzVector nu_momentum;
 
         size_t n_muons = 0;
         size_t n_protons = 0;
-        TVector3 zdir(0, 0, 1.);
         for (auto const& particle : ev_mctruth->at(0).GetParticles()) {
 
             if ( particle.StatusCode() == 15 ) {
+                remnant_momentum = particle.Trajectory().at(0).Momentum();
                 premnant = particle.Trajectory().at(0).Momentum().Vect().Mag();
-                ptremnant = premnant * sin(particle.Trajectory().at(0).Momentum().Vect().Angle(zdir));
+                ptremnant = premnant * sin(particle.Trajectory().at(0).Momentum().Vect().Theta());
                 Eremnant = particle.Trajectory().at(0).E();
+                true_n_TotE = pow(pow(premnant, 2) + pow(nmass_MEV / 1000., 2), 0.5);
+            }
+
+            if (abs(particle.PdgCode()) == 2000000101) {
+                // std::cout<<"Found a bindino! particle energy is "
+                // <<particle.Trajectory().at(0).E()
+                // <<" mass is "<<particle.Mass()
+                // <<" p is " << particle.Trajectory().at(0).Momentum().Vect().Mag()<<std::endl;
+                bindinoE = particle.Trajectory().at(0).E();
+                bindinop = particle.Trajectory().at(0).Momentum().Vect().Mag();
+                bindino_momentum = particle.Trajectory().at(0).Momentum();
+                // std::cout<<"bindino status code is "<<particle.StatusCode()<<std::endl;
             }
             // Only particles with status code 1 are relevant
             if ( particle.StatusCode() != 1) continue;
 
             // //Note: this KE is in units of GEV!
-            double KE = particle.Trajectory().at(0).E() - particle.Mass();
+            // double KE = particle.Trajectory().at(0).E() - particle.Mass();
 
             // //Don't care about any particles with less than 20 MeV KE
             // if ( KE < 0.02 ) continue;
@@ -158,16 +205,25 @@ reco_nu_E_4momentum = -999.;
         // std::cout << "Found a good event!" << std::endl;
         // std::cout << "evt_counter is " << evt_counter << std::endl;
         true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
-        double mumass_MEV = 105.6583715;
-        double pmass_MEV = 938.272;
+        nu_momentum = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Momentum();
+        genieCCQE = !ev_mctruth->at(0).GetNeutrino().CCNC() && !ev_mctruth->at(0).GetNeutrino().Mode();//ev_mctruth->at(0).GetNeutrino().InteractionType() == 1001;
+        // std::cout<<        ev_mctruth->at(0).GetNeutrino().InteractionType()<<std::endl;
 
         // TVector3 zdir(0, 0, 1.);
         TVector3 muvec = mu_momentum.Vect();
         TVector3 pvec = p_momentum.Vect();
-        double thetamu = muvec.Angle(zdir);
-        double thetap  = pvec.Angle(zdir);
+        thetamu = muvec.Theta();
+        // std::cout << "thetamu with anglezdir is " << thetamu << std::endl;
+        // std::cout << "meanwhile thetamu with muvec.Theta() is " << muvec.Theta() << std::endl;
+        thetap  = pvec.Theta();
+        thetamup = thetamu + thetap; //muvec.Angle(pvec);
+        // std::cout << "in main, thetamu, thetap, thetamup are "
+        //           << thetamu << ","
+        //           << thetap << ","
+        //           << thetamup << std::endl;
         true_mu_TotE = mu_momentum.E();
-        true_p_KE = p_momentum.E() - pmass_MEV/1000.;
+        true_p_TotE = p_momentum.E();
+        true_p_KE = p_momentum.E() - pmass_MEV / 1000.;
 
         // std::cout<<"thetamu is "<<thetamu<<", thetap is "<<thetap<<std::endl;
         // std::cout<<"proton TOTAL ENERGY is pvec mag squared plus proton mass squared sqrt is "
@@ -175,7 +231,9 @@ reco_nu_E_4momentum = -999.;
         // std::cout<<"p energy from TLorentzVector is "<<p_momentum.E()<<std::endl;
         reco_mu_p = pvec.Mag() * sin(thetap) / sin(thetamu);
         true_mu_p = muvec.Mag();
-        reco_nu_E_4momentum = _Ecalc->ComputeEnu1mu1p(muvec, true_mu_p*1000., pvec, pvec.Mag()*1000.);
+        true_p_p = pvec.Mag();
+
+        reco_nu_E_4momentum = _Ecalc->ComputeEnu1mu1p(muvec, true_mu_p * 1000., pvec, pvec.Mag() * 1000.);
         reco_mu_TotE = pow(pow(reco_mu_p, 2) + pow(mumass_MEV / 1000., 2), 0.5);
         Eccqe_recomumom = _Ecalc->ComputeECCQE(reco_mu_TotE * 1000., muvec, false);
         Eccqe_truemumom = _Ecalc->ComputeECCQE(mu_momentum.E() * 1000., muvec, false);
@@ -187,8 +245,27 @@ reco_nu_E_4momentum = -999.;
 
         TVector3 cross = muvec.Cross(pvec);
 
-        plane_Z_anglediff = cross.Angle(zdir);
+        plane_Z_anglediff = cross.Theta();
 
+        std::cout << "Computing muon total energy ... " << std::endl;
+        std::cout << "Note that true mu total energy is " << true_mu_TotE*1000. <<" MEV."<< std::endl;
+        // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticNumeric(muvec, pvec, pvec.Mag() * 1000.);
+        // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadratic(muvec, pvec, pvec.Mag() * 1000.);
+        // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(muvec, pvec, pvec.Mag() * 1000.) / 1000.;
+        // std::cout<<"Using muon direction, proton direction, proton momentum mag... iterative yields "<<reco_mu_TotE_quadratic<<std::endl;
+        reco_mu_p_quadratic = std::sqrt(std::pow(reco_mu_TotE_quadratic, 2) - std::pow(mumass_MEV / 1000., 2));
+        //consider true_n_TotE*1000. below for first argument to check for "exact matching" in the future
+        reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(938. + 25., true_p_TotE*1000., thetamu, thetap, true_p_p*1000.) / 1000.;
+        std::cout << "Beginning with the following: (En = "<<938 + 25
+                  << ", Ep = " << true_p_TotE*1000.
+                  << ", thetamu = " << thetamu
+                  << ", thetap = " << thetap
+                  << ", pp = " << true_p_p*1000.
+                  << ")"<<std::endl;
+        std::cout<<"Iterative technique has found this result for Emu: "<<reco_mu_TotE_quadratic*1000.<<std::endl;
+        
+        // std::cout << "--- Done computing muon total energy ---" << std::endl;
+        // << ", reco_mu_TotE_quadratic is " << reco_mu_TotE_quadratic << std::endl;
         // TVector3 totalf = muvec + pvec;
         // TVector3 totali = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Momentum().Vect();
         // std::cout<<"Final momentum (mu + p) minus initial (nu) is :"<<std::endl;
@@ -202,6 +279,26 @@ reco_nu_E_4momentum = -999.;
         //           << std::pow(std::pow(muvec.Mag(), 2) + std::pow(mumass_MEV / 1000., 2), 0.5) << std::endl;
         // std::cout << "PROTON transverse momentum component is " << pvec.Mag()*sin(thetap) << std::endl;
         // printTruthStuff(*ev_mctruth);
+
+
+
+
+        // std::cout<<"nu_momentum is :"<<std::endl;
+        // nu_momentum.Print();
+        // std::cout<<"bindino_momentum is :"<<std::endl;
+        // bindino_momentum.Print();
+        // std::cout<<"remnant_momentum is :"<<std::endl;
+        // remnant_momentum.Print();
+        // std::cout<<"mu_momentum is :"<<std::endl;
+        // mu_momentum.Print();
+        // std::cout<<"p_momentum is :"<<std::endl;
+        // p_momentum.Print();
+        // std::cout<<"neutrino momentum minus the rest of all momentum is :"<<std::endl;
+        // (nu_momentum - (p_momentum + mu_momentum + remnant_momentum + bindino_momentum) ).Print();
+        genieMomDiff = (nu_momentum - (p_momentum + mu_momentum + remnant_momentum + bindino_momentum) ).Vect().Mag();
+
+        // std::cout<<"TRUE MUON ENERGY (which below should match): "<<true_mu_TotE*1000.<<std::endl;
+        // double poop = _Ecalc->ComputeEmu1mu1pQuadraticIterative(muvec, pvec, pvec.Mag() * 1000.);
         _tree->Fill();
         return true;
     }

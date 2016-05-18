@@ -64,22 +64,237 @@ namespace larlite {
     double M_mu_MEV2 = 11163.676;  // 105.6583 MeV/c2 SQUARED
     double M_p_MEV2 = 880354.345; //  938.272 MeV/c2 SQUARED
 
-    double E_tot_mu = pow(pow(mu_mom_mag_MEV,2) + M_mu_MEV2, 0.5);
-    double E_tot_p  = pow(pow(p_mom_mag_MEV,2)  + M_p_MEV2,  0.5);
+    double E_tot_mu = pow(pow(mu_mom_mag_MEV, 2) + M_mu_MEV2, 0.5);
+    double E_tot_p  = pow(pow(p_mom_mag_MEV, 2)  + M_p_MEV2,  0.5);
 
     double thetamu  = mu_dir.Theta();
     double thetap   = p_dir.Theta();
-    double thetamup = mu_dir.Angle(p_dir);
+    double thetamup = thetamu + thetap;//mu_dir.Angle(p_dir);
+    // std::cout << "meanwhile in compute Enu1mu1p, thetamu, thetap, thetamup are "
+    //           << thetamu << ","
+    //           << thetap << ","
+    //           << thetamup << std::endl;
 
-    double numerator = 0.5*M_mu_MEV2 + E_tot_mu*E_tot_p - p_mom_mag_MEV*mu_mom_mag_MEV*std::cos(thetamup);
-    double denominator = E_tot_p - p_mom_mag_MEV*std::cos(thetap) + E_tot_mu - mu_mom_mag_MEV*std::cos(thetamu);
 
-    if(!denominator){
+    double numerator = 0.5 * M_mu_MEV2 + E_tot_mu * E_tot_p - p_mom_mag_MEV * mu_mom_mag_MEV * std::cos(thetamup);
+    // std::cout << "numerator is " << numerator << std::endl;
+    double denominator = E_tot_p - p_mom_mag_MEV * std::cos(thetap) + E_tot_mu - mu_mom_mag_MEV * std::cos(thetamu);
+    // std::cout << "denominator is " << denominator << std::endl;
+    // std::cout << "E_tot_p is " << E_tot_p
+    //           << ", p_mom_mag_MEV is " << p_mom_mag_MEV
+    //           << ", cos thetap is " << std::cos(thetap)
+    //           << ", E_tot_mu is " << E_tot_mu
+    //           << ", mu_mom_mag_MEV is " << mu_mom_mag_MEV << std::endl;
+
+    if (!denominator) {
       std::cerr << "Wow what are the odds. Denominator in ComputeEnu1mu1p is 0. ERROR!" << std::endl;
       return -1.;
     }
 
-    return (numerator/denominator) / 1000.;
+    return (numerator / denominator) / 1000.;
   }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadratic(const TVector3 &mu_dir,
+      const TVector3 &p_dir,
+      double p_mom_mag_MEV)
+  {
+    // This formula actually uses Emu = pmu which might not be necessary
+    // but makes the algebra easier
+    // Update: the algebra is incomprehensible (like 50 pages of mathematica output)
+    // so I'm writing a new function to solve it numerically
+
+    // double M_mu_MEV2 = 11163.676;  // 105.6583 MeV/c2 SQUARED
+    double M_p_MEV2 = 880354.345; //  938.272 MeV/c2 SQUARED
+    double M_n_MEV  = 939.57; // MeV/c2
+    // double E_b_MEV = 29.5;
+
+    double E_tot_p_MEV = pow(pow(p_mom_mag_MEV, 2)  + M_p_MEV2,  0.5);
+    double E_tot_n_MEV = M_n_MEV + 25.;
+
+    double thetamu  = mu_dir.Theta();
+    double thetap   = p_dir.Theta();
+    // double thetamup = thetamu + thetap;//mu_dir.Angle(p_dir);
+
+    // double Ap = E_tot_p - p_mom_mag_MEV * std::cos(thetap) + E_b;
+    // double Bp = E_tot_p - p_mom_mag_MEV * std::cos(thetamup) + E_b;
+    // double Cp = E_tot_p - ( M_n_MEV + 23.5 ) + E_b;
+
+    // double quad_a = (1 - std::cos(thetamu));
+    // double quad_b = Ap + Cp * (1 - std::cos(thetamu)) - Bp;
+    // double quad_c = Cp * Ap - 0.5 * M_mu_MEV2 - E_tot_p * E_b;
+
+    // double descriminant = std::sqrt(quad_b * quad_b - 4 * quad_a * quad_c);
+    // double res1 = (-quad_b + descriminant) / (2 * quad_a);
+    // double res2 = (-quad_b - descriminant) / (2 * quad_a);
+
+    // res1 /= 1000.;
+    // res2 /= 1000.;
+
+    // std::cout << "res1 is " << res1 << ", res2 is " << res2 << std::endl;
+    // return res2;
+
+    return ComputeEmu1mu1pQuadratic(E_tot_n_MEV, E_tot_p_MEV, thetamu, thetap, p_mom_mag_MEV);
+    // double result = (1 / (2 * (2 - 2 * std::cos(thetamu))));
+    // result *= (2 * E_tot_n_MEV - 2 * E_tot_p_MEV - 2 * E_tot_n_MEV * std::cos(thetamu) + 2 * E_tot_p_MEV * std::cos(thetamu)
+    //            + 2 * p_mom_mag_MEV * std::cos(thetap) - 2 * p_mom_mag_MEV * std::cos(thetamup)
+    //            - std::sqrt(-4 * (2 - 2 * std::cos(thetamu)) * (-M_mu_MEV2 - 2 * E_tot_n_MEV * E_tot_p_MEV + 2 * E_tot_p_MEV * E_tot_p_MEV
+    //                        + 2 * E_tot_n_MEV * p_mom_mag_MEV * std::cos(thetap) - 2 * E_tot_p_MEV * p_mom_mag_MEV * std::cos(thetap))
+    //                        + pow((-2 * E_tot_n_MEV + 2 * E_tot_p_MEV + 2 * E_tot_n_MEV * std::cos(thetamu) - 2 * E_tot_p_MEV * std::cos(thetamu)
+    //                               - 2 * p_mom_mag_MEV * std::cos(thetap) + 2 * p_mom_mag_MEV * std::cos(thetamup)), 2)));
+    // return result / 1000.;
+
+  }
+  double NuEnergyCalc::ComputeEmu1mu1pQuadratic(const TVector3 &mu_dir,
+      const TVector3 &p_dir,
+      double p_mom_mag_MEV,
+      double delta)
+  {
+
+    double M_p_MEV2 = 880354.345; //  938.272 MeV/c2 SQUARED
+    double M_n_MEV  = 939.57; // MeV/c2
+
+    double E_tot_p_MEV = pow(pow(p_mom_mag_MEV, 2)  + M_p_MEV2,  0.5);
+    double E_tot_n_MEV = M_n_MEV + 25.;
+
+    double thetamu  = mu_dir.Theta();
+    double thetap   = p_dir.Theta();
+
+    return ComputeEmu1mu1pQuadratic(E_tot_n_MEV, E_tot_p_MEV, thetamu, thetap, p_mom_mag_MEV, delta);
+
+  }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadratic(double E_tot_n_MEV,
+      double E_tot_p_MEV,
+      double thetamu,
+      double thetap,
+      double p_mom_mag_MEV)
+  {
+    double M_mu_MEV2 = 11163.676;  // 105.6583 MeV/c2 SQUARED
+    double thetamup = thetamu + thetap;
+    double result = (1 / (2 * (2 - 2 * std::cos(thetamu))));
+    result *= (2 * E_tot_n_MEV - 2 * E_tot_p_MEV - 2 * E_tot_n_MEV * std::cos(thetamu) + 2 * E_tot_p_MEV * std::cos(thetamu)
+               + 2 * p_mom_mag_MEV * std::cos(thetap) - 2 * p_mom_mag_MEV * std::cos(thetamup)
+               - std::sqrt(-4 * (2 - 2 * std::cos(thetamu)) * (-M_mu_MEV2 - 2 * E_tot_n_MEV * E_tot_p_MEV + 2 * E_tot_p_MEV * E_tot_p_MEV
+                           + 2 * E_tot_n_MEV * p_mom_mag_MEV * std::cos(thetap) - 2 * E_tot_p_MEV * p_mom_mag_MEV * std::cos(thetap))
+                           + pow((-2 * E_tot_n_MEV + 2 * E_tot_p_MEV + 2 * E_tot_n_MEV * std::cos(thetamu) - 2 * E_tot_p_MEV * std::cos(thetamu)
+                                  - 2 * p_mom_mag_MEV * std::cos(thetap) + 2 * p_mom_mag_MEV * std::cos(thetamup)), 2)));
+    return result / 1000.;
+
+  }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadratic(double E_tot_n_MEV,
+      double E_tot_p_MEV,
+      double thetamu,
+      double thetap,
+      double p_mom_mag_MEV,
+      double delta)
+  {
+    double M_mu_MEV2 = 11163.676;  // 105.6583 MeV/c2 SQUARED
+    double thetamup = thetamu + thetap;
+    double result = (1 / (2 * (2 - 2 * std::cos(thetamu))));
+
+    result *= (2 * E_tot_n_MEV - 2 * E_tot_p_MEV - 2 * delta * std::cos(thetamu) - 2 * E_tot_n_MEV * std::cos(thetamu) + 2 * E_tot_p_MEV * std::cos(thetamu)
+               + 2 * p_mom_mag_MEV * std::cos(thetap) - 2 * p_mom_mag_MEV * std::cos(thetamup)
+               - std::sqrt(
+                 pow((-2 * E_tot_n_MEV + 2 * E_tot_p_MEV + 2 * delta * std::cos(thetamu) + 2 * E_tot_n_MEV * std::cos(thetamu)
+                      - 2 * E_tot_p_MEV * std::cos(thetamu) - 2 * p_mom_mag_MEV * std::cos(thetap)
+                      + 2 * p_mom_mag_MEV * std::cos(thetamup)), 2)
+
+                 - 4 * (2 - 2 * std::cos(thetamu)) * (-M_mu_MEV2 - 2 * E_tot_n_MEV * E_tot_p_MEV + 2 * E_tot_p_MEV * E_tot_p_MEV
+                     - 2 * delta * E_tot_n_MEV * std::cos(thetamu) + 2 * delta * E_tot_p_MEV * std::cos(thetamu)
+
+                     + 2 * E_tot_n_MEV * p_mom_mag_MEV * std::cos(thetap) - 2 * E_tot_p_MEV * p_mom_mag_MEV * std::cos(thetap)
+                     - 2 * delta * p_mom_mag_MEV * std::cos(thetamup))));
+    return result / 1000.;
+
+  }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadraticNumeric(const TVector3 &mu_dir,
+      const TVector3 &p_dir,
+      double p_mom_mag_MEV)
+  {
+    // This formula does not use uses Emu = pmu
+    // but then the analytic solution is 50 pages of mathematica output
+    // so I'm rough-solving it numerically here
+
+    double M_mu_MEV2 = 11163.676;  // 105.6583 MeV/c2 SQUARED
+    double M_p_MEV2 = 880354.345; //  938.272 MeV/c2 SQUARED
+    double M_n_MEV  = 939.57; // MeV/c2
+
+    double E_tot_p  = pow(pow(p_mom_mag_MEV, 2)  + M_p_MEV2,  0.5);
+    double E_tot_n = M_n_MEV + 23.5;
+
+
+    double thetamu  = mu_dir.Theta();
+    double thetap   = p_dir.Theta();
+    double thetamup = thetamu + thetap; //mu_dir.Angle(p_dir);
+
+    double valmin = 99999999999.;
+    double imin = -1.;
+    for (int i = 0; i < 1500; i += 1) {
+      double E_tot_mu = (double)i;
+      double mu_mom_mag_MEV = pow(E_tot_mu * E_tot_mu - M_mu_MEV2, 0.5);
+      double val = (E_tot_mu + E_tot_p - E_tot_n) *
+                   ( 2 * E_tot_p - 2 * p_mom_mag_MEV * std::cos(thetap)
+                     + 2 * E_tot_mu - 2 * mu_mom_mag_MEV * std::cos(thetamu) )
+                   - M_mu_MEV2 - 2 * E_tot_mu * E_tot_p +
+                   2 * mu_mom_mag_MEV * p_mom_mag_MEV * std::cos(thetamup);
+      val = std::abs(val);
+      // std::cout<<i<<","<<val<<std::endl;
+      if (val < valmin) {
+        valmin = val;
+        imin = E_tot_mu;
+      }
+    }
+    //val should equal 0 if the correct E_tot_mu guess was made
+    std::cout << "best fit numerically computed energy is " << imin << std::endl;
+    // std::cout<<"valmin is "<<valmin<<", mu total energy computed is "<<imin/1000.<<std::endl;
+    return imin / 1000.;
+  }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadraticIterative(const TVector3 &mu_dir,
+      const TVector3 &p_dir, double p_mom_mag_MEV) {
+
+    double thetamu = mu_dir.Theta();
+    double thetap = p_dir.Theta();
+    double M_p_MEV2 = 880354.345; //  938.272 MeV/c2 SQUARED
+    double E_tot_p_MEV = std::sqrt(p_mom_mag_MEV * p_mom_mag_MEV + M_p_MEV2);
+    double E_tot_n_MEV = 938. + 25.;
+
+    return ComputeEmu1mu1pQuadraticIterative(E_tot_n_MEV, E_tot_p_MEV, thetamu, thetap, p_mom_mag_MEV);
+    // double M_mu_MEV2 = 11163.676;
+    // double M_mu_MEV  = 105.65837;
+
+    // double muEguess = ComputeEmu1mu1pQuadratic(mu_dir, p_dir, p_mom_mag_MEV) * 1000.;
+
+    // for (size_t i = 0; i < 10; ++i) {
+    //   double delta = muEguess - std::max(M_mu_MEV, std::sqrt(muEguess * muEguess - M_mu_MEV2));
+    //   muEguess = ComputeEmu1mu1pQuadratic(mu_dir, p_dir, p_mom_mag_MEV, delta) * 1000.;
+    // }
+
+    // std::cout << "Self-contained iterative approach thinks that muE guess is " << muEguess << std::endl;
+    // return muEguess;
+  }
+
+  double NuEnergyCalc::ComputeEmu1mu1pQuadraticIterative(double E_tot_n_MEV,
+      double E_tot_p_MEV,
+      double thetamu,
+      double thetap,
+      double p_mom_mag_MEV) {
+
+    double M_mu_MEV2 = 11163.676;
+    double M_mu_MEV  = 105.65837;
+
+    double muEguess = ComputeEmu1mu1pQuadratic(E_tot_n_MEV, E_tot_p_MEV, thetamu, thetap, p_mom_mag_MEV) * 1000.;
+
+    for (size_t i = 0; i < 10; ++i) {
+      double delta = muEguess - std::max(M_mu_MEV, std::sqrt(muEguess * muEguess - M_mu_MEV2));
+      muEguess = ComputeEmu1mu1pQuadratic(E_tot_n_MEV, E_tot_p_MEV, thetamu, thetap, p_mom_mag_MEV, delta) * 1000.;
+    }
+
+    // std::cout << "Self-contained iterative approach thinks that muE guess is " << muEguess << std::endl;
+    return muEguess;
+  }
+
 }
 #endif

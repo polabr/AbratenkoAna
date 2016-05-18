@@ -33,8 +33,8 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 
 # Let's run it.
-# my_proc.run(0,20)
-my_proc.run()
+my_proc.run(0,50)
+# my_proc.run()
 
 # done!
 print

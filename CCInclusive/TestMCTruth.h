@@ -64,6 +64,7 @@ namespace larlite {
     double absphidiff_minuspi;
     double reco_mu_p;
     double true_mu_p;
+    double true_p_p;
     double premnant;
     double ptremnant;
     double Eremnant;
@@ -72,10 +73,22 @@ namespace larlite {
     double Eccqe_truemumom;
     double Eccqe_recomumom;
     double true_mu_TotE;
+    double true_p_TotE;
     double true_p_KE;
+    double true_n_TotE;
+
     double reco_mu_TotE;
     double reco_nu_E_4momentum;
+    double reco_mu_TotE_quadratic;
+double reco_mu_p_quadratic;
+double thetap;
+double thetamu;
+double thetamup;
 
+    double bindinoE;
+    double bindinop;
+    bool genieCCQE;
+    double genieMomDiff;
     NuEnergyCalc *_Ecalc;
   };
 }
