@@ -11,7 +11,9 @@
 
 #pragma link C++ class larlite::TrackMomentumCalculator+;
 #pragma link C++ class larlite::TestMultiScatterPID+;
+#pragma link C++ class larlite::TestMultiScatterMomentum+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 

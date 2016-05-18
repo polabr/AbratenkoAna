@@ -33,19 +33,10 @@ namespace larlite {
     /// Default destructor
     virtual ~TestMultiScatterPID(){};
 
-    /** IMPLEMENT in TestMultiScatterPID.cc!
-        Initialization method to be called before the analysis event loop.
-    */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in TestMultiScatterPID.cc! 
-        Analyze a data event-by-event  
-    */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in TestMultiScatterPID.cc! 
-        Finalize method to be called after all events processed.
-    */
     virtual bool finalize();
 
     protected:
