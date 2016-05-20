@@ -248,22 +248,50 @@ namespace larlite {
         plane_Z_anglediff = cross.Theta();
 
         std::cout << "Computing muon total energy ... " << std::endl;
-        std::cout << "Note that true mu total energy is " << true_mu_TotE*1000. <<" MEV."<< std::endl;
+        std::cout << "Note that true mu total energy is " << true_mu_TotE * 1000. << " MEV." << std::endl;
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticNumeric(muvec, pvec, pvec.Mag() * 1000.);
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadratic(muvec, pvec, pvec.Mag() * 1000.);
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(muvec, pvec, pvec.Mag() * 1000.) / 1000.;
         // std::cout<<"Using muon direction, proton direction, proton momentum mag... iterative yields "<<reco_mu_TotE_quadratic<<std::endl;
         reco_mu_p_quadratic = std::sqrt(std::pow(reco_mu_TotE_quadratic, 2) - std::pow(mumass_MEV / 1000., 2));
         //consider true_n_TotE*1000. below for first argument to check for "exact matching" in the future
-        reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(938. + 25., true_p_TotE*1000., thetamu, thetap, true_p_p*1000.) / 1000.;
-        std::cout << "Beginning with the following: (En = "<<938 + 25
-                  << ", Ep = " << true_p_TotE*1000.
+        reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(938. + 25., true_p_TotE * 1000., thetamu, thetap, true_p_p * 1000.) / 1000.;
+        std::cout << "Beginning with the following: (En = " << 938 + 25
+                  << ", Ep = " << true_p_TotE * 1000.
                   << ", thetamu = " << thetamu
                   << ", thetap = " << thetap
-                  << ", pp = " << true_p_p*1000.
-                  << ")"<<std::endl;
-        std::cout<<"Iterative technique has found this result for Emu: "<<reco_mu_TotE_quadratic*1000.<<std::endl;
-        
+                  << ", pp = " << true_p_p * 1000.
+                  << ")" << std::endl;
+        std::cout << "Iterative technique has found this result for Emu: " << reco_mu_TotE_quadratic * 1000. << std::endl;
+
+        double avg_quad_mu_E = 0.;
+        size_t ctr = 0;
+        for (size_t i = 0; i <= 10; ++i) {
+            double n_KE = 10. + i * 4.;
+            double computed_E = _Ecalc->ComputeEmu1mu1pQuadraticIterative(938. + n_KE, true_p_TotE * 1000.,
+                                thetamu, thetap,
+                                true_p_p * 1000.);
+            if (!std::isnan(computed_E)) {
+                ctr++;
+                avg_quad_mu_E += computed_E;
+                std::cout << " n_KE = " << n_KE << ", computed E = " << computed_E << std::endl;
+            }
+        }
+        avg_quad_mu_E /= (double)ctr;
+        std::cout << "avg quad E is " << avg_quad_mu_E << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
         // std::cout << "--- Done computing muon total energy ---" << std::endl;
         // << ", reco_mu_TotE_quadratic is " << reco_mu_TotE_quadratic << std::endl;
         // TVector3 totalf = muvec + pvec;
@@ -315,7 +343,7 @@ namespace larlite {
             if ( particle.StatusCode() != 1 && particle.StatusCode() != 0 && particle.StatusCode() != 15    ) continue;
 
             // //Note: this KE is in units of GEV!
-            double KE = particle.Trajectory().at(0).E() - particle.Mass();
+            // double KE = particle.Trajectory().at(0).E() - particle.Mass();
 
             std::cout << " -- Particle with Status " << particle.StatusCode()
                       << " and PDG " << particle.PdgCode()

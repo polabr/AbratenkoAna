@@ -59,11 +59,11 @@ namespace larlite {
             // Only particles with status code 1 are relevant
             if ( particle.StatusCode() != 1 ) continue;
 
-            //Note: this KE is in units of GEV!
-            double KE = particle.Trajectory().at(0).E() - particle.Mass();
+            // //Note: this KE is in units of GEV!
+            // double KE = particle.Trajectory().at(0).E() - particle.Mass();
 
-            //Don't care about any particles with less than 20 MeV KE
-            if ( KE < 0.02 ) continue;
+            // //Don't care about any particles with less than 20 MeV KE
+            // if ( KE < 0.02 ) continue;
 
             //Count up the number of muons
             if ( particle.PdgCode() == 13 )
@@ -84,7 +84,16 @@ namespace larlite {
                     abs(particle.PdgCode()) == 211 ||
                     abs(particle.PdgCode()) == 111 ||
                     abs(particle.PdgCode()) == 11  ||
-                    abs(particle.PdgCode()) == 321 )
+                    abs(particle.PdgCode()) == 321 ||
+                    abs(particle.PdgCode()) == 2112 ||
+                    //abs(particle.PdgCode()) == 2000000101 || //kbindino
+                    abs(particle.PdgCode()) == 14 ||
+                    abs(particle.PdgCode()) == 12 ||
+                    particle.PdgCode() == -13 ||
+                    //particle.PdgCode() == 1000180400 || //argon 40
+                    abs(particle.PdgCode()) == 311 ||
+                    abs(particle.PdgCode()) == 3222 || //strange baryons
+                    abs(particle.PdgCode()) == 3122 ) //lambda baryon
                 return false;
 
         }
