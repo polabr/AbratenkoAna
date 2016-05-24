@@ -16,7 +16,20 @@ namespace larlite {
             _ana_tree->Branch("mcs_reco_mom", &_mcs_reco_mom, "mcs_reco_mom/D");
             _ana_tree->Branch("true_len", &_true_length, "true_len/D");
             _ana_tree->Branch("reco_len", &_reco_length, "reco_len/D");
+            _ana_tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
         }
+
+        double fidvol_dist = 5.;
+        double fidvol_dist_y = 5.;
+
+        //Box here is TPC
+        _fidvolBox.Min( 0 + fidvol_dist,
+                        -(::larutil::Geometry::GetME()->DetHalfHeight()) + fidvol_dist_y,
+                        0 + fidvol_dist);
+
+        _fidvolBox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist,
+                        ::larutil::Geometry::GetME()->DetHalfHeight() - fidvol_dist_y,
+                        ::larutil::Geometry::GetME()->DetLength() - fidvol_dist);
 
         return true;
     }
@@ -27,6 +40,7 @@ namespace larlite {
         _mcs_reco_mom = -999.;
         _true_length = -999.;
         _reco_length = -999.;
+        _mu_contained = false;
 
         //Get the MCTracks
         auto ev_mctrack = storage->get_data<event_mctrack>("mcreco");
@@ -62,6 +76,9 @@ namespace larlite {
             _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(trk);
             _reco_length = trk.Length();
         }
+
+        _mu_contained = _fidvolBox.Contain(mct.front().Position().Vect()) &&
+                        _fidvolBox.Contain(mct.back().Position().Vect());
 
         _ana_tree->Fill();
         return true;

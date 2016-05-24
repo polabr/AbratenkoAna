@@ -17,6 +17,8 @@
 
 #include "Analysis/ana_base.h"
 #include "TrackMomentumCalculator.h"
+#include "LArUtil/Geometry.h"
+#include "GeoAlgo/GeoAABox.h"
 
 namespace larlite {
   /**
@@ -52,6 +54,10 @@ namespace larlite {
     double _mcs_reco_mom;
     double _true_length;
     double _reco_length;
+    bool _mu_contained;
+
+    geoalgo::AABox _fidvolBox;
+
   };
 }
 #endif
