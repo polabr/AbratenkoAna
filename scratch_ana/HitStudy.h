@@ -53,7 +53,7 @@ protected:
  
   //get the geo/detector singletons only once
   const larutil::Geometry* mygeo;
-  const larutil::GeometryUtilities* mygeoutil;
+  const larutil::GeometryHelper* mygeoutil;
   const larutil::DetectorProperties* mydetprop;
 
   double fTimetoCm;

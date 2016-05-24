@@ -23,7 +23,7 @@ namespace cluster{
     
     //get the geo/detector singletons only once
     const larutil::Geometry* mygeo = larutil::Geometry::GetME();
-    const larutil::GeometryUtilities* mygeoutil = larutil::GeometryUtilities::GetME();
+    const larutil::GeometryHelper* mygeoutil = larutil::GeometryHelper::GetME();
     const larutil::DetectorProperties* mydetprop = larutil::DetectorProperties::GetME();
 
     double fTimetoCm = mygeoutil->TimeToCm();

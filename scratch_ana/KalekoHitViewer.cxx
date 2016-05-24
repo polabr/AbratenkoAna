@@ -11,7 +11,7 @@ namespace larlite{
     //Initializing pointers to zero is generally good practice.
     hHitHisto = 0;
     //Geometry utilities
-    mygeoutil = larutil::GeometryUtilities::GetME();
+    mygeoutil = larutil::GeometryHelper::GetME();
     fTimetoCm = mygeoutil->TimeToCm();
     fWiretoCm = mygeoutil->WireToCm();
 

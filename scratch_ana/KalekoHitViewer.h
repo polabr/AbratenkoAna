@@ -53,7 +53,7 @@ namespace larlite{
 
     TH2D* hHitHisto;
     
-    const larutil::GeometryUtilities* mygeoutil;
+    const larutil::GeometryHelper* mygeoutil;
     double fTimetoCm;
     double fWiretoCm;
 

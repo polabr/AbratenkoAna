@@ -9,7 +9,7 @@ namespace larlite {
 bool HitStudy::initialize() {
 
     mygeo = larutil::Geometry::GetME();
-    mygeoutil = larutil::GeometryUtilities::GetME();
+    mygeoutil = larutil::GeometryHelper::GetME();
     mydetprop = larutil::DetectorProperties::GetME();
 
     fTimetoCm = mygeoutil->TimeToCm();

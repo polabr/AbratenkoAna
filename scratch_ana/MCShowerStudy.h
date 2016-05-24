@@ -56,7 +56,20 @@ namespace larlite {
     TTree* _ana_tree;
     double _start_x_vtx;
     double _detprof_x_vtx;
+    double _detprof_y_vtx;
+    double _detprof_z_vtx;
     double _detprof_E;
+    double _mc_dedx;
+    double _mc_reco_angle;
+    int    _n_reco_showers;
+    double _reco_E;
+    double _reco_x_vtx;
+    double _reco_y_vtx;
+    double _reco_z_vtx;
+    double _reco_dedx;
+
+
+
 
   };
 }
