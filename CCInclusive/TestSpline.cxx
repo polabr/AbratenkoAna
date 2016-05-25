@@ -14,7 +14,7 @@ namespace larlite {
                     "Spline Computed E vs. Perfect Reco Proton Deposited E" :
                     "Spline Computed E vs. Perfect Reco Muon Deposited E";
 
-        _h = new TH2D("h", histtitle.c_str(), 100, 0, 3, 100, 0, 3);
+        _h = new TH2D("h", histtitle.c_str(), 200, 0, 2, 200, 0, 2);
 
         myspline = new TrackMomentumSplines();
 
