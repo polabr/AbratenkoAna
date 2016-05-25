@@ -9,9 +9,14 @@ namespace larlite {
 
     bool TestSpline::initialize() {
 
-        _h = new TH2D("h", "Spline Computed E vs. Perfect Reco Muon Deposited E", 100, 0, 3, 100, 0, 3);
+        std::string histtitle;
+        histtitle = _testing_protons ?
+                    "Spline Computed E vs. Perfect Reco Proton Deposited E" :
+                    "Spline Computed E vs. Perfect Reco Muon Deposited E";
 
-        myspline = new MuTrackMomentumSpline();
+        _h = new TH2D("h", histtitle.c_str(), 100, 0, 3, 100, 0, 3);
+
+        myspline = new TrackMomentumSplines();
 
 
         double fidvol_dist = 10.;
@@ -55,28 +60,37 @@ namespace larlite {
         bool _is_numuCC = !neutrino.CCNC() && neutrino.Nu().PdgCode() == 14 && neutrino.Lepton().PdgCode() == 13;
         if (!_is_numuCC) return false;
 
-        size_t n_muon_mctracks = 0;
-        mctrack mutrack;
+        size_t n_relevant_mctracks = 0;
+        mctrack thetrack;
         for (auto const& mct : *ev_mctrack) {
-            if (mct.PdgCode() == 13 && mct.size() >= 2) {
-                mutrack = mct;
-                n_muon_mctracks++;
+            if (!_testing_protons) {
+                if (mct.PdgCode() == 13 && mct.size() >= 2 ) {
+                    thetrack = mct;
+                    n_relevant_mctracks++;
+                }
+            }
+            else {
+                if (mct.PdgCode() == 2212 && mct.size() >= 2 && !_testing_protons) {
+                    thetrack = mct;
+                    n_relevant_mctracks++;
+                }
             }
         }
 
-        if (mutrack.size() < 2) return false;
+        if (thetrack.size() < 2) return false;
 
-        if ( !_myGeoAABox.Contain(::geoalgo::Vector(mutrack.front().Position().Vect())) ||
-                !_myGeoAABox.Contain(::geoalgo::Vector(mutrack.back().Position().Vect()))) return false;
-        if (n_muon_mctracks > 1) return false;
+        if ( !_myGeoAABox.Contain(::geoalgo::Vector(thetrack.front().Position().Vect())) ||
+                !_myGeoAABox.Contain(::geoalgo::Vector(thetrack.back().Position().Vect()))) return false;
+        if (n_relevant_mctracks > 1) return false;
 
-        double tracklen = ::geoalgo::Vector(mutrack.front().Position().Vect()).Dist(
-                              ::geoalgo::Vector(mutrack.back().Position().Vect()));
+        double tracklen = ::geoalgo::Vector(thetrack.front().Position().Vect()).Dist(
+                              ::geoalgo::Vector(thetrack.back().Position().Vect()));
 
-        double mu_depE = (mutrack.front().E() - mutrack.back().E()) / 1000.;
-        double mu_splineE = myspline->GetMuMomentum(tracklen) / 1000.;
+        double depE = (thetrack.front().E() - thetrack.back().E()) / 1000.;
+        double splineE = _testing_protons ?
+                        myspline->GetPMomentum(tracklen) / 1000. : myspline->GetMuMomentum(tracklen) / 1000.;
 
-        _h->Fill(mu_depE, mu_splineE);
+        _h->Fill(depE, splineE);
 
 
         return true;

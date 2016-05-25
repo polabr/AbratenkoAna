@@ -24,7 +24,9 @@ my_proc.set_ana_output_file("TestSplineCalc_ana_out.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-my_proc.add_process(fmwk.TestSpline())
+mymod = fmwk.TestSpline()
+mymod.SetTestingProtons(False)
+my_proc.add_process(mymod)
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

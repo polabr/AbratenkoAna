@@ -17,7 +17,7 @@
 
 #include "Analysis/ana_base.h"
 #include "TH2.h"
-#include "MuTrackMomentumSpline.h"
+#include "TrackMomentumSplines.h"
 #include "GeoAlgo/GeoAABox.h"
 #include "GeoAlgo/GeoVector.h"
 #include "LArUtil/Geometry.h"
@@ -32,7 +32,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    TestSpline() { _name = "TestSpline"; _fout = 0; _h=0; myspline=0;}
+    TestSpline() { _name = "TestSpline"; _fout = 0; _h=0; myspline=0; _testing_protons = false;}
 
     /// Default destructor
     virtual ~TestSpline() {}
@@ -44,10 +44,14 @@ namespace larlite {
 
     virtual bool finalize();
 
+    void SetTestingProtons(bool flag){ _testing_protons = flag; }
+
   protected:
     TH2D *_h;
 
-    MuTrackMomentumSpline *myspline;
+    bool _testing_protons;
+
+    TrackMomentumSplines *myspline;
     geoalgo::AABox _myGeoAABox;
   };
 }

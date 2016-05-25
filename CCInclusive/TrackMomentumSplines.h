@@ -1,5 +1,5 @@
 /**
- * \file MuTrackMomentumSpline.h
+ * \file TrackMomentumSplines.h
  *
  * \ingroup CCInclusive
  *
@@ -12,36 +12,41 @@
 /** \addtogroup CCInclusive
 
     @{*/
-#ifndef MUTRACKMOMENTUMSPLINE_H
-#define MUTRACKMOMENTUMSPLINE_H
+#ifndef TRACKMOMENTUMSPLINES_H
+#define TRACKMOMENTUMSPLINES_H
 
 #include <iostream>
- #include "TGraph.h"
- #include "TSpline.h"
+#include "TGraph.h"
+#include "TSpline.h"
 
 /**
-   \class MuTrackMomentumSpline
-   User defined class MuTrackMomentumSpline ... these comments are used to generate
+   \class TrackMomentumSplines
+   User defined class TrackMomentumSplines ... these comments are used to generate
    doxygen documentation!
  */
 namespace larlite {
 
-	class MuTrackMomentumSpline {
+	class TrackMomentumSplines {
 
 	public:
 
 		/// Default constructor
-		MuTrackMomentumSpline();
+		TrackMomentumSplines();
 
 		/// Default destructor
-		~MuTrackMomentumSpline() {}
+		~TrackMomentumSplines() {}
 
 		double GetMuMomentum(const double muon_range);
 
+		double GetPMomentum(const double p_range);
+
+
 	private:
 
-		TGraph *KEvsR;
-		TSpline3 *KEvsR_spline3;
+		TGraph *KEvsR_muon;
+		TSpline3 *KEvsR_muon_spline3;
+		TGraph *KEvsR_proton;
+		TSpline3 *KEvsR_proton_spline3;
 	};
 
 }

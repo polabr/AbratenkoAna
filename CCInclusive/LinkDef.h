@@ -10,7 +10,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::EfficiencyStudy+;
-#pragma link C++ class larlite::MuTrackMomentumSpline+;
+#pragma link C++ class larlite::TrackMomentumSplines+;
 #pragma link C++ class larlite::NuEnergyCalc+;
 #pragma link C++ class larlite::TestCCQECalc+;
 #pragma link C++ class larlite::TestSpline+;
@@ -18,9 +18,12 @@
 #pragma link C++ class larlite::TestKinematicNuReco+;
 #pragma link C++ class larlite::XiaoEventSelector+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
+#pragma link C++ class larlite::MC_1mu1pNn0else_Filter_MCTracks+;
 #pragma link C++ class larlite::TestMCTruth+;
+#pragma link C++ class larlite::EventsContainedStudy+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 
