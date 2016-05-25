@@ -70,7 +70,7 @@ namespace larlite {
                 }
             }
             else {
-                if (mct.PdgCode() == 2212 && mct.size() >= 2 && !_testing_protons) {
+                if (mct.PdgCode() == 2212 && mct.size() >= 2) {
                     thetrack = mct;
                     n_relevant_mctracks++;
                 }
