@@ -39,7 +39,7 @@ namespace larlite {
         }
 
         mycalc = new NuEnergyCalc();
-        myspline = new MuTrackMomentumSpline();
+        myspline = new TrackMomentumSplines();
         myMCScalc = new TrackMomentumCalculator();
 
         return true;
@@ -125,21 +125,23 @@ namespace larlite {
         double tracklen = (mu_mctrack.front().Position().Vect() - mu_mctrack.back().Position().Vect()).Mag();
         _reco_mu_E_range = pow(pow(myspline->GetMuMomentum(tracklen), 2) + mumass_MEV * mumass_MEV, 0.5);
 
-        std::cout<<"true mu E is "<<_true_mu_E<<std::endl;
+        // std::cout<<"true mu E is "<<_true_mu_E<<std::endl;
 
-        double avg_quad_mu_E = 0.;
-        std::cout<<"proton E is "<<p_mctrack.front().E()<<", thetamu is "<<thetamu<<", thetap is "<<thetap
-        <<", p mag is "<<p_mctrack.front().Momentum().Vect().Mag()<<std::endl;
-        for(size_t i = 0; i <= 10; ++i){
-            double n_KE = 10. + i*4.;
-            double computed_E = mycalc->ComputeEmu1mu1pQuadraticIterative(938. + n_KE, p_mctrack.front().E(),
+        // double avg_quad_mu_E = 0.;
+        // std::cout<<"proton E is "<<p_mctrack.front().E()<<", thetamu is "<<thetamu<<", thetap is "<<thetap
+        // <<", p mag is "<<p_mctrack.front().Momentum().Vect().Mag()<<std::endl;
+        // for(size_t i = 0; i <= 10; ++i){
+        //     double n_KE = 10. + i*4.;
+        //     double computed_E = mycalc->ComputeEmu1mu1pQuadraticIterative(938. + n_KE, p_mctrack.front().E(),
+        //                        thetamu, thetap,
+        //                        p_mctrack.front().Momentum().Vect().Mag());
+        //     avg_quad_mu_E += computed_E;
+            // std::cout<<" n_KE = "<<n_KE<<", computed E = "<<computed_E<<std::endl;
+        // }
+        // avg_quad_mu_E /= 11.;
+        _reco_mu_E_quadratic = mycalc->ComputeEmu1mu1pQuadraticIterative(938. + 25., p_mctrack.front().E(),
                                thetamu, thetap,
                                p_mctrack.front().Momentum().Vect().Mag());
-            avg_quad_mu_E += computed_E;
-            std::cout<<" n_KE = "<<n_KE<<", computed E = "<<computed_E<<std::endl;
-        }
-        avg_quad_mu_E /= 11.;
-        _reco_mu_E_quadratic = avg_quad_mu_E;
 
 
         _mu_contained = _fidvolBox.Contain(mu_mctrack.front().Position().Vect()) &&

@@ -22,7 +22,7 @@
 #include "GeoAlgo/GeoAABox.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/track.h"
-#include "MuTrackMomentumSpline.h"
+#include "TrackMomentumSplines.h"
 #include "NuEnergyCalc.h"
 
 namespace larlite {
@@ -90,7 +90,7 @@ namespace larlite {
     // Fiducial volume box
     geoalgo::AABox _myGeoAABox;
 
-    MuTrackMomentumSpline *myspline;
+    TrackMomentumSplines *myspline;
     NuEnergyCalc *mycalc;
   };
 }

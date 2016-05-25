@@ -1,13 +1,14 @@
-#ifndef LARLITE_FRACTIONEVENTSCONTAINED_CXX
-#define LARLITE_FRACTIONEVENTSCONTAINED_CXX
+#ifndef LARLITE_EVENTSCONTAINEDSTUDY_CXX
+#define LARLITE_EVENTSCONTAINEDSTUDY_CXX
 
-#include "FractionEventsContained.h"
+#include "EventsContainedStudy.h"
 #include "DataFormat/mctrack.h"
 #include "DataFormat/mctruth.h"
+#include "DataFormat/track.h"
 
 namespace larlite {
 
-	bool FractionEventsContained::initialize() {
+	bool EventsContainedStudy::initialize() {
 
 		double fidvol_dist = 5.;
 		double fidvol_dist_y = 5.;
@@ -30,16 +31,22 @@ namespace larlite {
 		_h_nu_E_contained = new TH1F("_h_nu_E_contained", "Neutrino True Energy: Contained Events [GeV]", 100, 0, 3.);
 		_h_nu_E_all = new TH1F("_h_nu_E_all", "Neutrino True Energy: All Events [GeV]", 100, 0, 3.);
 
-
+		_tree = new TTree("tree", "tree");
+		_tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
+		_tree->Branch("p_contained", &_p_contained, "p_contained/O");
+		_tree->Branch("n_reco_tracks_fromvtx", &_n_reco_tracks_fromvtx, "n_reco_tracks_fromvtx/I");
+		_tree->Branch("n_mc_tracks_fromvtx", &_n_mc_tracks_fromvtx, "n_mc_tracks_fromvtx/I");
 		return true;
 	}
 
-	bool FractionEventsContained::analyze(storage_manager* storage) {
+	bool EventsContainedStudy::analyze(storage_manager* storage) {
 
 		_evts_pass_filter++;
 
 		_mu_contained = false;
 		_p_contained = false;
+		_n_mc_tracks_fromvtx = 0;
+		_n_reco_tracks_fromvtx = 0;
 
 		auto ev_mctrack = storage->get_data<event_mctrack>("mcreco");
 		if (!ev_mctrack) {
@@ -62,7 +69,18 @@ namespace larlite {
 			return false;
 		}
 
+		auto ev_track = storage->get_data<event_track>("pandoraNuPMA");
+		if (!ev_track) {
+			print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
+			return false;
+		}
+
 		double true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
+		auto const& nu_vtx = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position().Vect();
+
+		// Make a small 3cm geosphere around neutrino vertex
+		_nu_sphere.Center(nu_vtx);
+		_nu_sphere.Radius(3.);
 
 		// Store the muon and the proton mctracks for later investigation
 		bool _found_muon = false;
@@ -72,10 +90,14 @@ namespace larlite {
 
 		// std::cout<<"Loop over mctracks"<<std::endl;
 		for (auto const& mct : *ev_mctrack) {
-			// std::cout<<" mct.size is "<<mct.size()<<std::endl;
+
 			if (!mct.size()) continue;
-			// std::cout<<" mct pdg is "<<mct.PdgCode()<<std::endl;
-			// std::cout<<" mct deposited energy is "<<mct.front().E() - mct.back().E()<<std::endl;
+
+			// Only count mctracks that stat within 1cm of the true neutrino vertex
+			if ( !_nu_sphere.Contain(mct.front().Position().Vect()) )
+				continue;
+
+			_n_mc_tracks_fromvtx++;
 
 			if (mct.PdgCode() == 13 ) {
 				//if you've already found a muon mctrack, return false
@@ -100,7 +122,7 @@ namespace larlite {
 				// with no crazy shit happening downstream.
 				// Maybe 10% of the 1mu+1p events have this extra crazy shit
 
-				// print(larlite::msg::kWARNING, "FractionEventsContained",
+				// print(larlite::msg::kWARNING, "EventsContainedStudy",
 				//       Form("Found a mctrack that wasn't p or mu! Its PDG is %d and its energy deposited is %0.1f MEV.",
 				//            mct.PdgCode(), mct.front().E() - mct.back().E()));
 				// if (abs(mct.PdgCode()) == 211) {
@@ -120,7 +142,7 @@ namespace larlite {
 
 		// If you haven't found a proton and a muon, something has gone wrong.
 		if (!_found_proton || !_found_muon) {
-			print(larlite::msg::kWARNING, "FractionEventsContained",
+			print(larlite::msg::kWARNING, "EventsContainedStudy",
 			      Form("Either didn't find a proton, or didn't find a muon!"));
 			return false;
 		}
@@ -140,12 +162,22 @@ namespace larlite {
 			_evts_fully_contained++;
 		}
 
+
+		/// Loop over reco tracks
+		// std::cout<<"Loop over mctracks"<<std::endl;
+		for (auto const& trk : *ev_track) {
+			if (_nu_sphere.Contain(trk.Vertex()))
+				_n_reco_tracks_fromvtx++;
+		}
+		_tree->Fill();
+
+
 		return true;
 	}
 
-	bool FractionEventsContained::finalize() {
+	bool EventsContainedStudy::finalize() {
 
-		std::cout << "Fraction Events Contained! Input events = "
+		std::cout << "Events Contained Study! Input events = "
 		          << _evts_pass_filter << ", fully contained events = "
 		          << _evts_fully_contained << ", so the fraction of events contained is "
 		          << (double)_evts_fully_contained / (double)_evts_pass_filter << std::endl;
@@ -156,6 +188,7 @@ namespace larlite {
 			_h_mu_E_all->Write();
 			_h_nu_E_contained->Write();
 			_h_nu_E_all->Write();
+			_tree->Write();
 		}
 
 		return true;

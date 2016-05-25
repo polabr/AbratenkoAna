@@ -11,8 +11,8 @@ namespace larlite {
         total_events = 0;
         kept_events = 0;
 
-        fidvol_dist = 10.;
-        fidvol_dist_y = 20.;
+        fidvol_dist = 5.;//10.;
+        fidvol_dist_y = 5.;//20.;
 
         //Box here is TPC
         _fidvolBox.Min( 0 + fidvol_dist,
@@ -93,7 +93,8 @@ namespace larlite {
                     //particle.PdgCode() == 1000180400 || //argon 40
                     abs(particle.PdgCode()) == 311 ||
                     abs(particle.PdgCode()) == 3222 || //strange baryons
-                    abs(particle.PdgCode()) == 3122 ) //lambda baryon
+                    abs(particle.PdgCode()) == 3122 ||
+                    abs(particle.PdgCode()) == 1000020040 ) //deuteron
                 return false;
 
         }

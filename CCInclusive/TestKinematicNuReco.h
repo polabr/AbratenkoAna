@@ -20,7 +20,7 @@
 #include "TVector3.h"
 #include "LArUtil/Geometry.h"
 #include "NuEnergyCalc.h"
-#include "MuTrackMomentumSpline.h"
+#include "TrackMomentumSplines.h"
 #include "TrackMomentumCalculator.h"
 #include "GeoAlgo/GeoAABox.h"
 
@@ -61,7 +61,7 @@ namespace larlite {
     double _true_mu_len;
 
     NuEnergyCalc *mycalc;
-    MuTrackMomentumSpline *myspline;
+    TrackMomentumSplines *myspline;
     TrackMomentumCalculator *myMCScalc;
 
     geoalgo::AABox _fidvolBox;

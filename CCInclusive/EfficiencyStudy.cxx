@@ -56,7 +56,7 @@ namespace larlite {
         }
 
 
-        myspline = new MuTrackMomentumSpline();
+        myspline = new TrackMomentumSplines();
         mycalc = new NuEnergyCalc();
 
         return true;
