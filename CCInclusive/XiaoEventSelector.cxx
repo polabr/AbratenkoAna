@@ -4,6 +4,8 @@
 #include "XiaoEventSelector.h"
 #include "DataFormat/opflash.h"
 #include "DataFormat/mctruth.h"
+#include "DataFormat/mcflux.h"
+
 
 
 namespace larlite {
@@ -13,34 +15,63 @@ namespace larlite {
         total_events = 0;
         passed_events = 0;
 
-        fidvol_dist = 10.;
+        fidvol_dist_x = 20.;
         fidvol_dist_y = 20.;
+        fidvol_dist_z = 10.;
 
         //Box here is TPC
-        _fidvolBox.Min( 0 + fidvol_dist,
+        _fidvolBox.Min( 0 + fidvol_dist_x,
                         -(::larutil::Geometry::GetME()->DetHalfHeight()) + fidvol_dist_y,
-                        0 + fidvol_dist);
+                        0 + fidvol_dist_z);
 
-        _fidvolBox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist,
+        _fidvolBox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist_x,
                         ::larutil::Geometry::GetME()->DetHalfHeight() - fidvol_dist_y,
-                        ::larutil::Geometry::GetME()->DetLength() - fidvol_dist);
+                        ::larutil::Geometry::GetME()->DetLength() - fidvol_dist_z);
 
         _hmult = new TH1F("hmult", "Track Multiplicity", 10, -0.5, 9.5);
         _hdedx = new TH2D("hdedx", "End dEdx vs Start dEdx;End dEdx;Start dEdx", 50, 0, 20, 50, 0, 20);
         _hcorrect_ID = new TH1F("hcorrectID", "Was Neutrino Vtx Correctly Identified?", 2, -0.5, 1.5);
+
+        if (_filetype == kINPUT_FILE_TYPE_MAX)
+            print(larlite::msg::kERROR, __FUNCTION__, Form("DID NOT SET INPUT FILE TYPE!"));
+        else if ( _filetype == kOnBeam ) {
+            BGW_mintime = 3.3;
+            BGW_maxtime = 4.9;
+        }
+        else if ( _filetype == kOffBeam ) {
+            BGW_mintime = 3.65;
+            BGW_maxtime = 5.25;
+        }
+        else if ( _filetype == kCorsikaInTime ) {
+            BGW_mintime = 3.2;
+            BGW_maxtime = 4.8;
+        }
+        else if ( _filetype == kBNBOnly ) {
+            BGW_mintime = 3.55;
+            BGW_maxtime = 5.15;
+        }
+        else if ( _filetype == kBNBCosmic ) {
+            BGW_mintime = 3.55;
+            BGW_maxtime = 5.15;
+        }
 
 
         if (!_tree) {
             _tree = new TTree("tree", "tree");
             _tree->Branch("true_nu_pdg", &_true_nu_pdg, "true_nu_pdg/I");
             _tree->Branch("true_nu_E", &_true_nu_E, "true_nu_E/D");
+            _tree->Branch("true_nu_CCNC", &_true_nu_CCNC, "true_nu_CCNC/O");
+            _tree->Branch("true_nu_mode", &_true_nu_mode, "true_nu_mode/I");
             _tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
             _tree->Branch("p_phi", &_p_phi, "p_phi/D");
             _tree->Branch("mu_phi", &_mu_phi, "mu_phi/D");
             _tree->Branch("correct_ID", &_correct_ID, "correct_ID/O");
             _tree->Branch("mu_end_dedx", &_mu_end_dedx, "mu_end_dedx/D");
             _tree->Branch("mu_start_dedx", &_mu_start_dedx, "mu_start_dedx/D");
+            _tree->Branch("fndecay", &_fndecay, "fndecay/I");
+            _tree->Branch("mu_p_dirdot", &_mu_p_dirdot, "mu_p_dirdot/D");
         }
+
         return true;
     }
 
@@ -53,6 +84,10 @@ namespace larlite {
         _mu_contained = false;
         _true_nu_E = -999.;
         _true_nu_pdg = -999;
+        _true_nu_CCNC = false;
+_true_nu_mode = -999;
+        _fndecay = 0;
+        _mu_p_dirdot = 999.;
     }
 
     bool XiaoEventSelector::analyze(storage_manager* storage) {
@@ -132,6 +167,25 @@ namespace larlite {
         _mu_phi = ::geoalgo::Vector(mutrack.VertexDirection()).Phi();
         _p_phi  = ::geoalgo::Vector( ptrack.VertexDirection()).Phi();
 
+        // There is now an additional cut requiring the dot product between the two track directions
+        // is less than 0.95, to reduce broken tracks being recod as 2track events (cosmic background)
+        // Make a unit TVector3 for each of the two tracks, ensuring each are pointing away from the vertex
+        auto const &geovtx = ::geoalgo::Vector(reco_neutrino.first.X(), reco_neutrino.first.Y(), reco_neutrino.first.Z());
+        auto mudir = ::geoalgo::Vector(mutrack.Vertex()).SqDist(geovtx) <
+                     ::geoalgo::Vector(mutrack.End()).SqDist(geovtx) ?
+                     ::geoalgo::Vector(mutrack.VertexDirection()) :
+                     ::geoalgo::Vector(mutrack.EndDirection()) * -1.;
+        auto pdir = ::geoalgo::Vector(ptrack.Vertex()).SqDist(geovtx) <
+                    ::geoalgo::Vector(ptrack.End()).SqDist(geovtx) ?
+                    ::geoalgo::Vector(ptrack.VertexDirection()) :
+                    ::geoalgo::Vector(ptrack.EndDirection()) * -1.;
+        mudir.Normalize();
+        pdir.Normalize();
+        _mu_p_dirdot = mudir.Dot(pdir);
+
+        // Cut on dot product less than 0.95
+        if( _mu_p_dirdot > 0.95 ) return false;
+
         // If we found a vertex and we are running over MC, let's check if it is accurate
         if (!_running_on_data) {
             auto ev_mctruth = storage->get_data<event_mctruth>("generator");
@@ -143,11 +197,25 @@ namespace larlite {
                 print(larlite::msg::kERROR, __FUNCTION__, Form("MCTruth size doesn't equal one!"));
                 return false;
             }
+            auto ev_mcflux = storage->get_data<event_mcflux>("generator");
+            if (!ev_mcflux) {
+                print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, mcflux!"));
+                return false;
+            }
+            // Require exactly one neutrino interaction
+            if (ev_mcflux->size() != 1) {
+                print(larlite::msg::kINFO, __FUNCTION__, Form("ev_mcflux size is not 1!"));
+                return false;
+            }
+            _fndecay = ev_mcflux->at(0).fndecay;
             // std::cout << "The reconstructed vertex is at : " << thevertexsphere.Center() << std::endl;
             // std::cout << "The true vertex is at : "
             //           <<::geoalgo::Vector(ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position()) << std::endl;
             _true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
             _true_nu_pdg = ev_mctruth->at(0).GetNeutrino().Nu().PdgCode();
+            _true_nu_CCNC = ev_mctruth->at(0).GetNeutrino().CCNC();
+            _true_nu_mode = ev_mctruth->at(0).GetNeutrino().Mode();
+
             ::geoalgo::Sphere thevertexsphere(reco_neutrino.first.X(),
                                               reco_neutrino.first.Y(),
                                               reco_neutrino.first.Z(),
@@ -327,7 +395,7 @@ namespace larlite {
         bool _flash_in_bgw = false;
         for (auto const& flash : *ev_opflash) {
 
-            if (flash.Time() > 3.55 && flash.Time() < 5.15 && flash.TotalPE() > 50.) {
+            if (flash.Time() > BGW_mintime && flash.Time() < BGW_maxtime && flash.TotalPE() > 50.) {
                 _flash_in_bgw = true;
                 // Keep track of the brightest flash in the BGW
                 if (flash.TotalPE() > theflash.TotalPE())

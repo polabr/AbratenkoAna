@@ -53,7 +53,17 @@ namespace larlite {
       _hcorrect_ID = 0;
       _running_on_data = false;
       _tree = 0;
+      _filetype = kINPUT_FILE_TYPE_MAX;
     }
+    /// Category of input file (for different BGW times)
+    enum InputFileType_t {
+      kOnBeam,
+      kOffBeam,
+      kCorsikaInTime,
+      kBNBOnly,
+      kBNBCosmic,
+      kINPUT_FILE_TYPE_MAX
+    };
 
     /// Default destructor
     virtual ~XiaoEventSelector() {}
@@ -65,6 +75,8 @@ namespace larlite {
     virtual bool finalize();
 
     void setRunningOnData(bool flag) { _running_on_data = flag; }
+
+    void setInputType(InputFileType_t filetype){ _filetype = filetype; }
 
   protected:
 
@@ -89,10 +101,15 @@ namespace larlite {
 
     void resetTTreeVars();
 
+    InputFileType_t _filetype;
+
     size_t total_events;
     size_t passed_events;
-    double fidvol_dist;
+    double fidvol_dist_x;
     double fidvol_dist_y;
+    double fidvol_dist_z;
+    double BGW_mintime;
+    double BGW_maxtime;
 
     // Fiducial volume box
     geoalgo::AABox _fidvolBox;
@@ -112,6 +129,10 @@ namespace larlite {
     double _mu_contained;
     double _true_nu_E;
     int    _true_nu_pdg;
+    bool _true_nu_CCNC;
+    int _true_nu_mode;
+    int    _fndecay;
+    double _mu_p_dirdot;
 
   };
 }
