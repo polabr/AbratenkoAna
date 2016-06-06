@@ -21,8 +21,10 @@
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter_MCTracks+;
 #pragma link C++ class larlite::TestMCTruth+;
 #pragma link C++ class larlite::EventsContainedStudy+;
+#pragma link C++ class larlite::NuMuCCFilter+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 
