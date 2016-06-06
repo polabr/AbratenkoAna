@@ -25,8 +25,12 @@ my_proc.set_ana_output_file("XiaoEventSelector_ana_out.root")
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-my_proc.add_process(fmwk.MC_1mu1pNn0else_Filter())
-my_proc.add_process(fmwk.XiaoEventSelector())
+#my_proc.add_process(fmwk.MC_1mu1pNn0else_Filter_MCTracks())#fmwk.MC_1mu1pNn0else_Filter())
+my_proc.add_process(fmwk.NuMuCCFilter())
+myxiao = fmwk.XiaoEventSelector()
+myxiao.setRunningOnData(False)
+myxiao.setInputType(myxiao.kBNBCosmic)
+my_proc.add_process(myxiao)
 
 print
 print "Finished configuring ana_processor. Start event loop!"
