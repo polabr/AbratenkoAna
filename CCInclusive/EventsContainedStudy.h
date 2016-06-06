@@ -19,7 +19,9 @@
 #include "LArUtil/Geometry.h"
 #include "TH1.h"
 #include "GeoAlgo/GeoAABox.h"
- #include "GeoAlgo/GeoSphere.h"
+#include "GeoAlgo/GeoSphere.h"
+#include "TrackMomentumSplines.h"
+#include "NuEnergyCalc.h"
 
 namespace larlite {
   /**
@@ -39,6 +41,8 @@ namespace larlite {
       _h_mu_E_all = 0;
       _h_mu_E_contained = 0;
       _h_mu_E_all = 0;
+      myspline = 0;
+      mycalc = 0;
     }
 
     /// Default destructor
@@ -52,20 +56,59 @@ namespace larlite {
 
   protected:
 
-        // Sphere around neutrino vertex
+    // Sphere around neutrino vertex
     geoalgo::Sphere _nu_sphere;
 
     TTree *_tree;
     bool _mu_contained;
     bool _p_contained;
     size_t _n_reco_tracks_fromvtx;
+    size_t _n_reco_tracks_endingnearvtx;
     size_t _n_mc_tracks_fromvtx;
+    double _true_mu_E;
+    double _true_p_E;
+    double _reco_mu_E;
+    double _reco_p_E;
+    double _true_nu_E;
+    double _reco_CCQE_E;
+    double _true_mu_len;
+    double _true_p_len;
+    double _reco_mu_len;
+    double _reco_p_len;
+    double _true_neutrons_E;
+    bool _is_reco_vtx_near_true_vtx;
+    int runno;
+    int subrunno;
+    int evtno;
+      // GNUMI decay codes (as in Ndecay)
+    /* --------------------------
+       Decay type Decay code
+       K0L -> nue pi- e+  1
+       K0L -> nuebar pi+ e- 2
+       K0L -> numu pi- mu+  3
+       K0L -> numubar pi+ mu- 4
+       K+ -> numu mu+         5
+       K+ -> nue pi0 e+         6
+       K+ -> numu pi0 mu+ 7
+       K- -> numubar mu-  8
+       K- -> nuebar pi0 e-  9
+       K- -> numubar pi0 mu-  10
+       mu+ -> numubar nue e+  11
+       mu- -> numu nuebar e-  12
+       pi+ -> numu mu+          13
+       pi- -> numubar mu- 14
+       -------------------------- */
+    int _fndecay;
+
 
     geoalgo::AABox _fidvolBox;
 
     size_t _evts_pass_filter;
     size_t _evts_fully_contained;
+    size_t kaleko_ctr;
 
+    TrackMomentumSplines *myspline;
+    NuEnergyCalc *mycalc;
 
 
     TH1F *_h_mu_E_contained;
