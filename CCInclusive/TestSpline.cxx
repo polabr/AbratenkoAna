@@ -11,8 +11,8 @@ namespace larlite {
 
         std::string histtitle;
         histtitle = _testing_protons ?
-                    "Spline Computed E vs. Perfect Reco Proton Deposited E" :
-                    "Spline Computed E vs. Perfect Reco Muon Deposited E";
+                    "Spline Computed E vs. Perfect Reco Proton Deposited E;Deposited E;Spline E" :
+                    "Spline Computed E vs. Perfect Reco Muon Deposited E;Deposited E;Spline E";
 
         _h = new TH2D("h", histtitle.c_str(), 200, 0, 2, 200, 0, 2);
 
