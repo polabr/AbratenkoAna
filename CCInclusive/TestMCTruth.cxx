@@ -95,7 +95,7 @@ namespace larlite {
         double nmass_MEV = 939.565;
 
 
-        //std::cout << " --- New event --- " << std::endl;
+        std::cout << " --- New event --- " << std::endl;
         evt_counter++;
         auto ev_mctruth = storage->get_data<event_mctruth>("generator");
         if (!ev_mctruth) {
@@ -120,6 +120,7 @@ namespace larlite {
         TLorentzVector remnant_momentum;
         TLorentzVector bindino_momentum;
         TLorentzVector nu_momentum;
+        TLorentzVector neutron_momentum;
 
         size_t n_muons = 0;
         size_t n_protons = 0;
@@ -132,6 +133,9 @@ namespace larlite {
                 Eremnant = particle.Trajectory().at(0).E();
                 true_n_TotE = pow(pow(premnant, 2) + pow(nmass_MEV / 1000., 2), 0.5);
             }
+
+            if (particle.StatusCode() == 11 && particle.PdgCode() == 2112)
+                neutron_momentum = particle.Trajectory().at(0).Momentum();
 
             if (abs(particle.PdgCode()) == 2000000101) {
                 // std::cout<<"Found a bindino! particle energy is "
@@ -247,8 +251,8 @@ namespace larlite {
 
         plane_Z_anglediff = cross.Theta();
 
-        std::cout << "Computing muon total energy ... " << std::endl;
-        std::cout << "Note that true mu total energy is " << true_mu_TotE * 1000. << " MEV." << std::endl;
+        // std::cout << "Computing muon total energy ... " << std::endl;
+        // std::cout << "Note that true mu total energy is " << true_mu_TotE * 1000. << " MEV." << std::endl;
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticNumeric(muvec, pvec, pvec.Mag() * 1000.);
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadratic(muvec, pvec, pvec.Mag() * 1000.);
         // reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(muvec, pvec, pvec.Mag() * 1000.) / 1000.;
@@ -256,13 +260,13 @@ namespace larlite {
         reco_mu_p_quadratic = std::sqrt(std::pow(reco_mu_TotE_quadratic, 2) - std::pow(mumass_MEV / 1000., 2));
         //consider true_n_TotE*1000. below for first argument to check for "exact matching" in the future
         reco_mu_TotE_quadratic = _Ecalc->ComputeEmu1mu1pQuadraticIterative(938. + 25., true_p_TotE * 1000., thetamu, thetap, true_p_p * 1000.) / 1000.;
-        std::cout << "Beginning with the following: (En = " << 938 + 25
-                  << ", Ep = " << true_p_TotE * 1000.
-                  << ", thetamu = " << thetamu
-                  << ", thetap = " << thetap
-                  << ", pp = " << true_p_p * 1000.
-                  << ")" << std::endl;
-        std::cout << "Iterative technique has found this result for Emu: " << reco_mu_TotE_quadratic * 1000. << std::endl;
+        // std::cout << "Beginning with the following: (En = " << 938 + 25
+        //           << ", Ep = " << true_p_TotE * 1000.
+        //           << ", thetamu = " << thetamu
+        //           << ", thetap = " << thetap
+        //           << ", pp = " << true_p_p * 1000.
+        //           << ")" << std::endl;
+        // std::cout << "Iterative technique has found this result for Emu: " << reco_mu_TotE_quadratic * 1000. << std::endl;
 
         double avg_quad_mu_E = 0.;
         size_t ctr = 0;
@@ -274,11 +278,11 @@ namespace larlite {
             if (!std::isnan(computed_E)) {
                 ctr++;
                 avg_quad_mu_E += computed_E;
-                std::cout << " n_KE = " << n_KE << ", computed E = " << computed_E << std::endl;
+                // std::cout << " n_KE = " << n_KE << ", computed E = " << computed_E << std::endl;
             }
         }
         avg_quad_mu_E /= (double)ctr;
-        std::cout << "avg quad E is " << avg_quad_mu_E << std::endl;
+        // std::cout << "avg quad E is " << avg_quad_mu_E << std::endl;
 
 
 
@@ -311,18 +315,29 @@ namespace larlite {
 
 
 
-        // std::cout<<"nu_momentum is :"<<std::endl;
-        // nu_momentum.Print();
-        // std::cout<<"bindino_momentum is :"<<std::endl;
-        // bindino_momentum.Print();
-        // std::cout<<"remnant_momentum is :"<<std::endl;
-        // remnant_momentum.Print();
-        // std::cout<<"mu_momentum is :"<<std::endl;
-        // mu_momentum.Print();
-        // std::cout<<"p_momentum is :"<<std::endl;
-        // p_momentum.Print();
-        // std::cout<<"neutrino momentum minus the rest of all momentum is :"<<std::endl;
-        // (nu_momentum - (p_momentum + mu_momentum + remnant_momentum + bindino_momentum) ).Print();
+        std::cout << "nu_momentum is :" << std::endl;
+        nu_momentum.Print();
+        std::cout << "bindino_momentum is :" << std::endl;
+        bindino_momentum.Print();
+        std::cout << "remnant_momentum is :" << std::endl;
+        remnant_momentum.Print();
+        std::cout << "from remnant, my articially constructed neutron 4 momentum is :" << std::endl;
+        TLorentzVector neutron_4mom(
+            -1.*remnant_momentum.Vect().X(),
+            -1.*remnant_momentum.Vect().Y(),
+            -1.*remnant_momentum.Vect().Z(),
+            std::sqrt(remnant_momentum.Vect().Mag2() + 0.939565 * 0.939565)
+        );
+        std::cout << "mctruth neutron_momentum is :" << std::endl;
+        neutron_momentum.Print();
+        std::cout << "mu_momentum is :" << std::endl;
+        mu_momentum.Print();
+        std::cout << "p_momentum is :" << std::endl;
+        p_momentum.Print();
+        std::cout << "neutrino 4momentum plus mctruth neutron 4momentum minus (p + mu + bindino 4momentum) :" << std::endl;
+        (nu_momentum + neutron_momentum - (p_momentum + mu_momentum + bindino_momentum) ).Print();
+        std::cout << "neutrino 4momentum plus artificial neutron 4momentum minus (p + mu + bindino 4momentum) :" << std::endl;
+        (nu_momentum + neutron_4mom- (p_momentum + mu_momentum + bindino_momentum) ).Print();
         genieMomDiff = (nu_momentum - (p_momentum + mu_momentum + remnant_momentum + bindino_momentum) ).Vect().Mag();
 
         // std::cout<<"TRUE MUON ENERGY (which below should match): "<<true_mu_TotE*1000.<<std::endl;
