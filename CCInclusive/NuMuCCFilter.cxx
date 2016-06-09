@@ -3,6 +3,7 @@
 
 #include "NuMuCCFilter.h"
 #include "DataFormat/mctruth.h"
+#include "DataFormat/mcflux.h"
 
 namespace larlite {
 
@@ -65,13 +66,32 @@ namespace larlite {
         if (ev_mctruth->at(0).GetNeutrino().CCNC() || ev_mctruth->at(0).GetNeutrino().Nu().PdgCode() != 14)
             return false;
 
+        // If this filter toggled to only look at numuCC from kaons, read in the mcflux to determine neutrino ancestry
+        // and throw out this event if neutrino doesn't have fndecay == 5 (K+ --> numu + mu+)
+        if(_keep_only_numu_from_kaons){
+
+            auto ev_mcflux = storage->get_data<event_mcflux>("generator");
+            if (!ev_mcflux) {
+                print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, mcflux!"));
+                return false;
+            }
+            // Require exactly one neutrino interaction
+            if (ev_mcflux->size() != 1) {
+                print(larlite::msg::kINFO, __FUNCTION__, Form("ev_mcflux size is not 1!"));
+                return false;
+            }
+
+            if( ev_mcflux->at(0).fndecay != 5 ) return false;
+
+        }
+
         kept_events++;
 
         return true;
     }
 
     bool NuMuCCFilter::finalize() {
-
+        std::cout << "NuMuCCFilter has _keep_only_numu_from_kaons set to "<<_keep_only_numu_from_kaons<<"."<<std::endl;
         std::cout << "NuMuCCFilter: Total events = " << total_events << std::endl;
         std::cout << "NuMuCCFilter: Final kept events = " << kept_events << std::endl;
 

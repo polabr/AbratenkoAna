@@ -29,26 +29,23 @@ namespace larlite {
   public:
 
     /// Default constructor
-    NuMuCCFilter(){ _name="NuMuCCFilter"; _fout=0;}
+    NuMuCCFilter(){ 
+      _name="NuMuCCFilter"; 
+      _fout=0;
+    _keep_only_numu_from_kaons = false;
+  }
 
     /// Default destructor
     virtual ~NuMuCCFilter(){}
 
-    /** IMPLEMENT in NuMuCCFilter.cc!
-        Initialization method to be called before the analysis event loop.
-    */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in NuMuCCFilter.cc! 
-        Analyze a data event-by-event  
-    */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in NuMuCCFilter.cc! 
-        Finalize method to be called after all events processed.
-    */
     virtual bool finalize();
 
+    void SetNuMuFromKaonOnly(bool flag){ _keep_only_numu_from_kaons = flag; }
+    
   protected:
     
     // Fiducial volume box
@@ -59,6 +56,8 @@ namespace larlite {
     double fidvol_dist_z;
     size_t total_events;
     size_t kept_events;
+
+    bool _keep_only_numu_from_kaons;
     
   };
 }
