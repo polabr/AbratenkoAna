@@ -49,6 +49,8 @@ namespace larlite {
     geoalgo::AABox _fidvolBox;
     double fidvol_dist;
     double fidvol_dist_y;
+    double fidvol_dist_x;
+    double fidvol_dist_z;
     size_t total_events;
     size_t kept_events;
     size_t kaleko_ctr;
