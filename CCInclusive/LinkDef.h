@@ -16,14 +16,20 @@
 #pragma link C++ class larlite::TestSpline+;
 #pragma link C++ class larlite::EventSelector+;
 #pragma link C++ class larlite::TestKinematicNuReco+;
-#pragma link C++ class larlite::XiaoEventSelector+;
+#pragma link C++ class larlite::XiaoEventAna+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter_MCTracks+;
 #pragma link C++ class larlite::TestMCTruth+;
 #pragma link C++ class larlite::EventsContainedStudy+;
 #pragma link C++ class larlite::NuMuCCFilter+;
+#pragma link C++ class larlite::XiaoNuFinder+;
+
+#pragma link C++ class larlite::TestPPiCalo+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
+
 
 
 
