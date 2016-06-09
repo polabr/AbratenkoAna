@@ -70,6 +70,9 @@ namespace larlite {
     double _reco_mu_E;
     double _reco_p_E;
     double _true_nu_E;
+    double _true_nu_x;
+    double _true_nu_y;
+    double _true_nu_z;
     double _reco_CCQE_E;
     double _true_mu_len;
     double _true_p_len;

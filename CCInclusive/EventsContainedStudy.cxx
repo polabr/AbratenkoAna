@@ -44,6 +44,9 @@ namespace larlite {
 		_tree->Branch("reco_mu_E", &_reco_mu_E, "reco_mu_E/D");
 		_tree->Branch("reco_p_E", &_reco_p_E, "reco_p_E/D");
 		_tree->Branch("true_nu_E", &_true_nu_E, "true_nu_E/D");
+		_tree->Branch("true_nu_x", &_true_nu_x, "true_nu_x/D");
+		_tree->Branch("true_nu_y", &_true_nu_y, "true_nu_y/D");
+		_tree->Branch("true_nu_z", &_true_nu_z, "true_nu_z/D");
 		_tree->Branch("reco_CCQE_E", &_reco_CCQE_E, "reco_CCQE_E/D");
 		_tree->Branch("true_mu_len", &_true_mu_len, "true_mu_len/D");
 		_tree->Branch("true_p_len", &_true_p_len, "true_p_len/D");
@@ -83,6 +86,9 @@ namespace larlite {
 		_reco_mu_E = -999.;
 		_reco_p_E = -999.;
 		_true_nu_E = -999.;
+		_true_nu_x = -999.;
+		_true_nu_y = -999.;
+		_true_nu_z = -999.;
 		_reco_CCQE_E = -999.;
 		_true_mu_len = -999.;
 		_true_p_len = -999.;
@@ -143,6 +149,9 @@ namespace larlite {
 
 		_true_nu_E = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().E();
 		auto const& nu_vtx = ev_mctruth->at(0).GetNeutrino().Nu().Trajectory().front().Position().Vect();
+		_true_nu_x = nu_vtx.X();
+		_true_nu_y = nu_vtx.Y();
+		_true_nu_z = nu_vtx.Z();
 
 		// Make a small 3cm geosphere around neutrino vertex
 		_nu_sphere.Center(nu_vtx);
