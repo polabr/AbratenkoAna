@@ -10,7 +10,7 @@ if len(sys.argv) < 2:
 from ROOT import larlite as fmwk
 from ROOT import gSystem
 
-gSystem.Load('libKalekoAna_LArSoftImport')
+# gSystem.Load('libKalekoAna_LArSoftImport')
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
 
