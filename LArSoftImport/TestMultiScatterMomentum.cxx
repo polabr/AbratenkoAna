@@ -63,8 +63,7 @@ namespace larlite {
       std::cout << "The y coordinate of the nu vertex is located at: " << mctruth.GetNeutrino().Nu().Trajectory().front().Y() << ".\n";
       std::cout << "The z coordinate of the nu vertex is located at: " << mctruth.GetNeutrino().Nu().Trajectory().front().Z() << ".\n";	
       
-    }
-    else {
+    } else {
       print(larlite::msg::kERROR, __FUNCTION__, Form("NEUTRINO VERTEX NOT CONTAINED"));
       return false;
     }
@@ -78,7 +77,8 @@ namespace larlite {
     }
 
     std::cout << "I see " << ev_mctrack->size() << " mctracks in this event\n";
-    
+
+    // Narrowing down the number of mctracks
     for (size_t i=0; i<ev_mctrack->size(); i++) {
       
       auto mctrack=ev_mctrack->at(i);
@@ -86,122 +86,161 @@ namespace larlite {
       if(mctrack.PdgCode()==13 && mctrack.Origin()==1) {
 	
 	std::cout<<"On mctrack " << i << ", and the particle's mother PDG is "<<mctrack.MotherPdgCode()<< ", the PDG code is " << mctrack.PdgCode() << ", and the ancestor PDG is "<<mctrack.AncestorPdgCode() <<"\n";
-	//	std::cout<<"The process is "<<mctrack.Process()<<", the mother process is "<<mctrack.MotherProcess()<<", the ancestor process is "<<mctrack.AncestorProcess()<<".\n";
 	std::cout << "The origin is: " << mctrack.Origin() << ".\n";
 	
-	//	  for (size_t i=0; i<mctrack.size(); i++) {
-	//
-	//	    auto var=mctrack.at(i);
-	//	    
-	//	    std::cout << var << "\n";
-	//
-	//	  }
-	
-	//	  TLorentzVector positionVector=mctrack.front().Position();
-	
-	//	  if(mctrack.front().Position()[1])	   
-	
-	//	  std::cout << "The neutrino vertex here is " << mctruth.GetNeutrino().Nu().Trajectory().front().Position() << "\n";
-
-	
-	if (mctrack.size()!=0){
+	if (mctrack.size()!=0) {
 	  
 	  std::cout << "The x coordinate of the starting point of the muon is: " << mctrack.front().X() << ".\n"; 
 	  std::cout << "The y coordinate of the starting point of the muon is: " << mctrack.front().Y() << ".\n"; 
 	  std::cout << "The z coordinate of the starting point of the muon is: " << mctrack.front().Z() << ".\n"; 
-	}
-	else {
+
+	} else {
 	  print(larlite::msg::kERROR, __FUNCTION__, Form("mctrack.size() was 0 here!"));
 	  return false;
 	}
 	
 	auto const& mct_start = mctrack.front().Position().Vect();
+	
 	double dist=(nu_vtx-mct_start).Mag();
+	
 	std::cout << "This is the difference between coordinates: " << dist << "\n";
 
-	if (dist>0.001){
+	if (dist>0.001) {
 	  
 	  print(larlite::msg::kERROR, __FUNCTION__, Form("Distance was too large, skipping this mctrack..."));
 	  return false;
 	  
 	}
+
+	// Put here?
+	//	  W00T, next step! This is where another if statement for sorting the mctracks would go, 
+	//        after sifting through only PGD=13 and Origin=1
 	
-	//	  std::cout << "W00T, next step!" << dist << "\n";
+	// Extract MC TTree info from the one MCTrack  
+
+	_true_mom=mctrack.front().Momentum().Vect().Mag()/1000.;
+
+	_true_length=(mctrack.End().Position().Vect()-mctrack.Start().Position().Vect()).Mag(); 
+
+	if (_using_mctracks)                                                                                    
+	  _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(mctrack);                                                
+	std::cout << "Everything went ok so far. Now onto the Reco Tracks." << "\n";    
+
+	if (!_using_mctracks) {
+	  
+	  //Get the Reco Tracks
+	  auto ev_track=storage->get_data<event_track>("pandoraNuKHit");
+	  
+	  if (!ev_track) {
+	    print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
+	    return false;
+	  }
+
+	  std::cout << "I see " << ev_track->size() << " tracks in this event\n";
+	  
+	  // Sorting through the tracks
+	  for (size_t i=0; i<ev_track->size(); i++) {
+	    
+	    auto track=ev_track->at(i);
+	    
+	    std::cout << i << "\n";
+
+	    auto const& trk_start = track.front().Position().Vect();
+	    auto const& trk_end = track.back().Position().Vect();
+	    
+	    std::cout << "This is this track's x coordinate: " << track.front().X() << "\n";
+	    std::cout << "This is this track's y coordinate: " << track.front().Y() << "\n";
+	    std::cout << "This is this track's z coordinate: " << track.front().Z() << "\n";
+
+	  }
+	  
+	  // Note: mct_start variable aleady initialized above
+	  auto const& mct_end = mctrack.back().Position().Vect();
+
+	  if (ev_track->size() != 1) {
+	    print(larlite::msg::kERROR, __FUNCTION__, Form("NOTE: ev_track->size()!=1"));
+	    return false;
+	    
+	  }                    
+	  
+	} else {
+	  
+	  print(larlite::msg::kERROR, __FUNCTION__, Form("These mctracks did not have the PDG=13 and Origin=1"));
+	  
+	  continue;
+	  
+	}
 	
       }
       
-      //       	  if(mctrack.Origin()!=1){
-      
-      // ignore this iteration of the loop                                                
-      // return false;
-      //}
-      
-      //	  std::cout<<"On mctrack "<<i<<" and particle's mother PDG is "<<mctrack.MotherPdgCode()<<"\n";
-      
-      //	}
-      
-    }
+    } // Ends the for loop above.
     
-    // MC Reco stuff should be in here
-    
-    //  if (ev_mctrack->size() != 1) {
-    //  print(larlite::msg::kERROR, __FUNCTION__, Form("MC NOTE: ev_mctrack->size()!=1"));
-    //    return false;
-    
-  }
+      // MC Reco stuff should be in here
 
-  /// Extract MC TTree info from the one MCTrack
-  auto const& mct = ev_mctrack->at(0);
-  _true_mom = mct.front().Momentum().Vect().Mag() / 1000.;
-  
-  _true_length = (mct.End().Position().Vect() - mct.Start().Position().Vect()).Mag();
-  
-  if (_using_mctracks)
-    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(mct);
-  
-  std::cout << "Everything went ok so far. Now onto the Reco Tracks." << "\n"
-  
-  if (!_using_mctracks) {
-    //Get the Reco Tracks
-    auto ev_track = storage->get_data<event_track>("pandoraNuKHit");
+    /*
+
+    // Extract MC TTree info from the one MCTrack
+    auto const& mct = ev_mctrack->at(0);
     
-    std::cout << "I see " << ev_track->size() << " tracks in this event\n";
+        _true_mom=mct.front().Momentum().Vect().Mag()/1000.;
     
-    if (!ev_track) {
-      print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
-      return false;
+     _true_length=(mct.End().Position().Vect()-mct.Start().Position().Vect()).Mag();
+    
+    if (_using_mctracks)
+      _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(mct);
+  
+    std::cout << "Everything went ok so far. Now onto the Reco Tracks." << "\n";
+  
+    if (!_using_mctracks) {
+
+      //Get the Reco Tracks
+      auto ev_track = storage->get_data<event_track>("pandoraNuKHit");
+          
+      if (!ev_track) {
+
+	print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
+	return false;
+
+      }
+
+      std::cout << "I see " << ev_track->size() << " tracks in this event\n";
+
+      if (ev_track->size() != 1) {
+	print(larlite::msg::kERROR, __FUNCTION__, Form("NOTE: ev_track->size()!=1"));
+	return false;
+    
+      }
+    
+      // Extract Reco TTree info from the one track
+      auto const& trk = ev_track->at(0);
+      _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(trk);
+      _reco_length = trk.Length();
+  
     }
-    if (ev_track->size() != 1) {
-      print(larlite::msg::kERROR, __FUNCTION__, Form("NOTE: ev_track->size()!=1"));
-      return false;
-    }
+  
+    _mu_contained = _fidvolBox.Contain(mct.front().Position().Vect()) &&
+      _fidvolBox.Contain(mct.back().Position().Vect());
+  
+    _ana_tree->Fill();
     
-    /// Extract Reco TTree info from the one track
-    auto const& trk = ev_track->at(0);
-    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(trk);
-    _reco_length = trk.Length();
-  }
-  
-  _mu_contained = _fidvolBox.Contain(mct.front().Position().Vect()) &&
-		 _fidvolBox.Contain(mct.back().Position().Vect());
-  
-  _ana_tree->Fill();
-  //	}
-  return true;
+    */
+
+    return true;
 }
 
-bool TestMultiScatterMomentum::finalize() {
+  bool TestMultiScatterMomentum::finalize() {
   
-  if (_fout) { _fout->cd(); _ana_tree->Write(); }
+    if (_fout) { _fout->cd(); _ana_tree->Write(); }
   
-  else
-    print(larlite::msg::kERROR, __FUNCTION__, "Did not find an output file pointer!!! File not opened?");
+    else
+      print(larlite::msg::kERROR, __FUNCTION__, "Did not find an output file pointer!!! File not opened?");
   
-  if (_ana_tree)
-    delete _ana_tree;
+    if (_ana_tree)
+      delete _ana_tree;
   
-  return true;
-}
+    return true;
+  }
 
 }
 #endif
+
