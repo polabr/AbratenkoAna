@@ -50,10 +50,11 @@ namespace larlite {
     std::vector<Float_t> recoX; std::vector<Float_t> recoY; std::vector<Float_t> recoZ;
     
     recoX.clear(); recoY.clear(); recoZ.clear();
-    
+
+    // Getting size of given mctrack vector in function's argument
     Int_t n_points=trk.size();
     
-    //    std::cout<<"kaleko: n_points = "<<n_points<<std::endl;
+    std::cout<<"kaleko: n_points = "<<n_points<<std::endl;
     
     // Looping through track vector for each individual entry
     for (Int_t i=0; i<n_points; i++) {
@@ -113,7 +114,8 @@ namespace larlite {
     
   }
   
-  // Defining GetRecoTracks
+  // Takes X, Y, and Z coord vectors (recoX, recoY, recoZ) as args
+  // Checks if coordinate vector lengths match; if not, fails the tracks
   Int_t TrackMomentumCalculator::GetRecoTracks(const std::vector<Float_t> &xxx, const std::vector<Float_t> &yyy, const std::vector<Float_t> &zzz) {
     
     // Taking lengths of each coordinate vector
@@ -121,7 +123,7 @@ namespace larlite {
     
     // Comparing track coordinate lengths; basically, if they don't match, don't use this data
     if ((a1!=a2) || (a1!=a3) || (a2!=a3)) { 
-      std::cout << "(Get reco tracks) Error! Track coordinate lengths don't match!" << std::endl; 
+      std::cout << "(GetRecoTracks) Error! Track coordinate lengths don't match!" << std::endl; 
       return -1; 
     }
     
@@ -131,7 +133,7 @@ namespace larlite {
     
     for (Int_t i=0; i<a1; i++) {
       
-      // Obtaining each element at index
+      // Obtaining each individual coordinate element at index
       Double_t nowx=xxx.at(i);
       Double_t nowy=yyy.at(i);
       Double_t nowz=zzz.at(i);
@@ -161,117 +163,151 @@ namespace larlite {
   
   Int_t TrackMomentumCalculator::GetSegTracks2(const std::vector<Float_t> &xxx, const std::vector<Float_t> &yyy, const std::vector<Float_t> &zzz) {
     
-    Double_t stag=0.0;
+    Double_t stag = 0.0;
     
     // Getting size of input vectors
-    Int_t a1=xxx.size(); Int_t a2=yyy.size(); Int_t a3=zzz.size();
+    Int_t a1 = xxx.size(); Int_t a2 = yyy.size(); Int_t a3 = zzz.size();
     
     // Make sure all coordinate lengths match
-    if ((a1!=a2) || (a1!=a3) || (a2!=a3)) {
-      std::cout << "(Digitize reco tracks) Error! Track coordinate lengths don't match!" << std::endl; 
+    if ((a1 != a2) || (a1 != a3) || (a2 != a3)) {
+
+      std::cout << "(Digitize reco tracks (GetSegTracks2)) Error! Track coordinate lengths don't match!" << std::endl; 
+
       return -1; 
-      
+
     }
     
-    Int_t stopper=seg_stop/seg_size;
+    Int_t stopper = seg_stop / seg_size;
     
-    Int_t a4=a1-1;
+    Int_t a4 = a1 - 1;
     
+    // Making sure all relevant vectors are of size 0
     segx.clear(); segy.clear(); segz.clear();
     
     segnx.clear(); segny.clear(); segnz.clear();
     
     segL.clear();
     
-    Int_t ntot=0;
+    Int_t ntot = 0;
     
-    n_seg=0;
+    n_seg = 0;
     
     Double_t x0; Double_t y0; Double_t z0;
     
-    Double_t x00=xxx.at(0); Double_t y00=yyy.at(0); Double_t z00=zzz.at(0);
+    Double_t x00 = xxx.at(0); Double_t y00 = yyy.at(0); Double_t z00 = zzz.at(0);
     
-    Int_t indC=0;
+    Int_t indC = 0;
     
     std::vector<Float_t> vx; std::vector<Float_t> vy; std::vector<Float_t> vz;
     
     vx.clear(); vy.clear(); vz.clear();
     
-    for (Int_t i=0; i<=a4; i++) {
+    // Note: this only loops through once! So only for the beginning points!
+    for (Int_t i = 0; i <= a4; i++) {
       
-      x0=xxx.at(i); y0=yyy.at(i); z0=zzz.at(i);
+      // These are each individual coordinate of a point inside recoX,Y,Z for a given index
+      x0 = xxx.at(i); y0 = yyy.at(i); z0 = zzz.at(i);
       
-      Double_t RR0=sqrt(pow(x00-x0, 2.0)+pow(y00-y0, 2.0)+pow(z00-z0, 2.0));
+      // Gets distance between each individual coordinate for a given index and the beginning coordinate
+      // Since this is only looped over once, should be a distance of 0
+      Double_t RR0 = sqrt(pow(x00 - x0, 2.0) + pow(y00 - y0, 2.0) + pow(z00 - z0, 2.0));
       
-      if (RR0>=stag) {
+      // "As long as the distance isn't negative" (which it shouldn't be) 
+      if (RR0 >= stag) {
+	
+	// segx,y,z are new vectors of each element in recoX,Y,Z (why?)
 	segx.push_back(x0); segy.push_back(y0); segz.push_back(z0);
 	
+	// segL is a vector of 0's
 	segL.push_back(stag);
 	
+	// Setting each element of x,y,z_seg array to the elements in recoX,Y,Z (why?)
 	x_seg[n_seg]=x0;  y_seg[n_seg]=y0; z_seg[n_seg]=z0;
 	
 	n_seg++;
 	
+	// Filling newly created vectors with elements in recoX,Y,Z (why all these similar vectors?)
 	vx.push_back(x0); vy.push_back(y0); vz.push_back(z0);
 	
+	// Why is this line even here?
 	ntot++;
 	
-	indC=i+1;
+	// This loop only runs once and breaks after. Thus, after it, indC is only 1
+	indC = i+1;
 
 	break;
 	
       }
       
     }
-    
-    for (Int_t i=indC; i<a4; i++) {
+
+    std::cout << "This is indC at the end of the loop: " << indC << "\n";
+
+    // From 1 up until (recoX,Y,Z lengths - 1)
+    for (Int_t i = indC; i < a4; i++) {
       
-      Double_t x1=xxx.at(i); Double_t y1=yyy.at(i); Double_t z1=zzz.at(i);
+      Double_t x1 = xxx.at(i); Double_t y1 = yyy.at(i); Double_t z1 = zzz.at(i);
       
-      Double_t dr1=sqrt(pow(x1-x0, 2)+pow(y1-y0, 2)+pow(z1-z0, 2));
+      // What are x0, y0, z0 here? They weren't assigned values in this loop!
+      // Were they supposed to be x00, y00, z00?
+      Double_t dr1 = sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2) + pow(z1 - z0, 2));
       
-      Double_t x2=xxx.at(i+1); Double_t y2=yyy.at(i+1); Double_t z2=zzz.at(i+1);
+      Double_t x2 = xxx.at(i + 1); Double_t y2 = yyy.at(i + 1); Double_t z2 = zzz.at(i + 1);
       
-      Double_t dr2=sqrt(pow(x2-x0, 2)+pow(y2-y0, 2)+pow(z2-z0, 2));
+      Double_t dr2 = sqrt(pow(x2 - x0, 2) + pow(y2 - y0, 2) + pow(z2 - z0, 2));
       
-      if (dr1<seg_size) {
+      // If the first distance is under 10 cm: (why does it check for this?)
+      if (dr1 < seg_size) {
 	
+	// Add to the vx,y,z vectors
 	vx.push_back(x1); vy.push_back(y1); vz.push_back(z1);
 	
 	ntot++;
 	
       }
       
-      if (dr1<seg_size && dr2>seg_size) {
+      // If distance 1 is under 10 cm but distance 2 is over 10 cm
+      if (dr1 < seg_size && dr2 > seg_size) {
 	
-	// std::cout << " 1 " << std::endl;
+	Double_t t = 0.0;
 	
-	Double_t t=0.0;
+	// Difference between the 2 distances (how much more d2 is than d1) for each coord
+	Double_t dx = x2 - x1; Double_t dy = y2 - y1; Double_t dz = z2 - z1;
 	
-	Double_t dx=x2-x1; Double_t dy=y2-y1; Double_t dz=z2-z1;
+	// Total distance with distance formula
+	Double_t dr = sqrt(dx*dx + dy*dy + dz*dz);
 	
-	Double_t dr=sqrt(dx*dx+dy*dy+dz*dz);
-	
-	if (dr==0) { 
+	// This wouldn't even happen
+	if (dr == 0) {
+	  
 	  std::cout << "(Zero) Error! " << std::endl; 
+	  
 	  return -1; 
+	
 	}
 	
-	Double_t beta=2.0*((x1-x0)*dx+(y1-y0)*dy+(z1-z0)*dz)/(dr*dr);
 	
-	Double_t gamma = ( dr1 * dr1 - seg_size * seg_size ) / ( dr * dr );
+	Double_t beta = 2.0 * ((x1 - x0)*dx + (y1 - y0)*dy + (z1 - z0)*dz) / (dr*dr);
+       
+	Double_t gamma = (dr1*dr1 - seg_size*seg_size) / (dr*dr);
 	
-	Double_t delta = beta * beta - 4.0 * gamma;
+	Double_t delta = beta*beta - 4.0*gamma;
 	
-	if ( delta < 0.0 ) { std::cout << " ( Discriminant ) Error ! " << std::endl; return -1; }
+	if (delta < 0.0) { 
+	  
+	  std::cout << " (Discriminant) Error! " << std::endl; 
+
+	  return -1; 
 	
-	Double_t lysi1 = ( -beta + sqrt( delta ) ) / 2.0;
+	}
+	
+	Double_t lysi1 = (-beta + sqrt(delta)) / 2.0;
 	
 	t = lysi1;
 	
-	Double_t xp = x1 + t * dx;
+	Double_t xp = x1 + t*dx;
 	
-	Double_t yp = y1 + t * dy;
+	Double_t yp = y1 + t*dy;
 	
 	Double_t zp = z1 + t * dz;
 	
@@ -770,10 +806,11 @@ namespace larlite {
     
     return result;
     
-	}
+  }
   
-  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::mctrack &trk )
-  {
+  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD(const larlite::mctrack &trk) {
+   
+    // Momentum? Set to -1 by default
     Double_t p = -1.0;
     
     std::vector<Float_t> recoX; std::vector<Float_t> recoY; std::vector<Float_t> recoZ;
@@ -782,43 +819,53 @@ namespace larlite {
     
     Int_t n_points = trk.size();
     
-    for ( Int_t i = 0; i < n_points; i++ )
-      {
-	const TVector3 &pos = trk[i].Position().Vect();
-	
-	recoX.push_back( pos.X() ); recoY.push_back( pos.Y() ); recoZ.push_back( pos.Z() );
-	
-	// cout << " posX, Y, Z : " << pos.X() << ", " << pos.Y() << ", " << pos.Z() << endl; getchar();
-	
-      }
+    for (Int_t i = 0; i < n_points; i++) {
+
+      // Get a coordinate position vector (of XYZ) at each i in the mctrack
+      const TVector3 &pos = trk[i].Position().Vect();
+      
+      // recoX,Y,Z are each individual coordinate vectors for mctracks
+      recoX.push_back(pos.X()); recoY.push_back(pos.Y()); recoZ.push_back(pos.Z());
+      
+      std::cout << " CALCULATOR: pos X, Y, Z : " << pos.X() << ", " << pos.Y() << ", " << pos.Z() << std::endl;
+      
+    }
     
+    // Checking how many X coordinates there are for this mctrack
     Int_t my_steps = recoX.size();
     
-    if ( my_steps < 2 ) return -1.0;
+    if (my_steps < 2) 
+      return -1.0;
     
-    Int_t check0 = GetRecoTracks( recoX, recoY, recoZ );
+    // Make sure GetRecoTracks returns 0 to pass (this is checking if coord vectors are the same len)
+    Int_t check0 = GetRecoTracks(recoX, recoY, recoZ);
     
-    if ( check0 != 0 ) return -1.0;
+    if (check0 != 0) 
+      return -1.0;
     
     seg_size = steps_size2;
     
-    Int_t check1 = GetSegTracks2( recoX, recoY, recoZ );
+    Int_t check1 = GetSegTracks2(recoX, recoY, recoZ);
     
-    if ( check1 != 0 ) return -1.0;
+    if (check1 != 0) 
+      return -1.0;
     
     Int_t seg_steps = segx.size();
     
-    if ( seg_steps < 2 ) return -1;
+    if (seg_steps < 2) 
+      return -1;
     
     Int_t seg_steps0 = seg_steps - 1;
     
     Double_t recoL = segL.at(seg_steps0);
     
-    if ( recoL < minLength || recoL > maxLength ) return -1;
+    if (recoL < minLength || recoL > maxLength) 
+      return -1;
     
-    Int_t check2 = GetDeltaThetaij( dEi, dEj, dthij, seg_size, ind );
+    Int_t check2 = GetDeltaThetaij(dEi, dEj, dthij, seg_size, ind);
     
-    if ( check2 != 0 ) return -1.0;
+    if (check2 != 0) 
+      return -1.0;
     
     Double_t logL = 1e+16;
     
@@ -860,8 +907,8 @@ namespace larlite {
     
   }
   
-  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::track &trk )
-  {
+  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::track &trk ) {
+
     Double_t p = -1.0;
     
     std::vector<Float_t> recoX; std::vector<Float_t> recoY; std::vector<Float_t> recoZ;
