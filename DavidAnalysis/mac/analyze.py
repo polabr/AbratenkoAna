@@ -1,12 +1,9 @@
 import ROOT
 from ROOT import TFile, gDirectory, TCanvas, TH1D, TColor
-# from ROOT import TFile, gDirectory
-# You probably also want to import TH1D,
-# unless you're not making any histograms.
-# from ROOT import TH1D
 
 # Open the file. 
-f=TFile("testmultiscattermomentum_output.root")
+f=TFile("testmultiscattermomentum_output.root","READ")
+
 # See what is inside the file.
 print "Now looking inside the file:"
 f.ls()
@@ -15,6 +12,7 @@ f.ls()
 # tree=gDirectory.Get("ana_tree")
 # entries=tree.GetEntries()
 
+# GetEntry reads all branches of entry, outputs number of bytes read
 #entry=f.ana_tree.GetEntry(0)
 #print entry
 
@@ -24,24 +22,21 @@ f.ana_tree.Show(0)
 
 # Get the total number of entries in the tree.
 entries=f.ana_tree.GetEntries()
-print "This is how many total  entries are inside the tree:\n",entries
+print "This is how many total entries are inside the tree:\n", entries
 
 # Making a histogram. 
 # With TTree.Draw, first argument is the variable we are plotting, second
 # argument is cuts we want to make, third argument is draw styles. 
-# canvy=TCanvas("canvy","canvy",720,152,682,505)
-# canvy.cd()
-# tree.Draw("mcs_reco_mom:true_mom","","COLZ")
-# f.ana_tree.Draw("true_mom:mcs_reco_mom","mcs_reco_mom<0.1 && mcs_reco_mom>0","COLZ")
-# input=raw_input("Press enter to continue...")
 print "This is the current graph of MCp vs. MCSp."
-f.ana_tree.Draw("true_mom:mcs_reco_mom","","COLZ")
+trueMomVsMcsRecoColz=TCanvas("trueMomVsMcsRecoColz","trueMomVsMcsRecoColz",720,152,682,505)
+trueMomVsMcsRecoColz.cd()
+f.ana_tree.Draw("true_mom:mcs_reco_mom","","")
+# f.ana_tree.Draw("true_mom:mcs_reco_mom","mcs_reco_mom<0.1 && mcs_reco_mom>0","COLZ")
 input=raw_input("Press enter to continue...")
+# f.ana_tree.Draw("true_mom:mcs_reco_mom","","COLZ")
+# input=raw_input("Press enter to continue...")
 
-# mychain = gDirectory.Get( 'tree1' )
 # entries = mychain.GetEntriesFast()
-
-### The Set-up code goes here.
 
 # Setting up the histogram (range 100-150)
 histogram1=TH1D("h1","Energies from 0.3-0.5 GeV",100,-4,4)
@@ -144,8 +139,8 @@ stop=2.1
 
 for i in range(0,entries,1):
     count+=1
-    f.ana_tree.GetEntry(i)
-    if f.ana_tree.mcs_reco_mom!=-1: # and f.ana_tree.mu_contained==1:
+    en = f.ana_tree.GetEntry(i)
+    if f.ana_tree.mcs_reco_mom!=-1: #and f.ana_tree.mu_contained==1:
         #while f.ana_tree.true_mom>start and f.ana_tree.true_mom<start+step:
         #    histogram1.Fill(delta(i))
         if f.ana_tree.reco_len>100 and f.ana_tree.reco_len<150:
@@ -208,7 +203,7 @@ for i in range(0,entries,1):
                 histogram29.Fill(delta(i))
         
 # After the loop above.
-# print "This is count after the loop:",count
+print "This is count after the loop:",count
 canvy1=TCanvas("canvy1","canvy1",720,152,682,505)
 canvy1.cd()
 histogram1.Draw()

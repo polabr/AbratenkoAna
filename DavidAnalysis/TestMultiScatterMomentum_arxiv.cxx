@@ -83,19 +83,19 @@ namespace larlite {
         _ana_tree->Fill();
         return true;
     }
-
-    bool TestMultiScatterMomentum_arxiv::finalize() {
-
-        if (_fout) { _fout->cd(); _ana_tree->Write(); }
-
-        else
-            print(larlite::msg::kERROR, __FUNCTION__, "Did not find an output file pointer!!! File not opened?");
-
-        if (_ana_tree)
-            delete _ana_tree;
-
-        return true;
-    }
+  
+  bool TestMultiScatterMomentum_arxiv::finalize() {
+      
+    if (_fout) { _fout->cd(); _ana_tree->Write(); }
+    
+    else
+      print(larlite::msg::kERROR, __FUNCTION__, "Did not find an output file pointer!!! File not opened?");
+    
+    if (_ana_tree)
+      delete _ana_tree;
+    
+    return true;
+  }
 
 }
 #endif
