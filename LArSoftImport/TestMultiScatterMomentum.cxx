@@ -24,6 +24,7 @@ namespace larlite {
       _ana_tree->Branch("true_len", &_true_length, "true_len/D");
       _ana_tree->Branch("reco_len", &_reco_length, "reco_len/D");
       _ana_tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
+      //      _ana_tree->Branch("distances", &_distances, "mu_contained/O");
     }
 
     double fidvol_dist = 5.;
@@ -37,25 +38,29 @@ namespace larlite {
     _fidvolBox.Max( 2 * (::larutil::Geometry::GetME()->DetHalfWidth()) - fidvol_dist,
 		    ::larutil::Geometry::GetME()->DetHalfHeight() - fidvol_dist_y,
 		    ::larutil::Geometry::GetME()->DetLength() - fidvol_dist);
-    
+
     return true;
     
   }
+
+  int neutrinoCounter = 0;
   
   bool TestMultiScatterMomentum::analyze(storage_manager* storage) {
     
+    bool filling = false;
+
     // Set initial values for all vars
     _true_mom = -999.;
     _mcs_reco_mom = -999.;
     _true_length = -999.;
     _reco_length = -999.;
     _mu_contained = false;
-
+    
     std::cout << "Starting mc truth now." << "\n";
     
     // Get neutrino interaction vertex
     auto ev_mctruth = storage->get_data<event_mctruth>("generator");
-
+    
     // Neutrino vertex has to be at a single point
     if(ev_mctruth->size() != 1) 
       return false;
@@ -74,6 +79,7 @@ namespace larlite {
 
     } else {
       print(larlite::msg::kERROR, __FUNCTION__, Form("NEUTRINO VERTEX NOT CONTAINED"));
+      neutrinoCounter++;
       return false;
     }
 
@@ -95,13 +101,13 @@ namespace larlite {
       if(mctrack.PdgCode() == 13 && mctrack.Origin() == 1) {
 	
 	std::cout << "On mctrack " << i << ", and the particle's mother PDG is " << mctrack.MotherPdgCode() << ", the PDG code is " << mctrack.PdgCode() << ", and the ancestor PDG is " << mctrack.AncestorPdgCode() << "\n";
-	std::cout << "The origin is: " << mctrack.Origin() << ".\n";
+	std::cout << "The origin is: " << mctrack.Origin() << "\n";
 	
 	if (mctrack.size() != 0) {
 	  
-	  std::cout << "The x coordinate of the starting point of the muon is: " << mctrack.front().X() << "\n"; 
-	  std::cout << "The y coordinate of the starting point of the muon is: " << mctrack.front().Y() << "\n"; 
-	  std::cout << "The z coordinate of the starting point of the muon is: " << mctrack.front().Z() << "\n"; 
+	  std::cout << "The x-coordinate of the starting point of the muon is: " << mctrack.front().X() << "\n"; 
+	  std::cout << "The y-coordinate of the starting point of the muon is: " << mctrack.front().Y() << "\n"; 
+	  std::cout << "The z-coordinate of the starting point of the muon is: " << mctrack.front().Z() << "\n"; 
 	  
 	} else {
 	  print(larlite::msg::kERROR, __FUNCTION__, Form("mctrack.size() was 0 here!"));
@@ -109,6 +115,7 @@ namespace larlite {
 	}
 	
 	auto const& mct_start = mctrack.front().Position().Vect();
+	auto const& mct_back = mctrack.back().Position().Vect();
 	
 	double dist = (nu_vtx - mct_start).Mag();
 	
@@ -152,7 +159,20 @@ namespace larlite {
 	    return false;
 	  }
 
-	  // Setting the final chosen track's distance to some absurdly high number to start with
+	  // Obtain vector approximating direction of mctrack
+	  TVector3 mctrackDir = mct_back - mct_start;
+	  TVector3 unitMctrackDir = mctrackDir.Unit();
+
+	  // This is the value the dot product will be compared to
+	  double unitConstant = 1.0;
+	  
+	  // Setting the direction value (to be minimized)
+	  double minDir = 10000;
+
+	  // Setting the maximum allowed distance threshold
+	  double maxDist = 10000;
+
+	  // Setting the distance b/w starting points value (to be minimized)
 	  double minDist = 10000;
 
 	  // Just assigning a dummy value to chosenTrack here
@@ -166,34 +186,84 @@ namespace larlite {
 	    
 	    auto track = ev_track->at(i);
 	    
-	    auto const& trk_start = track.LocationAtPoint(0);  
-	    
-	    std::cout << "These are TRACK " << i << "'s starting X, Y, Z coordinates: " << trk_start.X() << ", " << trk_start.Y() << ", " << trk_start.Z() << "\n";
-	    
-	    auto  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
-	    
-	    std::cout << "Dist between starts: " << distBetweenStarts << "\n";
-	    
-	    if (distBetweenStarts < minDist) {
+	    // Want a track with at least 2 points in it
+	    if (track.NumberTrajectoryPoints() > 1) {
 	      
-	      minDist = distBetweenStarts;
+	      auto const& trk_start = track.LocationAtPoint(0);
+ 	      auto const& trk_end = track.LocationAtPoint((track.NumberTrajectoryPoints() - 1));	
 
-	      chosenTrack = track;
+	      std::cout << "These are TRACK " << i << "'s starting X, Y, Z coordinates: " << trk_start.X() << ", " << trk_start.Y() << ", " << trk_start.Z() << "\n";
+	      
+	      TVector3 trackDir = trk_end - trk_start;
+	      TVector3 unitTrackDir = trackDir.Unit();
+	      
+	      double dotProduct = unitTrackDir.Dot(unitMctrackDir);
+	      
+	      std::cout << "This is the dot product result: " << dotProduct << "\n";
 
-	      index = i;
-	    
+	      double angleDiff = fabs(fabs(dotProduct) - unitConstant);
+
+	      std::cout << "This is the angle difference (closest to 0 is best): " << angleDiff << "\n";
+	      	  
+	      auto  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
+
+	      if (distBetweenStarts < maxDist) {
+		
+		if (angleDiff < minDir) {
+
+		  std::cout << "YAYYYY!!!!!!!!!!!\n";
+		  
+		  minDir = angleDiff;
+
+		  // Never use this distance except when comparing two tracks with the exact same direction
+		  minDist = distBetweenStarts;
+		  
+		  chosenTrack = track; 
+		  
+		  index = i;
+		  
+		}
+		
+		else if (angleDiff == minDir) {
+		  
+		  std::cout << "This tracks' direction matches that of the previous track. Now comparing their respective distances from the mctrack starting point...\n";
+		  
+		  if (distBetweenStarts < minDist) {
+		    
+		    chosenTrack = track;
+		    
+		    index = i;
+		    
+		  } else {
+		    
+		    std::cout << "This track was farther away from the mctrack. Skipping...\n";
+		    
+		  }
+		  
+		}
+		
+		else if (angleDiff > minDir) {
+		  
+		  std::cout << "The track's difference in direction from the mctrack is larger than the previous track. Skipping...\n";
+		  
+		}
+		
+	      } else {
+		
+		std::cout << "Track was not within the maximum starting point distance from mctrack. Skipping...\n";
+		
+	      }
+	      
 	    }
 	    
 	  }
 	  
-	  std::cout << "This is the resulting minDist: " << minDist << "\n";
-	  
 	  auto const& cho_trk_start = chosenTrack.LocationAtPoint(0);
 	  
 	  std::cout << "These are the CHOSEN TRACK's starting X, Y, Z coordinates: " << cho_trk_start.X() << ", " << cho_trk_start.Y() << ", " << cho_trk_start.Z() << "\n";
-
+	  
 	  std::cout << "It is track number " << index << "\n";
-	 
+	  
 	  // Extract Reco TTree info from the one track  
 	  _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosenTrack);
 	  
@@ -202,27 +272,40 @@ namespace larlite {
 	  _reco_length = chosenTrack.Length();
 	  
 	  std::cout << "This is the track's reco length: " << _reco_length << " cm \n";
-
+	  
 	}
 	
       } else {
 	
-	print(larlite::msg::kERROR, __FUNCTION__, Form("These mctracks did not have the PDG=13 and Origin=1"));
-	continue;
+	print(larlite::msg::kERROR, __FUNCTION__, Form("These mctracks did not have the PDG = 13 and Origin = 1"));
+	continue; 
 	
       }
       
-      _mu_contained = _fidvolBox.Contain(mctrack.front().Position().Vect()) &&  _fidvolBox.Contain(mctrack.back().Position().Vect());                                                                                    
+      _mu_contained = _fidvolBox.Contain(mctrack.front().Position().Vect()) &&  _fidvolBox.Contain(mctrack.back().Position().Vect());
       
       _ana_tree->Fill();
+ 
+      filling = true;
+
+    } 
+
+    if (filling != true) {
+      
+      int n;
+      
+      print(larlite::msg::kERROR, __FUNCTION__, "NO NEUTRINO"); 
+      std::cin >> n;
       
     }
-    
+
     return true;
     
   }
   
   bool TestMultiScatterMomentum::finalize() {
+
+    std::cout << "Neutrinos lost: " << neutrinoCounter << "\n";
     
     std::cout << "Writing ana_tree" << "\n";
     if (_fout) { _fout->cd(); _ana_tree->Write(); }
@@ -239,4 +322,3 @@ namespace larlite {
   
 }
 #endif
-
