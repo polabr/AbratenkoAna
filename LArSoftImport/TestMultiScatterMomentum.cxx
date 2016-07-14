@@ -24,7 +24,10 @@ namespace larlite {
       _ana_tree->Branch("true_len", &_true_length, "true_len/D");
       _ana_tree->Branch("reco_len", &_reco_length, "reco_len/D");
       _ana_tree->Branch("mu_contained", &_mu_contained, "mu_contained/O");
-      //      _ana_tree->Branch("distances", &_distances, "mu_contained/O");
+      _ana_tree->Branch("distances", &_distances, "distances/D");
+      _ana_tree->Branch("angles", &_angles, "angles/D");
+      _ana_tree->Branch("startPoints", &_startPoints, "startPoints/D");
+      _ana_tree->Branch("endPoints", &_endPoints, "endPoints/D");
     }
 
     double fidvol_dist = 5.;
@@ -55,6 +58,10 @@ namespace larlite {
     _true_length = -999.;
     _reco_length = -999.;
     _mu_contained = false;
+    _distances = -999.;
+    _angles = -999.;
+    _startPoints.SetXYZ(-999.,-999.,-999.);
+    _endPoints.SetXYZ(-999.,-999.,-999.);
     
     std::cout << "Starting mc truth now." << "\n";
     
@@ -130,8 +137,9 @@ namespace larlite {
 	_true_mom = mctrack.front().Momentum().Vect().Mag() / 1000.;
 	std::cout << "True mom for this mctrack: " << _true_mom << " GeV \n";
 	
-	_true_length = (mctrack.End().Position().Vect() - mctrack.Start().Position().Vect()).Mag(); 
-	std::cout << "True length for this mctrack: " << _true_length << " cm \n";	
+	// This is true length in the detector, so front() and back() are used rather than Start() and End()
+	_true_length = (mctrack.back().Position().Vect() - mctrack.front().Position().Vect()).Mag(); 
+	std::cout << "True length for this mctrack: " << _true_length << " cm \n";
 	
 	if (_using_mctracks) {
 	  _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(mctrack);
@@ -170,7 +178,7 @@ namespace larlite {
 	  double minDir = 10000;
 
 	  // Setting the maximum allowed distance threshold
-	  double maxDist = 10000;
+	  double maxDist = 20;
 
 	  // Setting the distance b/w starting points value (to be minimized)
 	  double minDist = 10000;
@@ -198,14 +206,20 @@ namespace larlite {
 	      TVector3 unitTrackDir = trackDir.Unit();
 	      
 	      double dotProduct = unitTrackDir.Dot(unitMctrackDir);
-	      
+   
 	      std::cout << "This is the dot product result: " << dotProduct << "\n";
 
-	      double angleDiff = fabs(fabs(dotProduct) - unitConstant);
+	      double angleDiff = fabs(dotProduct) - unitConstant;
 
 	      std::cout << "This is the angle difference (closest to 0 is best): " << angleDiff << "\n";
 	      	  
-	      auto  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
+	      double  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
+
+	      double  distBetweenStartEnd = sqrt(pow(trk_end.X() - mct_start.X(), 2) + pow(trk_end.Y() - mct_start.Y(), 2) + pow(trk_end.Z() - mct_start.Z(), 2));
+
+	      // Assigns minimum difference value to distBetweenStarts
+	      if (distBetweenStarts > distBetweenStartEnd)
+		distBetweenStarts = distBetweenStartEnd;
 
 	      if (distBetweenStarts < maxDist) {
 		
@@ -221,6 +235,14 @@ namespace larlite {
 		  chosenTrack = track; 
 		  
 		  index = i;
+
+		  _distances = distBetweenStarts;
+		  
+		  _angles = dotProduct;
+		  
+		  _startPoints = trk_start;
+		  
+		  _endPoints = trk_end;
 		  
 		}
 		
@@ -234,10 +256,18 @@ namespace larlite {
 		    
 		    index = i;
 		    
+		    _distances = distBetweenStarts;
+
+		    _angles = dotProduct;
+		    
+		    _startPoints = trk_start;
+		    
+		    _endPoints = trk_end;
+		    
 		  } else {
 		    
 		    std::cout << "This track was farther away from the mctrack. Skipping...\n";
-		    
+		    continue;
 		  }
 		  
 		}
@@ -245,13 +275,13 @@ namespace larlite {
 		else if (angleDiff > minDir) {
 		  
 		  std::cout << "The track's difference in direction from the mctrack is larger than the previous track. Skipping...\n";
-		  
+		  continue;
 		}
 		
 	      } else {
 		
 		std::cout << "Track was not within the maximum starting point distance from mctrack. Skipping...\n";
-		
+		continue;
 	      }
 	      
 	    }
@@ -273,6 +303,12 @@ namespace larlite {
 	  
 	  std::cout << "This is the track's reco length: " << _reco_length << " cm \n";
 	  
+	  _mu_contained = _fidvolBox.Contain(mctrack.front().Position().Vect()) &&  _fidvolBox.Contain(mctrack.back().Position().Vect());
+      
+	  _ana_tree->Fill();
+ 
+	  filling = true;
+
 	}
 	
       } else {
@@ -282,12 +318,6 @@ namespace larlite {
 	
       }
       
-      _mu_contained = _fidvolBox.Contain(mctrack.front().Position().Vect()) &&  _fidvolBox.Contain(mctrack.back().Position().Vect());
-      
-      _ana_tree->Fill();
- 
-      filling = true;
-
     } 
 
     if (filling != true) {

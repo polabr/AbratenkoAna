@@ -57,6 +57,10 @@ namespace larlite {
     double _true_length;
     double _reco_length;
     bool _mu_contained;
+    double _distances;
+    double _angles;
+    TVector3 _startPoints; 
+    TVector3 _endPoints; 
 
     geoalgo::AABox _fidvolBox;
 
