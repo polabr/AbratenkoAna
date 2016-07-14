@@ -195,96 +195,95 @@ namespace larlite {
 	    auto track = ev_track->at(i);
 	    
 	    // Want a track with at least 2 points in it
-	    if (track.NumberTrajectoryPoints() > 1) {
+	    if (track.NumberTrajectoryPoints() < 2) continue;
 	      
-	      auto const& trk_start = track.LocationAtPoint(0);
- 	      auto const& trk_end = track.LocationAtPoint((track.NumberTrajectoryPoints() - 1));	
+	    auto const& trk_start = track.LocationAtPoint(0);
+	    auto const& trk_end = track.LocationAtPoint((track.NumberTrajectoryPoints() - 1));	
 
-	      std::cout << "These are TRACK " << i << "'s starting X, Y, Z coordinates: " << trk_start.X() << ", " << trk_start.Y() << ", " << trk_start.Z() << "\n";
+	    std::cout << "These are TRACK " << i << "'s starting X, Y, Z coordinates: " << trk_start.X() << ", " << trk_start.Y() << ", " << trk_start.Z() << "\n";
 	      
-	      TVector3 trackDir = trk_end - trk_start;
-	      TVector3 unitTrackDir = trackDir.Unit();
+	    TVector3 trackDir = trk_end - trk_start;
+	    TVector3 unitTrackDir = trackDir.Unit();
 	      
-	      double dotProduct = unitTrackDir.Dot(unitMctrackDir);
+	    double dotProduct = unitTrackDir.Dot(unitMctrackDir);
    
-	      std::cout << "This is the dot product result: " << dotProduct << "\n";
+	    std::cout << "This is the dot product result: " << dotProduct << "\n";
 
-	      double angleDiff = fabs(dotProduct) - unitConstant;
+	    double angleDiff = fabs(dotProduct) - unitConstant;
 
-	      std::cout << "This is the angle difference (closest to 0 is best): " << angleDiff << "\n";
+	    std::cout << "This is the angle difference (closest to 0 is best): " << angleDiff << "\n";
 	      	  
-	      double  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
+	    double  distBetweenStarts = sqrt(pow(trk_start.X() - mct_start.X(), 2) + pow(trk_start.Y() - mct_start.Y(), 2) + pow(trk_start.Z() - mct_start.Z(), 2));
 
-	      double  distBetweenStartEnd = sqrt(pow(trk_end.X() - mct_start.X(), 2) + pow(trk_end.Y() - mct_start.Y(), 2) + pow(trk_end.Z() - mct_start.Z(), 2));
+	    double  distBetweenStartEnd = sqrt(pow(trk_end.X() - mct_start.X(), 2) + pow(trk_end.Y() - mct_start.Y(), 2) + pow(trk_end.Z() - mct_start.Z(), 2));
 
-	      // Assigns minimum difference value to distBetweenStarts
-	      if (distBetweenStarts > distBetweenStartEnd)
-		distBetweenStarts = distBetweenStartEnd;
+	    // Assigns minimum difference value to distBetweenStarts
+	    if (distBetweenStarts > distBetweenStartEnd) distBetweenStarts = distBetweenStartEnd;
 
-	      if (distBetweenStarts < maxDist) {
+	    if (distBetweenStarts < maxDist) {
 		
-		if (angleDiff < minDir) {
+	      if (angleDiff < minDir) {
 
-		  std::cout << "YAYYYY!!!!!!!!!!!\n";
+		std::cout << "YAYYYY!!!!!!!!!!!\n";
 		  
-		  minDir = angleDiff;
+		minDir = angleDiff;
+		
+		// Never use this distance except when comparing two tracks with the exact same direction
+		minDist = distBetweenStarts;
+		  
+		chosenTrack = track; 
+		  
+		index = i;
 
-		  // Never use this distance except when comparing two tracks with the exact same direction
-		  minDist = distBetweenStarts;
+		_distances = distBetweenStarts;
 		  
-		  chosenTrack = track; 
+		_angles = dotProduct;
 		  
+		_startPoints = trk_start;
+		  
+		_endPoints = trk_end;
+		  
+	      }
+		
+	      else if (angleDiff == minDir) {
+		  
+		std::cout << "This tracks' direction matches that of the previous track. Now comparing their respective distances from the mctrack starting point...\n";
+		
+		if (distBetweenStarts < minDist) {
+		    
+		  chosenTrack = track;
+		    
 		  index = i;
-
+		    
 		  _distances = distBetweenStarts;
-		  
-		  _angles = dotProduct;
-		  
-		  _startPoints = trk_start;
-		  
-		  _endPoints = trk_end;
-		  
-		}
-		
-		else if (angleDiff == minDir) {
-		  
-		  std::cout << "This tracks' direction matches that of the previous track. Now comparing their respective distances from the mctrack starting point...\n";
-		  
-		  if (distBetweenStarts < minDist) {
-		    
-		    chosenTrack = track;
-		    
-		    index = i;
-		    
-		    _distances = distBetweenStarts;
 
-		    _angles = dotProduct;
+		  _angles = dotProduct;
 		    
-		    _startPoints = trk_start;
+		  _startPoints = trk_start;
 		    
-		    _endPoints = trk_end;
+		  _endPoints = trk_end;
 		    
-		  } else {
+		} else {
 		    
-		    std::cout << "This track was farther away from the mctrack. Skipping...\n";
-		    continue;
-		  }
-		  
-		}
-		
-		else if (angleDiff > minDir) {
-		  
-		  std::cout << "The track's difference in direction from the mctrack is larger than the previous track. Skipping...\n";
+		  std::cout << "This track was farther away from the mctrack. Skipping...\n";
 		  continue;
 		}
+		  
+	      }
 		
-	      } else {
-		
-		std::cout << "Track was not within the maximum starting point distance from mctrack. Skipping...\n";
+	      else if (angleDiff > minDir) {
+		  
+		std::cout << "The track's difference in direction from the mctrack is larger than the previous track. Skipping...\n";
 		continue;
 	      }
-	      
+		
+	    } else {
+		
+	      std::cout << "Track was not within the maximum starting point distance from mctrack. Skipping...\n";
+	      continue;
 	    }
+	      
+
 	    
 	  }
 	  
@@ -310,7 +309,9 @@ namespace larlite {
 	  filling = true;
 
 	}
-	
+
+	break; // stop loop over MC tracks if the neutrino one is found	
+
       } else {
 	
 	print(larlite::msg::kERROR, __FUNCTION__, Form("These mctracks did not have the PDG = 13 and Origin = 1"));
