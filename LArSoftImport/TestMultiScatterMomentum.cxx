@@ -220,7 +220,7 @@ namespace larlite {
 	    // Assigns minimum difference value to distBetweenStarts
 	    if (distBetweenStarts > distBetweenStartEnd) distBetweenStarts = distBetweenStartEnd;
 
-	    if (distBetweenStarts < maxDist) {
+	    if (fabs(distBetweenStarts) < maxDist) {
 		
 	      if (angleDiff < minDir) {
 
