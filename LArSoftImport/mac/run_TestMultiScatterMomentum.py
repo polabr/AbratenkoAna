@@ -40,7 +40,7 @@ print
 print "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.enable_event_alignment(False)
+#my_proc.enable_event_alignment(False)
 
 # Let's run it.
 # my_proc.run(1,1);

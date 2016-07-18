@@ -14,6 +14,7 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes) #larlite
 INCFLAGS += $(shell basictool-config --includes) #basictool
+INCFLAGS += -I${LARLITE_USERDEVDIR}/KalekoAna/CCInclusive/
 
 #INCFLAGS += -I$(LARLITE_COREDIR)
 #INCFLAGS += -I$(LARLITE_USERDEVDIR)
@@ -29,6 +30,7 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 LDFLAGS += -L$(shell root-config --libdir)
 LDFLAGS += $(shell basictool-config --libs)
 LDFLAGS += $(shell larlite-config --libs)
+LDFLAGS += -lKalekoAna_CCInclusive
 
 # call the common GNUmakefile
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE

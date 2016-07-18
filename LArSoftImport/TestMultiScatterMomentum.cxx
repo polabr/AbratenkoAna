@@ -18,6 +18,7 @@ namespace larlite {
 
     th = new TH1D("th","",100,0,100);
     _tmc = TrackMomentumCalculator();
+    _range_calc = TrackMomentumSplines();
     
     // Create TTree variables
     if (!_ana_tree) {
@@ -31,6 +32,8 @@ namespace larlite {
       _ana_tree->Branch("angles", &_angles, "angles/D");
       _ana_tree->Branch("startPoints", &_startPoints, "startPoints/D");
       _ana_tree->Branch("endPoints", &_endPoints, "endPoints/D");
+      _ana_tree->Branch("range_recotrack_mom", &_range_recotrack_mom, "range_recotrack_mom/D");
+      _ana_tree->Branch("range_MCTrack_mom", &_range_MCTrack_mom, "range_MCTrack_mom/D");
     }
     
     if (!_trackmatch_tree) {
@@ -221,6 +224,8 @@ namespace larlite {
     _angles = -999.;
     _startPoints.SetXYZ(-999., -999., -999.);
     _endPoints.SetXYZ(-999., -999., -999.);
+    _range_recotrack_mom = -999.;
+    _range_MCTrack_mom = -999.; 
     
     //    size_t twoTrackCounter;
 
@@ -266,6 +271,12 @@ namespace larlite {
     // This is true length in the detector, so front() and back() are used rather than Start() and End()
     _true_length = (chosen_mctrack.back().Position().Vect() - chosen_mctrack.front().Position().Vect()).Mag();
     
+    // Get the range based energy from MCTrack
+    // This actually returns KINETIC ENERGY so need to add in the MCTrack
+    // This returns in MEV... 105.658 is the muon mass
+    // Dividing by 1000 is just to convert to GEV
+    _range_MCTrack_mom = (_range_calc.GetMuMomentum(_true_length) + 105.658) / 1000.;
+
     // Is the mctrack contained in fiducial volume?
     _mu_contained = _fidvolBox.Contain(chosen_mctrack.front().Position().Vect()) &&
       _fidvolBox.Contain(chosen_mctrack.back().Position().Vect());
@@ -299,6 +310,12 @@ namespace larlite {
     // Let's store some TTree variables about the chosen track
     _reco_length = chosen_track.Length();
     
+    // Get the range based energy from reco track
+    // This actually returns KINETIC ENERGY so need to add in the MCTrack
+    // This returns in MEV... 105.658 is the muon mass
+    // Dividing by 1000 is just to convert to GEV
+    _range_recotrack_mom = (_range_calc.GetMuMomentum(_reco_length) + 105.658) / 1000.;
+
     // Start and end point of matched reco track (TVector3's)
     _startPoints = chosen_track.Vertex();
     _endPoints = chosen_track.End();

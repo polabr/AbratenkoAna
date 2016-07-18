@@ -17,6 +17,7 @@
 
 #include "Analysis/ana_base.h"
 #include "TrackMomentumCalculator.h"
+#include "TrackMomentumSplines.h"
 #include "LArUtil/Geometry.h"
 #include "GeoAlgo/GeoAABox.h"
 #include "TH1D.h"
@@ -70,6 +71,7 @@ namespace larlite {
     
     bool _using_mctracks;
     
+    // Instance of TrackMomentumCalculator (MCS based energy)
     TrackMomentumCalculator _tmc;
     
     // This ttree is filled ONCE PER EVENT (or not at all for an event if something fails)
@@ -83,6 +85,8 @@ namespace larlite {
     double _angles;
     TVector3 _startPoints;
     TVector3 _endPoints;
+    double _range_recotrack_mom;
+    double _range_MCTrack_mom;
     
     // This ttree is filled once per RECO TRACK inside of the getMatchedTrack function
     // this ttree is mostly for debugging to determine where your track-match cut values
@@ -95,6 +99,9 @@ namespace larlite {
     
     // This is the value the dot product will be compared to
     double unitConstant;
+
+    // Instance of TrackMomentumSplines (range based energy)
+    TrackMomentumSplines _range_calc;
   };
 }
 #endif
