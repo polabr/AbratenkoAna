@@ -27,6 +27,7 @@
 #include "TAxis.h"
 // #include "Minuit2/Minuit2Minimizer.h"
 #include "TMath.h"
+#include "TH1D.h"
 
 /**
    \class TrackMomentumCalculator
@@ -95,8 +96,8 @@ namespace larlite {
     
     Double_t my_mcs_llhd( Double_t x0, Double_t x1 );
     
-    Double_t GetMomentumMultiScatterLLHD(const larlite::mctrack &trk);
-    Double_t GetMomentumMultiScatterLLHD(const larlite::track &trk);
+    Double_t GetMomentumMultiScatterLLHD(const larlite::mctrack &trk, TH1D* th);
+    Double_t GetMomentumMultiScatterLLHD(const larlite::track &trk, TH1D* th);
     // Double_t GetMomentumMultiScatterChi2( const larlite::mctrack &trk );
     
     Double_t p_mcs_2; Double_t LLbf;
