@@ -14,7 +14,7 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += $(shell basictool-config --includes) #basictool
-INCFLAGS += -I${LARLITE_USERDEVDIR}/KalekoAna/LArSoftImport/
+#INCFLAGS += -I${LARLITE_USERDEVDIR}/KalekoAna/LArSoftImport/
 
 # platform-specific options
 OSNAME          = $(shell uname -s)
@@ -27,7 +27,7 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 # call the common GNUmakefile
 LDFLAGS += $(shell larlite-config --libs)
 LDFLAGS += $(shell basictool-config --libs)
-LDFLAGS += -lKalekoAna_LArSoftImport
+#LDFLAGS += -lKalekoAna_LArSoftImport
 
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE
 

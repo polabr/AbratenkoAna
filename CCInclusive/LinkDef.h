@@ -15,7 +15,6 @@
 #pragma link C++ class larlite::TestCCQECalc+;
 #pragma link C++ class larlite::TestSpline+;
 #pragma link C++ class larlite::EventSelector+;
-#pragma link C++ class larlite::TestKinematicNuReco+;
 #pragma link C++ class larlite::XiaoEventAna+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter_MCTracks+;
