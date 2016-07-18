@@ -907,91 +907,21 @@ namespace larlite {
     
   }
   
+  // Convert track to an auxiliary mctrack and return the momentum using the mctrack version since it is the one with Polina's comments
   Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::track &trk ) {
 
-    Double_t p = -1.0;
+    larlite::mctrack auxTrack;    
     
-    std::vector<Float_t> recoX; std::vector<Float_t> recoY; std::vector<Float_t> recoZ;
-    
-    recoX.clear(); recoY.clear(); recoZ.clear();
-    
-    Int_t n_points = trk.NumberTrajectoryPoints();
-    
-    for ( Int_t i = 0; i < n_points; i++ )
-      {
-	const TVector3 &pos = trk.LocationAtPoint(i);
-	
-	recoX.push_back( pos.X() ); recoY.push_back( pos.Y() ); recoZ.push_back( pos.Z() );
-	
-	// cout << " posX, Y, Z : " << pos.X() << ", " << pos.Y() << ", " << pos.Z() << endl; getchar();
-	
-      }
-    
-    Int_t my_steps = recoX.size();
-    
-    if ( my_steps < 2 ) return -1.0;
-    
-    Int_t check0 = GetRecoTracks( recoX, recoY, recoZ );
-    
-    if ( check0 != 0 ) return -1.0;
-    
-    seg_size = steps_size2;
-    
-    Int_t check1 = GetSegTracks2( recoX, recoY, recoZ );
-    
-    if ( check1 != 0 ) return -1.0;
-    
-    Int_t seg_steps = segx.size();
-    
-    if ( seg_steps < 2 ) return -1;
-    
-    Int_t seg_steps0 = seg_steps - 1;
-    
-    Double_t recoL = segL.at(seg_steps0);
-    
-    if ( recoL < minLength || recoL > maxLength ) return -1;
-    
-    Int_t check2 = GetDeltaThetaij( dEi, dEj, dthij, seg_size, ind );
-    
-    if ( check2 != 0 ) return -1.0;
-    
-    Double_t logL = 1e+16;
-    
-    Double_t bf = -666.0; // Double_t errs = -666.0;
-    
-    Double_t start1 = 0.0; Double_t end1 = 750.0;
-    
-    Double_t start2 = 0.0; Int_t end2 = 0.0; // 800.0;
-    
-    for ( Int_t k = start1; k <= end1; k++ )
-      {
-	Double_t p_test = 0.001 + k * 0.01;
-	
-	for ( Int_t l = start2; l <= end2; l++ )
-	  {
-	    Double_t res_test = 2.0; // 0.001+l*1.0;
-	    
-	    Double_t fv = my_mcs_llhd( p_test, res_test );
-	    
-	    if ( fv < logL )
-	      {
-		bf = p_test;
-		
-		logL = fv;
-		
-		// errs = res_test;
-		
-	      }
-	    
-	  }
-	
-      }
-    
-    p_mcs_2 = bf; LLbf = logL;
-    
-    p = p_mcs_2;
-    
-    return p;
+    auxTrack.resize( trk.NumberTrajectoryPoints() );
+
+    for ( size_t i = 0; i < trk.NumberTrajectoryPoints(); i++ ){
+      // Time coordinate is 0 since it is not used
+      TLorentzVector aux4vec( trk.LocationAtPoint(i), 0 );
+
+      auxTrack[i].SetPosition( aux4vec );
+    }
+
+    return TrackMomentumCalculator::GetMomentumMultiScatterLLHD( auxTrack );
     
   }
   
