@@ -24,7 +24,7 @@ for x in xrange(len(sys.argv)):
 my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify output root file name
-my_proc.set_ana_output_file("newTesty2.root")
+my_proc.set_ana_output_file("greatNewOutput.root")
 
 # Attach a template process
 mymod = fmwk.TestMultiScatterMomentum()
