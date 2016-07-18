@@ -11,7 +11,7 @@ from ROOT import TFile, gDirectory, TCanvas, TH1D, TColor, TGraphErrors, TMath, 
 from operator import truediv
 
 # Open the file 
-f = TFile("testmultiscattermomentum_output.root", "READ")
+f = TFile("newDavidFiles.root", "READ")
 
 # See what is inside the file
 print "Now looking inside the file:"
@@ -32,7 +32,7 @@ print "This is the current graph of MCp vs. MCSp."
 trueMomVsMcsRecoColz = TCanvas("trueMomVsMcsRecoColz", "trueMomVsMcsRecoColz", 720, 152, 682, 505)
 trueMomVsMcsRecoColz.cd()
 # Cut is placed to exclude failed events (-1)
-f.ana_tree.Draw("true_mom:mcs_reco_mom", "mcs_reco_mom>0", "COLZ")
+f.ana_tree.Draw("true_mom:mcs_reco_mom", "", "COLZ")
 input = raw_input("Press enter to continue...")
 
 ###-----------------

@@ -15,7 +15,8 @@ namespace larlite {
   bool TestMultiScatterMomentum::initialize() {
     
     unitConstant = 1.;
-    
+
+    th = new TH1D("th","",100,0,100);
     _tmc = TrackMomentumCalculator();
     
     // Create TTree variables
@@ -100,6 +101,8 @@ namespace larlite {
     // Require exactly one good mctrack, otherwise throw exception
     if (n_found_mctracks != 1) {
       print(larlite::msg::kWARNING, __FUNCTION__, Form("n_found_mctracks not equal to 1! It is %zu.", n_found_mctracks));
+      //      int dummyVar;
+      //      std::cin >> dummyVar;
       throw std::exception();
     }
     
@@ -120,7 +123,7 @@ namespace larlite {
     _match_dotprod = -999.;
     
     //Get the Tracks
-    auto ev_track = storage->get_data<event_track>("pandoraNuKHit");
+    auto ev_track = storage->get_data<event_track>("pandoraNuPMA");
     
     if (!ev_track) {
       print(larlite::msg::kERROR, __FUNCTION__, Form("Did not find specified data product, track!"));
@@ -198,6 +201,8 @@ namespace larlite {
     // Require exactly one matched track, otherwise throw exception
     if (n_found_tracks != 1) {
       print(larlite::msg::kWARNING, __FUNCTION__, Form("n_found_tracks not equal to 1! It is %zu.", n_found_tracks));
+      //      if (n_found_tracks > 1)
+      //twoTrackCounter++;
       throw std::exception();
     }
     
@@ -217,6 +222,8 @@ namespace larlite {
     _startPoints.SetXYZ(-999., -999., -999.);
     _endPoints.SetXYZ(-999., -999., -999.);
     
+    //    size_t twoTrackCounter;
+
     // Get neutrino interaction vertex
     auto ev_mctruth = storage->get_data<event_mctruth>("generator");
     if (!ev_mctruth) {
@@ -269,7 +276,7 @@ namespace larlite {
     // If the user is NOT running only on MCTracks:
     // continue directly past this if-statement and start dealing with reco tracks
     if (_using_mctracks) {
-      _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_mctrack);
+      _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_mctrack, th);
       _ana_tree->Fill();
       return true;
     }
@@ -313,11 +320,13 @@ namespace larlite {
     _angles = fabs(dotProduct) - unitConstant;
     
     // MCS momentum of matched reco track:
-    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_track);
+    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_track, th);
     
     // Length of matched reco track:
     _reco_length = chosen_track.Length();
     
+    //    std::cout << "This was how many times there were 2+ tracks found: " << twoTrackCounter << "\n";
+
     _ana_tree->Fill();
     
     return true;
@@ -325,6 +334,8 @@ namespace larlite {
   }
   
   bool TestMultiScatterMomentum::finalize() {
+
+    th->Write();
     
     std::cout << "Writing ttrees..." << "\n";
     if (_fout) { _fout->cd(); _ana_tree->Write(); _trackmatch_tree->Write(); }

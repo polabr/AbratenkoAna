@@ -19,6 +19,7 @@
 #include "TrackMomentumCalculator.h"
 #include "LArUtil/Geometry.h"
 #include "GeoAlgo/GeoAABox.h"
+#include "TH1D.h"
 
 // #include "../UserDev/BasicTool/GeoAlgo/GeoAABox.h"
 
@@ -64,6 +65,8 @@ namespace larlite {
     const larlite::track getMatchedTrack(storage_manager* storage, const larlite::mctrack chosen_mctrack);
     
   protected:
+
+    TH1D* th;
     
     bool _using_mctracks;
     
