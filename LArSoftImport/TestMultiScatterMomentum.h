@@ -21,6 +21,10 @@
 #include "LArUtil/Geometry.h"
 #include "GeoAlgo/GeoAABox.h"
 #include "TH1D.h"
+#include "FidVolBox.h"
+
+// This is the code that selects events on actual data
+#include "XiaoNuFinder.h"
 
 // #include "../UserDev/BasicTool/GeoAlgo/GeoAABox.h"
 
@@ -34,7 +38,14 @@ namespace larlite {
   public:
     
     /// Default constructor
-    TestMultiScatterMomentum() { _name = "TestMultiScatterMomentum"; _fout = 0; _ana_tree = 0; _trackmatch_tree = 0; _using_mctracks = true;}
+    TestMultiScatterMomentum() { 
+      _name = "TestMultiScatterMomentum"; 
+      _fout = 0; 
+      _ana_tree = 0; 
+      _trackmatch_tree = 0; 
+      _using_mctracks = true;
+      _running_on_data = false;
+    }
     
     /// Default destructor
     virtual ~TestMultiScatterMomentum() {}
@@ -61,10 +72,20 @@ namespace larlite {
        finalize function saves stuff
     */
     
+    // This function is used on MC simulation to find the mctrack of interest
     const larlite::mctrack getChosenMCTrack(storage_manager* storage, const TVector3 nu_vtx);
     
+    // This function is used on MC simulation to get the reco track closely matching the given mctrack
     const larlite::track getMatchedTrack(storage_manager* storage, const larlite::mctrack chosen_mctrack);
     
+    // This function is used when running on actual data to find the reco track of interest
+    const larlite::track getMuonTrackData(storage_manager* storage);
+
+    // Set this to true in your python run script if you are running on real data
+    // instead of simulated cosmics. The default is FALSE so if you don't set it,
+    // it will assuming you are running on simulated data.
+    void SetRunningOnData(bool flag) { _running_on_data = flag; }
+
   protected:
 
     TH1D* th;
@@ -81,6 +102,7 @@ namespace larlite {
     double _true_length;
     double _reco_length;
     bool _mu_contained;
+    bool _mu_contained_reco;
     double _distances;
     double _angles;
     TVector3 _startPoints;
@@ -102,6 +124,12 @@ namespace larlite {
 
     // Instance of TrackMomentumSplines (range based energy)
     TrackMomentumSplines _range_calc;
+
+    // Instance of XiaoNuFinder (for finding neutrino events in actual data)
+    XiaoNuFinder _nu_finder;
+
+    // Whether you are running on actual data, or simulated BNB+Cosmics
+    bool _running_on_data;
   };
 }
 #endif
