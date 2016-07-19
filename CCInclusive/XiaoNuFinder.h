@@ -22,9 +22,9 @@
 #include "GeoAlgo/GeoVector.h"
 #include "GeoAlgo/GeoSphere.h"
 #include "GeoAlgo/GeoAABox.h"
-#include "LArUtil/Geometry.h"
 #include "CCInclusiveConstants.h"
-#include "TrackMomentumSplines.h"
+#include "KalekoPIDFiller.h"
+#include "FidVolBox.h"
 
 /**
    \class XiaoNuFinder
@@ -37,7 +37,7 @@ namespace larlite {
 	class XiaoNuFinder : public larlite_base {
 
 	public:
-	
+
 		void setInputType(InputFileType_t filetype) { _filetype = filetype; }
 
 		/// Default constructor
@@ -46,11 +46,15 @@ namespace larlite {
 		/// Default destructor
 		~XiaoNuFinder() {}
 
-		std::pair<larlite::vertex, std::vector<larlite::track> > findNeutrino(const event_track *ev_track,
-		        const event_calorimetry *ev_calo,
-		        const larlite::AssSet_t & ass_calo_v,
-		        const event_vertex *ev_vtx,
-		        const event_opflash *ev_flash);
+		KalekoNuItxn_t findNeutrino(const event_track *ev_track,
+		                            const event_calorimetry *ev_calo,
+		                            const larlite::AssSet_t & ass_calo_v,
+		                            const event_vertex *ev_vtx,
+		                            const event_opflash *ev_flash);
+
+		void printNumbers();
+
+		void setVtxSphereRadius(double myradius) { _vtx_sphere_radius = myradius; }
 
 	protected:
 
@@ -71,17 +75,22 @@ namespace larlite {
 
 		InputFileType_t _filetype;
 
-		double fidvol_dist_x;
-		double fidvol_dist_y;
-		double fidvol_dist_z;
 		double BGW_mintime;
 		double BGW_maxtime;
 
 		// Fiducial volume box
 		geoalgo::AABox _fidvolBox;
 
-		// Track momentum splines
-		TrackMomentumSplines *myspline;
+		// PID filler
+		KalekoPIDFiller _PID_filler;
+
+		size_t _tot_requests;
+		size_t _n_evts_with_flash_in_bgw;
+		size_t _n_evts_viable_vertex;
+		size_t _n_successful_flashmatch;
+		bool _viable_vtx_has_matched_flash;
+
+		double _vtx_sphere_radius;
 	};
 
 }

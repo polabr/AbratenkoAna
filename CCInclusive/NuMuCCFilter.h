@@ -17,7 +17,7 @@
 
 #include "Analysis/ana_base.h"
 #include "GeoAlgo/GeoAABox.h"
-#include "LArUtil/Geometry.h"
+#include "FidVolBox.h"
 
 namespace larlite {
   /**
@@ -33,6 +33,8 @@ namespace larlite {
       _name="NuMuCCFilter"; 
       _fout=0;
     _keep_only_numu_from_kaons = false;
+    _min_nu_energy = 0.;
+    _flip = false;
   }
 
     /// Default destructor
@@ -45,20 +47,21 @@ namespace larlite {
     virtual bool finalize();
 
     void SetNuMuFromKaonOnly(bool flag){ _keep_only_numu_from_kaons = flag; }
+    void SetMinNuEnergy(double minE) { _min_nu_energy = minE; }
+    void FlipFilter(bool flag) { _flip = flag; }
     
   protected:
     
     // Fiducial volume box
     geoalgo::AABox _fidvolBox;
-    double fidvol_dist;
-    double fidvol_dist_y;
-    double fidvol_dist_x;
-    double fidvol_dist_z;
+ 
     size_t total_events;
     size_t kept_events;
 
     bool _keep_only_numu_from_kaons;
-    
+    double _min_nu_energy;
+
+    bool _flip;
   };
 }
 #endif

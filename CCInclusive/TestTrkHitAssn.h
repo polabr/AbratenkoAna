@@ -1,9 +1,9 @@
 /**
- * \file TestPPiCalo.h
+ * \file TestTrkHitAssn.h
  *
  * \ingroup CCInclusive
- *
- * \brief Class def header for a class TestPPiCalo
+ * 
+ * \brief Class def header for a class TestTrkHitAssn
  *
  * @author davidkaleko
  */
@@ -12,29 +12,23 @@
 
     @{*/
 
-#ifndef LARLITE_TESTPPICALO_H
-#define LARLITE_TESTPPICALO_H
+#ifndef LARLITE_TESTTRKHITASSN_H
+#define LARLITE_TESTTRKHITASSN_H
 
 #include "Analysis/ana_base.h"
-#include "TH1.h"
+#include "TTree.h"
 
 namespace larlite {
 
-  class TestPPiCalo : public ana_base {
-
+  class TestTrkHitAssn : public ana_base{
+  
   public:
 
     /// Default constructor
-    TestPPiCalo() {
-      _name = "TestPPiCalo";
-      _fout = 0;
-      _h_avgdedx_proton = 0;
-      _h_avgdedx_pion = 0;
-      _h_avgdedx_muon = 0;
-    }
+    TestTrkHitAssn(){ _name="TestTrkHitAssn"; _fout=0; _tree = 0;}
 
     /// Default destructor
-    virtual ~TestPPiCalo() {}
+    virtual ~TestTrkHitAssn(){}
 
     virtual bool initialize();
 
@@ -43,25 +37,22 @@ namespace larlite {
     virtual bool finalize();
 
   protected:
-
-    TH1F *_h_avgdedx_proton;
-    TH1F *_h_avgdedx_pion;
-    TH1F *_h_avgdedx_muon;
-
-    size_t n_proton_evts_tot;
-    size_t n_pion_evts_tot;
-    size_t n_muon_evts_tot;
     
+    TTree *_tree;
+    double _sum_hit_ADC;
+    double _mct_depE;
+    size_t _n_asstd_hits;
+    size_t _n_tothits;
   };
 }
 #endif
 
 //**************************************************************************
-//
+// 
 // For Analysis framework documentation, read Manual.pdf here:
 //
 // http://microboone-docdb.fnal.gov:8080/cgi-bin/ShowDocument?docid=3183
 //
 //**************************************************************************
 
-/** @} */ // end of doxygen group
+/** @} */ // end of doxygen group 

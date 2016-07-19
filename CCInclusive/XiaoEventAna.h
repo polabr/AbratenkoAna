@@ -27,18 +27,23 @@
 #include "GeoAlgo/GeoVector.h"
 #include "GeoAlgo/GeoSphere.h"
 #include "GeoAlgo/GeoAABox.h"
-#include "LArUtil/Geometry.h"
 #include "XiaoNuFinder.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TTree.h"
 #include "CCInclusiveConstants.h"
+#include "TrackMomentumSplines.h"
+//#include "NuEnergyCalc.h"
+#include "FidVolBox.h"
+#include "TrackMomentumCalculator.h"
+
 
 namespace larlite {
   /**
      \class XiaoEventAna
      User custom analysis class made by SHELL_USER_NAME
    */
+
   class XiaoEventAna : public ana_base {
 
   public:
@@ -53,8 +58,9 @@ namespace larlite {
       _running_on_data = false;
       _tree = 0;
       _filetype = kINPUT_FILE_TYPE_MAX;
+      _vtx_sphere_radius = 3.;
     }
-  
+
     /// Default destructor
     virtual ~XiaoEventAna() {}
 
@@ -68,9 +74,16 @@ namespace larlite {
 
     void setInputType(InputFileType_t filetype) { _filetype = filetype; }
 
+    void setVtxSphereRadius(double myradius) { _vtx_sphere_radius = myradius; }
+
   protected:
 
     XiaoNuFinder _nu_finder;
+    TrackMomentumSplines _myspline;
+    TrackMomentumCalculator _MCScalc;
+    //    NuEnergyCalc _nu_E_calc;
+
+    double _vtx_sphere_radius;
 
     void resetTTreeVars();
 
@@ -78,9 +91,7 @@ namespace larlite {
 
     size_t total_events;
     size_t passed_events;
-    double fidvol_dist_x;
-    double fidvol_dist_y;
-    double fidvol_dist_z;
+
     // double BGW_mintime;
     // double BGW_maxtime;
 
@@ -99,7 +110,8 @@ namespace larlite {
     bool   _correct_ID;
     double _mu_phi;
     double _p_phi;
-    double _mu_contained;
+    bool _longest_trk_contained;
+    bool _all_trks_contained;
     double _true_nu_E;
     int    _true_nu_pdg;
     bool   _true_nu_CCNC;
@@ -111,8 +123,24 @@ namespace larlite {
     int _n_associated_tracks;
 
     double _longest_trk_len;
+    double _second_longest_trk_len;
     double _longest_trk_theta;
+    double _longest_trk_MCS_mom;
+    double _longest_trk_spline_mom;
+    double _nu_E_estimate;
 
+    double _true_nu_x;
+    double _true_nu_y;
+    double _true_nu_z;
+
+    double _dist_reco_true_vtx;
+    double _max_tracks_dotprod;
+    double _longest_tracks_dotprod;
+    double _longest_tracks_dotprod_trkendpoints;
+
+    double _longest_track_end_x;
+    double _longest_track_end_y;
+    double _longest_track_end_z;
   };
 }
 #endif

@@ -33,7 +33,9 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 
 # Let's run it.
-my_proc.run(0,50)
+#the event discussed in nevis mtg 061016 is (47,1)
+#from ~/Data/larlite/mcc7_022316/scan_prodgenie_bnb_nu_uboone_mcc7_detsim_v1/scan_prodgenie_bnb_nu_uboone_mcc7_detsim_v1_all.root
+my_proc.run() 
 # my_proc.run()
 
 # done!

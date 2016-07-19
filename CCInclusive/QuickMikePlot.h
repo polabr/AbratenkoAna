@@ -1,9 +1,9 @@
 /**
- * \file TestSpline.h
+ * \file QuickMikePlot.h
  *
  * \ingroup CCInclusive
  *
- * \brief Class def header for a class TestSpline
+ * \brief Class def header for a class QuickMikePlot
  *
  * @author davidkaleko
  */
@@ -12,47 +12,55 @@
 
     @{*/
 
-#ifndef LARLITE_TESTSPLINE_H
-#define LARLITE_TESTSPLINE_H
+#ifndef LARLITE_QUICKMIKEPLOT_H
+#define LARLITE_QUICKMIKEPLOT_H
 
 #include "Analysis/ana_base.h"
-#include "TH2.h"
-#include "TrackMomentumSplines.h"
+#include "TTree.h"
 #include "GeoAlgo/GeoAABox.h"
-#include "GeoAlgo/GeoVector.h"
 #include "FidVolBox.h"
+#include "GeoAlgo/GeoSphere.h"
 
 namespace larlite {
   /**
-     \class TestSpline
+     \class QuickMikePlot
      User custom analysis class made by SHELL_USER_NAME
    */
-  class TestSpline : public ana_base {
+  class QuickMikePlot : public ana_base {
 
   public:
 
     /// Default constructor
-    TestSpline() { _name = "TestSpline"; _fout = 0; _h=0; myspline=0; _testing_protons = false;}
+    QuickMikePlot() { _name = "QuickMikePlot"; _fout = 0; _tree = 0;}
 
     /// Default destructor
-    virtual ~TestSpline() {}
-
-
+    virtual ~QuickMikePlot() {}
     virtual bool initialize();
-
     virtual bool analyze(storage_manager* storage);
-
     virtual bool finalize();
 
-    void SetTestingProtons(bool flag){ _testing_protons = flag; }
 
   protected:
-    TH2D *_h;
+    TTree *_tree;
+    bool _CCNC;
+    int _nupdg;
+    int _fndecay;
+    double _true_nu_E;
+    double _true_mu_E;
+    double _true_mu_len;
+    bool _nu_infidvol;
 
-    bool _testing_protons;
+    double _nu_vtx_x;
+    double _nu_vtx_y;
+    double _nu_vtx_z;
 
-    TrackMomentumSplines *myspline;
-    geoalgo::AABox _myGeoAABox;
+    // Sphere around neutrino vertex
+    geoalgo::Sphere _nu_sphere;
+
+    // Fiducial volume box
+    geoalgo::AABox _fidvolBox;
+
+
   };
 }
 #endif
