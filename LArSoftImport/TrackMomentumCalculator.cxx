@@ -241,7 +241,7 @@ namespace larlite {
       
     }
     
-    std::cout << "This is indC at the end of the loop: " << indC << "\n";
+    //std::cout << "This is indC at the end of the loop: " << indC << "\n";
     
     // From 1 up until (recoX,Y,Z lengths - 1)
     for (Int_t i = indC; i < a4; i++) {
@@ -825,7 +825,7 @@ namespace larlite {
       // Get a coordinate position vector (X,Y,Z) for each point i in the mctrack
       const TVector3 &pos = trk[i].Position().Vect();
       
-      std::cout << "CALCULATOR: pos X, Y, Z: " << pos.X() << ", " << pos.Y() << ", " << pos.Z() << std::endl;
+      //      std::cout << "CALCULATOR: pos X, Y, Z: " << pos.X() << ", " << pos.Y() << ", " << pos.Z() << std::endl;
       
       // recoX,Y,Z are each individual coordinate vectors for all points in mctrack
       recoX.push_back(pos.X()); recoY.push_back(pos.Y()); recoZ.push_back(pos.Z());
@@ -845,9 +845,12 @@ namespace larlite {
     // Make sure GetRecoTracks returns 0 to pass (simply checks if coord vectors recoX,Y,Z  are the same len (should be!))
     Int_t check0 = GetRecoTracks(recoX, recoY, recoZ);
     
-    th->Fill(check0);
-    if (check0 != 0) 
+    if (check0 != 0) {
+
+      th->Fill(2);
       return -1.0;
+
+    }
     
     // steps_size2 = 10.0
     seg_size = steps_size2;
@@ -873,7 +876,7 @@ namespace larlite {
     // This should apparently be the reconstructed length value
     Double_t recoL = segL.at(seg_steps0);
 
-    std::cout << "This is the reco length: " << recoL << "\n";
+    //std::cout << "CALCULATOR: This is the reco length: " << recoL << "\n";
     
     // Make sure reco length is b/w certain values
     if (recoL < minLength || recoL > maxLength) 
