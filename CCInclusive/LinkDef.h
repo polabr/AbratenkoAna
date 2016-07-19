@@ -17,7 +17,6 @@
 #pragma link C++ class larlite::XiaoEventAna+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter+;
 #pragma link C++ class larlite::MC_1mu1pNn0else_Filter_MCTracks+;
-#pragma link C++ class larlite::TestMCTruth+;
 #pragma link C++ class larlite::NuMuCCFilter+;
 #pragma link C++ class larlite::XiaoNuFinder+;
 
