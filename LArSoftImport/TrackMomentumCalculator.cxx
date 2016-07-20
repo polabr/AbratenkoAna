@@ -37,7 +37,8 @@ namespace larlite {
     // Assuming this is track length
     minLength=100;
     maxLength=1350.0;
-    
+
+    hFails = new TH1D("hFails", "Case of failure;Case of failure;Entries", 10, 0, 10);    
   }
   
   
@@ -807,7 +808,9 @@ namespace larlite {
     
   }
   
-  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD(const larlite::mctrack &trk, TH1D* th) {
+  enum momFails{kmy_steps, kGetRecoTracks, kGetSegTracks2, kseg_steps, krecoL, kGetDeltaThetaij};
+
+  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD(const larlite::mctrack &trk) {
     
     // Momentum: Set to -1 by default
     Double_t p = -1.0;
@@ -839,15 +842,16 @@ namespace larlite {
     
     // Checks if X-coordinate vector is big enough to work with (e.g. doesn't have 1, 0 or negative # of points)
     // Should probably change this to 3 in the future (to account for needing angle b/w segments)
-    if (my_steps < 2) 
+    if (my_steps < 2){
+      hFails->Fill(kmy_steps);
       return -1.0;
+    }
     
     // Make sure GetRecoTracks returns 0 to pass (simply checks if coord vectors recoX,Y,Z  are the same len (should be!))
     Int_t check0 = GetRecoTracks(recoX, recoY, recoZ);
     
     if (check0 != 0) {
-
-      th->Fill(2);
+      hFails->Fill(kGetRecoTracks);
       return -1.0;
 
     }
@@ -858,17 +862,21 @@ namespace larlite {
     // Make sure GetSegTracks2 returns 0 to pass
     Int_t check1 = GetSegTracks2(recoX, recoY, recoZ);
     
-    th->Fill(check1);
-    if (check1 != 0) 
-      return -1.0;
-    
+
+    if (check1 != 0) {
+      hFails->Fill(kGetSegTracks2);
+      return -1.0;    
+    }
+
     // Basically getting size of recoX (was copied into segx) (Was other stuff done to it later?)
     Int_t seg_steps = segx.size();
     
     // Want these seg_step tracks to have a certain minimum number of coords
-    if (seg_steps < 2) 
+    if (seg_steps < 2){ 
+      hFails->Fill(kseg_steps);
       return -1;
-    
+    }    
+
     // Get index of last coordinate value in seg_steps
     Int_t seg_steps0 = seg_steps - 1;
     
@@ -879,15 +887,19 @@ namespace larlite {
     //std::cout << "CALCULATOR: This is the reco length: " << recoL << "\n";
     
     // Make sure reco length is b/w certain values
-    if (recoL < minLength || recoL > maxLength) 
+    if (recoL < minLength || recoL > maxLength){ 
+      hFails->Fill(krecoL);
       return -1;
-    
+    }    
+
     // Make sure GetDeltaThetaij function returns 0
     Int_t check2 = GetDeltaThetaij(dEi, dEj, dthij, seg_size, ind);
     
-    if (check2 != 0) 
+    if (check2 != 0){ 
+      hFails->Fill(kGetDeltaThetaij);
       return -1.0;
-    
+    }
+
     // ***Bunch of constants below this point (what exactly are they?)***
 
     Double_t logL = 1e+16;
@@ -940,7 +952,7 @@ namespace larlite {
 
   // Convert track to an auxiliary mctrack and return the momentum using the mctrack version since it is the one with Polina's comments                                               
   
-  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::track &trk, TH1D* th ) {
+  Double_t TrackMomentumCalculator::GetMomentumMultiScatterLLHD( const larlite::track &trk ) {
     
     larlite::mctrack auxTrack;
     
@@ -953,7 +965,7 @@ namespace larlite {
       auxTrack[i].SetPosition( aux4vec );
     }
 
-    return TrackMomentumCalculator::GetMomentumMultiScatterLLHD( auxTrack, th );
+    return TrackMomentumCalculator::GetMomentumMultiScatterLLHD( auxTrack );
     
   }
   

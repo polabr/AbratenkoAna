@@ -17,7 +17,6 @@ namespace larlite {
 
     unitConstant = 1.;
 
-    th = new TH1D("th", "", 100, 0, 100);
     _tmc = TrackMomentumCalculator();
     _range_calc = TrackMomentumSplines();
 
@@ -370,7 +369,7 @@ namespace larlite {
       // If the user is NOT running only on MCTracks:
       // continue directly past this if-statement and start dealing with reco tracks
       if (_using_mctracks) {
-        _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_mctrack, th);
+        _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_mctrack);
         _ana_tree->Fill();
         return true;
       }
@@ -447,7 +446,7 @@ namespace larlite {
     }
 
     // MCS momentum of matched reco track:
-    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_track, th);
+    _mcs_reco_mom = _tmc.GetMomentumMultiScatterLLHD(chosen_track);
 
     // Length of matched reco track:
     _reco_length = chosen_track.Length();
@@ -460,10 +459,10 @@ namespace larlite {
 
   bool TestMultiScatterMomentum::finalize() {
 
-    th->Write();
+    TH1D* th = _tmc.GetHistoFails();
 
     std::cout << "Writing ttrees..." << "\n";
-    if (_fout) { _fout->cd(); _ana_tree->Write(); _trackmatch_tree->Write(); }
+    if (_fout) { _fout->cd(); _ana_tree->Write(); _trackmatch_tree->Write(); th->Write(); }
 
     else
       print(larlite::msg::kERROR, __FUNCTION__, "Did not find an output file pointer!!! File not opened?");
