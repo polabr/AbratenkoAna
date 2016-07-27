@@ -355,10 +355,11 @@ namespace larlite {
       _true_length = (chosen_mctrack.back().Position().Vect() - chosen_mctrack.front().Position().Vect()).Mag();
 
       // Get the range based energy from MCTrack
-      // This actually returns KINETIC ENERGY so need to add in the MCTrack
+      // This actually returns KINETIC ENERGY so need to calculate momentum
       // This returns in MEV... 105.658 is the muon mass
       // Dividing by 1000 is just to convert to GEV
-      _range_MCTrack_mom = (_range_calc.GetMuMomentum(_true_length) + 105.658) / 1000.;
+      double _range_tot_E = (_range_calc.GetMuMomentum(_true_length) + 105.658);
+      _range_MCTrack_mom = std::sqrt(_range_tot_E*_range_tot_E - (105.658*105.658));
 
       // Is the mctrack contained in fiducial volume?
       _mu_contained = _fidvolBox.Contain(chosen_mctrack.front().Position().Vect()) &&
