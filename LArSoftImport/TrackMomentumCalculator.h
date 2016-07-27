@@ -61,6 +61,11 @@ namespace larlite {
     Float_t kcal;
     std::vector<Float_t> dthij; std::vector<Float_t> dEi; std::vector<Float_t> dEj; std::vector<Float_t> ind;
     
+  private:
+    // Histogram holding cases in which this class returns MCS momentum -1 
+    TH1D* hFails;
+    
+
   public:
     
     // Constructor and destructor  //
@@ -96,8 +101,8 @@ namespace larlite {
     
     Double_t my_mcs_llhd( Double_t x0, Double_t x1 );
     
-    Double_t GetMomentumMultiScatterLLHD(const larlite::mctrack &trk, TH1D* th);
-    Double_t GetMomentumMultiScatterLLHD(const larlite::track &trk, TH1D* th);
+    Double_t GetMomentumMultiScatterLLHD(const larlite::mctrack &trk);
+    Double_t GetMomentumMultiScatterLLHD(const larlite::track &trk);
     // Double_t GetMomentumMultiScatterChi2( const larlite::mctrack &trk );
     
     Double_t p_mcs_2; Double_t LLbf;
@@ -109,7 +114,12 @@ namespace larlite {
     Double_t minLength;
     
     Double_t maxLength;
-  };
+ 
+    TH1D* GetHistoFails(){return hFails;};
+
+    
+
+ };
 
 } // end namespace larlite
 
